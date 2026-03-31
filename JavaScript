@@ -1,109 +1,124 @@
-// Функция для отправки заказа
+// --- НАСТРОЙКИ БОТА ---
+const botToken = "8730430332:AAGff_PCX2059o3EUwG-d9C19uTqcH4sAZ4";
+const myId = "7727345054"; // <--- ЗАМЕНИТЕ ЭТО НА ВАШ ID ИЗ @userinfobot
+
+// 1. Инициализация корзины (загружаем из памяти или создаем пустую)
+let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+// 2. Функция добавления товара в корзину
+function addToCart(name, price) {
+    cart.push({ name: name, price: price });
+    saveCart();
+    renderCart();
+    alert(name + " добавлен в корзину!");
+}
+
+// 3. Сохранение корзины в память браузера
+function saveCart() {
+    localStorage.setItem('cart', JSON.stringify(cart));
+}
+
+// 4. Удаление товара из корзины
+function removeFromCart(index) {
+    cart.splice(index, 1);
+    saveCart();
+    renderCart();
+}
+
+// 5. Функция отрисовки корзины на экране
+function renderCart() {
+    const cartContainer = document.getElementById('cart-items'); // Элемент, где список товаров
+    const totalElement = document.getElementById('cart-total');   // Элемент, где итоговая сумма
+    
+    if (!cartContainer) return; // Если мы не на странице корзины, ничего не делаем
+
+    cartContainer.innerHTML = '';
+    let total = 0;
+
+    cart.forEach((item, index) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'cart-item';
+        itemDiv.innerHTML = `
+            <span>${item.name} - ${item.price} руб.</span>
+            <button onclick="removeFromCart(${index})">❌</button>
+        `;
+        cartContainer.appendChild(itemDiv);
+        total += parseFloat(item.price);
+    });
+
+    if (totalElement) {
+        totalElement.textContent = total + " руб.";
+    }
+}
+
+// 6. ФУНКЦИЯ ОТПРАВКИ ЗАКАЗА В TELEGRAM (С ПРОРАБОТКОЙ ПОВТОРНОЙ ПОКУПКИ)
 async function sendOrder(event) {
-    event.preventDefault(); // Останавливаем перезагрузку страницы
+    event.preventDefault(); // Отключаем перезагрузку страницы
 
     const form = event.target;
     const btn = form.querySelector('button');
-    const originalBtnText = btn.textContent;
 
-    // 1. Собираем данные из корзины (предположим, они в localStorage)
-    const cartData = JSON.parse(localStorage.getItem('cart')) || [];
-    if (cartData.length === 0) {
+    // Проверка: есть ли товары в корзине?
+    if (cart.length === 0) {
         alert("Ваша корзина пуста!");
         return;
     }
 
-    // Блокируем кнопку, чтобы не нажали дважды
+    // Собираем данные из полей формы
+    const name = form.name ? form.name.value : "Не указано";
+    const phone = form.phone ? form.phone.value : "Не указано";
+
+    // Формируем список товаров для сообщения
+    let itemList = "";
+    let totalSum = 0;
+    cart.forEach((item, index) => {
+        itemList += `${index + 1}. ${item.name} — ${item.price} руб.\n`;
+        totalSum += parseFloat(item.price);
+    });
+
+    // Текст сообщения для вас
+    const message = `🛍 НОВЫЙ ЗАКАЗ!\n\n` +
+                    `Товары:\n${itemList}\n` +
+                    `💰 Итого: ${totalSum} руб.\n\n` +
+                    `👤 Клиент: ${name}\n` +
+                    `📞 Телефон: ${phone}`;
+
+    // Блокируем кнопку, чтобы избежать двойных нажатий
     btn.disabled = true;
     btn.textContent = "Отправка...";
 
-    // Формируем сообщение
-    let message = `🛍 Новый заказ!\n\n`;
-    cartData.forEach((item, index) => {
-        message += `${index + 1}. ${item.name} — ${item.price} руб.\n`;
-    });
-    
-    // Добавляем данные из полей формы (имя, телефон)
-    const formData = new FormData(form);
-    message += `\n👤 Клиент: ${formData.get('name')}`;
-    message += `\n📞 Телефон: ${formData.get('phone')}`;
-
-    // Настройки бота
-    const token = "ВАШ_ТОКЕН";
-    const chatId = "ВАШ_ID";
-    const url = `https://api.telegram.org/bot${token}/sendMessage`;
-
     try {
-        const response = await fetch(url, {
+        const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                chat_id: chatId,
+                chat_id: myId,
                 parse_mode: 'html',
                 text: message
             })
         });
 
         if (response.ok) {
-            alert("Заказ успешно отправлен!");
+            alert("Заказ успешно отправлен! Мы свяжемся с вами.");
 
-            // --- ВОТ ЗДЕСЬ ИДЕТ ПРОРАБОТКА ПОВТОРНОЙ ПОКУПКИ ---
+            // --- ОБНУЛЕНИЕ ДЛЯ ПОВТОРНОЙ ПОКУПКИ ---
             
-            // 2. Очищаем форму
-            form.reset(); 
-
-            // 3. Очищаем корзину в памяти браузера
-            localStorage.removeItem('cart'); 
-
-            // 4. Обновляем визуальную корзину на сайте (вызываем вашу функцию отрисовки)
-            if (typeof updateCartUI === 'function') {
-                updateCartUI(); 
-            }
+            form.reset();            // 1. Очищаем поля (имя, телефон)
+            cart = [];               // 2. Очищаем массив корзины в коде
+            localStorage.removeItem('cart'); // 3. Очищаем корзину в памяти браузера
+            renderCart();            // 4. Очищаем корзину визуально на сайте
 
         } else {
-            alert("Ошибка при отправке. Попробуйте снова.");
+            alert("Ошибка при отправке. Пожалуйста, проверьте, запущен ли бот @Boss_storesvzbot");
         }
     } catch (error) {
-        alert("Произошла ошибка соединения.");
+        alert("Ошибка сети. Попробуйте еще раз.");
     } finally {
-        // 5. Всегда возвращаем кнопку в рабочее состояние
+        // --- ВОЗВРАЩАЕМ КНОПКУ В РАБОЧЕЕ СОСТОЯНИЕ ---
         btn.disabled = false;
-        btn.textContent = originalBtnText;
+        btn.textContent = "Заказать еще раз";
     }
 }
 
-// Привязываем событие к форме (оно будет работать бесконечное количество раз)
-document.getElementById('order-form').addEventListener('submit', sendOrder);
-// Настройки (замените на свои)
-const token = "8774835028:AAGaSx43As98UPxENWUYDU9msflIKLHPToc";
-const chatId = "7727345054"; // Не ID бота, а ваш!
-
-async function sendOrder(event) {
-    event.preventDefault();
-    
-    // ... остальной код сбора данных ...
-
-    const message = 🚀 НОВЫЙ ЗАКАЗ!\n\n + 
-                    👤 Клиент: ${name}\n + 
-                    📞 Телефон: ${phone};
-
-    try {
-        await fetch(https://api.telegram.org/bot${token}/sendMessage, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                chat_id: chatId,
-                parse_mode: 'html',
-                text: message
-            })
-        });
-        
-        // После успешной отправки ОБЯЗАТЕЛЬНО очищаем всё для повторной покупки
-        event.target.reset(); // Очистить поля формы
-        localStorage.removeItem('cart'); // Очистить корзину в памяти
-        alert("Заказ отправлен!");
-        
-    } catch (error) {
-        console.error("Ошибка:", error);
-    }
-}
+// Запускаем отрисовку корзины при загрузке страницы
+document.addEventListener('DOMContentLoaded', renderCart);

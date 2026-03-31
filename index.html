@@ -16,87 +16,83 @@
 </head>
 <body class="select-none">
 
+    <!-- ШАПКА -->
     <header class="sticky top-0 z-50 bg-black/90 backdrop-blur-xl p-4 border-b border-yellow-500/20 flex justify-between items-center">
         <div>
             <h1 class="text-2xl font-black italic text-yellow-500 uppercase tracking-tighter leading-none">BOSS STORE</h1>
-            <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1">Digital Agency</p>
+            <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1 italic">Digital Agency</p>
         </div>
         <div class="flex gap-2">
-            <button onclick="openSupport()" class="bg-white/5 px-3 py-2 rounded-xl text-[10px] font-black border border-white/10 text-yellow-500 uppercase italic">Поддержка</button>
-            <div class="bg-white/10 px-3 py-2 rounded-xl text-xs font-bold border border-white/10 tracking-tighter">🛒 <span id="cart-count">0</span></div>
+            <!-- КНОПКА ПОДДЕРЖКИ - ВЕДЕТ В ЛИЧКУ -->
+            <button onclick="contactAdmin()" class="bg-yellow-500/10 px-3 py-2 rounded-xl text-[10px] font-black border border-yellow-500/20 text-yellow-500 uppercase italic tracking-widest">Поддержка</button>
+            <div class="bg-white/10 px-3 py-2 rounded-xl text-xs font-bold border border-white/10">🛒 <span id="cart-count">0</span></div>
         </div>
     </header>
 
-    <div id="cat-list" class="flex gap-2 overflow-x-auto no-scrollbar p-4 sticky top-[72px] z-40 bg-black/50 backdrop-blur-sm"></div>
+    <div id="cat-list" class="flex gap-2 overflow-x-auto no-scrollbar p-4 sticky top-[72px] z-40 bg-black/50 backdrop-blur-sm border-b border-white/5"></div>
 
     <main class="p-4 pb-48">
         <div id="catalog" class="grid grid-cols-2 gap-4">
-            <p class="col-span-2 text-center py-10 text-gray-500 animate-pulse uppercase text-[10px] font-bold italic">Загрузка витрины...</p>
+            <p class="col-span-2 text-center py-10 text-gray-500 animate-pulse uppercase text-[10px] font-bold">Загрузка витрины...</p>
         </div>
     </main>
 
-    <!-- КОРЗИНА -->
-    <div id="checkout-bar" class="fixed bottom-6 left-4 right-4 z-50 glass p-5 rounded-[32px] hidden border-yellow-500/40 shadow-2xl">
+    <!-- ПАНЕЛЬ КОРЗИНЫ -->
+    <div id="checkout-bar" class="fixed bottom-6 left-4 right-4 z-50 glass p-5 rounded-[32px] hidden border-yellow-500/40 shadow-2xl shadow-yellow-500/10">
         <div class="flex justify-between items-center">
             <div>
-                <p class="text-[10px] text-gray-400 uppercase font-black mb-1">Сумма:</p>
-                <p id="total-price" class="text-2xl font-black text-yellow-500 italic">0 ₽</p>
+                <p class="text-[10px] text-gray-400 uppercase font-black mb-1">К оплате:</p>
+                                <p id="total-price" class="text-2xl font-black text-yellow-500 italic leading-none">0 ₽</p>
             </div>
-                        <button onclick="openPay()" class="bg-yellow-500 text-black px-10 py-4 rounded-2xl font-black uppercase text-sm btn-click shadow-lg shadow-yellow-500/20 tracking-tighter italic">Оплатить</button>
+            <button onclick="openPay()" class="bg-yellow-500 text-black px-10 py-4 rounded-2xl font-black uppercase text-sm btn-click shadow-lg shadow-yellow-500/20 italic tracking-tighter">Оформить</button>
         </div>
     </div>
 
     <!-- МОДАЛКА ОПЛАТЫ -->
     <div id="pay-modal" class="fixed inset-0 bg-black z-[100] hidden p-6 overflow-y-auto">
         <div class="max-w-md mx-auto">
-            <button onclick="closePay()" class="text-yellow-500 font-bold mb-8 uppercase text-[10px] tracking-widest">← Вернуться</button>
-            <h2 class="text-5xl font-black mb-1 uppercase italic leading-none">ОПЛАТА</h2>
+            <button onclick="closePay()" class="text-yellow-500 font-bold mb-8 uppercase text-[10px] tracking-widest">← Назад к покупкам</button>
+            <h2 class="text-5xl font-black mb-1 uppercase italic leading-none text-white">ОПЛАТА</h2>
             <p class="text-gray-500 text-[10px] uppercase font-bold mb-8 italic tracking-widest text-yellow-500/50">Boss Store Checkout</p>
             
             <div class="glass p-6 rounded-[40px] border-yellow-500/30 shadow-2xl">
-                <div class="text-center mb-8 bg-yellow-500 p-4 rounded-3xl border border-yellow-500/20">
+                <!-- СУММА -->
+                <div class="text-center mb-8 bg-yellow-500 p-5 rounded-3xl border border-yellow-500/20 shadow-lg shadow-yellow-500/10">
                     <p class="text-black text-[10px] uppercase font-black tracking-widest mb-1 opacity-60 italic">СУММА К ПЕРЕВОДУ:</p>
                     <p id="modal-total-price" class="text-4xl font-black text-black italic leading-none tracking-tighter">0 ₽</p>
                 </div>
 
-                <div class="bg-black/60 p-5 rounded-3xl mb-6 border border-white/5 text-center">
-                    <p class="text-yellow-500 text-[10px] uppercase font-black mb-4 tracking-widest italic underline">Реквизиты Т-Банк</p>
+                <!-- РЕКВИЗИТЫ -->
+                <div class="bg-black/60 p-5 rounded-3xl mb-6 border border-white/5 text-center shadow-inner">
+                    <p class="text-yellow-500 text-[10px] uppercase font-black mb-4 tracking-widest italic underline underline-offset-4 decoration-yellow-500/20">Реквизиты Т-Банк</p>
                     <div class="mb-4">
                         <p class="text-gray-500 text-[9px] uppercase mb-1 font-bold">Номер карты (Т-Банк):</p>
                         <p class="text-white font-bold text-lg tracking-wider select-all">2200 7019 5529 9232</p>
                     </div>
                     <div>
                         <p class="text-gray-500 text-[9px] uppercase mb-1 font-bold">По СБП (Т-Банк):</p>
-                        <p class="text-white font-bold text-lg select-all">+7 950 170 07 87</p>
+                                                <p class="text-white font-bold text-lg select-all">+7 950 170 07 87</p>
                     </div>
                 </div>
-                                <button onclick="confirmOrder()" id="confirm-btn" class="w-full bg-white text-black py-5 rounded-2xl font-black uppercase text-sm btn-click shadow-xl mb-4 italic">Я оплатил(а)</button>
-                <button onclick="openSupport()" class="w-full bg-white/5 text-gray-500 py-3 rounded-2xl font-bold uppercase text-[9px] tracking-widest border border-white/5 italic">Проблема с оплатой?</button>
+
+                <!-- КНОПКИ -->
+                <button onclick="confirmOrder()" id="confirm-btn" class="w-full bg-white text-black py-5 rounded-2xl font-black uppercase text-sm btn-click shadow-xl mb-4 italic">Я оплатил(а)</button>
+                
+                <button onclick="contactAdmin()" class="w-full bg-white/5 text-gray-500 py-3 rounded-2xl font-bold uppercase text-[9px] tracking-widest border border-white/5 italic">Проблема с оплатой? Пишите в поддержку</button>
             </div>
         </div>
-    </div>
-
-    <!-- МОДАЛКА ПОДДЕРЖКИ -->
-    <div id="support-modal" class="fixed inset-0 bg-black z-[200] hidden p-6 flex flex-col items-center justify-center">
-        <div class="w-full max-w-md bg-black border border-yellow-500/20 rounded-[40px] p-8 glass shadow-2xl relative">
-            <button onclick="closeSupport()" class="absolute top-6 right-6 text-gray-500 text-xl font-bold">×</button>
-            <h3 class="text-2xl font-black uppercase italic text-yellow-500 mb-2">Написать админу</h3>
-            <p class="text-gray-500 text-[10px] uppercase font-bold mb-6 italic tracking-widest leading-tight">Если у вас теневой бан или вопрос — напишите сообщение ниже</p>
-            
-            <textarea id="support-msg" rows="4" class="w-full bg-black/50 border border-white/10 rounded-3xl p-4 text-white text-sm outline-none focus:border-yellow-500 transition-colors mb-6" placeholder="Введите ваш текст..."></textarea>
-            
-            <button onclick="sendSupport()" id="support-btn" class="w-full bg-yellow-500 text-black py-5 rounded-2xl font-black uppercase text-sm btn-click shadow-lg shadow-yellow-500/20 italic">Отправить сообщение</button>
-            </div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // --- ДАННЫЕ ВШИТЫ ---
+        // --- ТВОИ НАСТРОЙКИ ---
         const SHEETDB_URL = 'https://sheetdb.io/api/v1/5gnvz043vf750';
         const BOT_TOKEN = '8774835028:AAGaSx43As98UPxENWUYDU9msflIKLHPToc';
         const ADMIN_ID = '7727345054'; 
+        const ADMIN_USERNAME = 'твой_ник'; // <--- ВПИШИ СВОЙ НИК БЕЗ @ (например: boss_store_admin)
+        // ----------------------
 
         let products = [];
         let cart = [];
@@ -114,7 +110,7 @@
                 renderCats();
                 renderItems();
             } catch (e) {
-                document.getElementById('catalog').innerHTML = "Ошибка связи";
+                document.getElementById('catalog').innerHTML = "<p class='col-span-2 text-center text-red-500'>Ошибка связи с БД</p>";
             }
         }
 
@@ -139,7 +135,7 @@
                     <h3 class="text-[11px] font-black uppercase leading-tight mb-1 tracking-tighter">${p.Name}</h3>
                     <p class="text-[9px] text-gray-500 mb-3 flex-1 italic leading-none">${p.Description || ''}</p>
                     <div class="flex justify-between items-center mt-auto pt-2 border-t border-white/5">
-                        <span class="text-yellow-500 font-black text-[13px] italic tracking-tighter">${p.Price} ₽</span>
+                        <span class="text-yellow-500 font-black text-[14px] italic tracking-tighter">${p.Price} ₽</span>
                         <button onclick="addToCart(${products.indexOf(p)})" class="bg-white text-black w-8 h-8 rounded-xl font-black btn-click shadow-md">+</button>
                     </div>
                 </div>
@@ -164,41 +160,23 @@
             } else { bar.classList.add('hidden'); }
         }
 
-        function openPay() { document.getElementById('pay-modal').classList.remove('hidden'); }
-        function closePay() { document.getElementById('pay-modal').classList.add('hidden'); }
-        function openSupport() { document.getElementById('support-modal').classList.remove('hidden'); }
-        function closeSupport() { document.getElementById('support-modal').classList.add('hidden'); }
+        function openPay() { 
+            document.getElementById('pay-modal').classList.remove('hidden'); 
+            tg.HapticFeedback.notificationOccurred('success');
+        }
+        
+        function closePay() { 
+            document.getElementById('pay-modal').classList.add('hidden'); 
+        }
 
-        async function sendSupport() {
-            const msg = document.getElementById('support-msg').value;
-            if(!msg) return;
-            const btn = document.getElementById('support-btn');
-            btn.innerText = "ОТПРАВЛЯЮ...";
-            btn.disabled = true;
-
-            const user = tg.initDataUnsafe.user || { first_name: 'Покупатель', id: 'unknown' };
-            const text = `📩 НОВОЕ СООБЩЕНИЕ ОТ КЛИЕНТА!\n\n` +
-                         `👤 От: ${user.first_name}\n` +
-                         `🔗 Личка: [ССЫЛКА](tg://user?id=${user.id})\n` +
-                         `👤 Ник: @${user.username || 'отсутствует'}\n\n` +
-                         `📝 Текст: ${msg}`;
-
-            try {
-                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ chat_id: ADMIN_ID, text: text, parse_mode: 'Markdown' })
-                });
-                tg.showAlert("Сообщение отправлено! Админ напишет вам, как только освободится.");
-                closeSupport();
-                document.getElementById('support-msg').value = '';
-            } catch (e) { tg.showAlert("Ошибка!"); }
-            btn.innerText = "Отправить сообщение"; btn.disabled = false;
+        // ФУНКЦИЯ СВЯЗИ С АДМИНОМ (ЛИЧКА)
+        function contactAdmin() {
+            tg.openTelegramLink(`https://t.me/${ADMIN_USERNAME}`);
         }
 
         async function confirmOrder() {
             const btn = document.getElementById('confirm-btn');
-            btn.innerText = "ОТПРАВКА..."; btn.disabled = true;
+            btn.innerText = "ОТПРАВЛЯЮ..."; btn.disabled = true;
 
             const total = cart.reduce((s, p) => s + p.Price, 0);
             const user = tg.initDataUnsafe.user || { first_name: 'Покупатель', id: 'unknown' };
@@ -206,7 +184,7 @@
 
             const text = `🚀 НОВЫЙ ЗАКАЗ!\n\n` +
                          `👤 Клиент: ${user.first_name}\n` +
-                         `🔗 Профиль: [ССЫЛКА](tg://user?id=${user.id})\n` +
+                         `🔗 Личка: [ССЫЛКА](tg://user?id=${user.id})\n` +
                          `👤 Ник: @${user.username || 'отсутствует'}\n\n` +
                          `🛒 Товары:\n${itemsList}\n\n` +
                          `💰 Итого: ${total} ₽\n` +
@@ -218,9 +196,13 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ chat_id: ADMIN_ID, text: text, parse_mode: 'Markdown' })
                 });
-                tg.showAlert("Ваш заказ принят! Теперь обязательно отправьте скриншот чека админу.");
+                tg.showAlert("Ваш заказ принят! Теперь ОБЯЗАТЕЛЬНО отправьте скриншот чека в личные сообщения админу.");
                 tg.close();
-            } catch (e) { tg.showAlert("Ошибка!"); btn.innerText = "Я оплатил(а)"; btn.disabled = false; }
+            } catch (e) { 
+                tg.showAlert("Ошибка отправки заказа."); 
+                btn.innerText = "Я оплатил(а)"; 
+                btn.disabled = false; 
+            }
         }
 
         window.onload = loadData;

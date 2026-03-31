@@ -7,50 +7,70 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background: #000; color: white; font-family: sans-serif; }
+        body { background: #000; color: white; font-family: sans-serif; overflow-x: hidden; }
         .cat-active { background: #fbbf24 !important; color: #000 !important; font-weight: 900; }
         .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        .btn-click:active { transform: scale(0.95); }
     </style>
 </head>
-<body class="select-none overflow-x-hidden">
+<body class="select-none">
 
     <header class="sticky top-0 z-50 bg-black/90 backdrop-blur-xl p-4 border-b border-yellow-500/20">
         <div class="flex justify-between items-center mb-4">
-            <h1 class="text-2xl font-black italic text-yellow-500 leading-none">BOSS STORE</h1>
-            <div class="bg-white/10 px-4 py-2 rounded-2xl text-xs font-bold border border-white/10">🛒 <span id="cart-count">0</span></div>
+            <div>
+                <h1 class="text-2xl font-black italic text-yellow-500 leading-none uppercase tracking-tighter">BOSS STORE</h1>
+                <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1">Digital Agency</p>
+            </div>
+            <div class="bg-white/10 px-4 py-2 rounded-2xl text-xs font-bold border border-white/10 italic">
+                🛒 <span id="cart-count">0</span>
+            </div>
         </div>
         <div id="cat-list" class="flex gap-2 overflow-x-auto no-scrollbar pb-1"></div>
     </header>
 
-    <main class="p-4 pb-32">
+    <main class="p-4 pb-40">
         <div id="catalog" class="grid grid-cols-2 gap-4">
-            <p class="col-span-2 text-center py-10 text-gray-500 animate-pulse">ЗАГРУЗКА ВИТРИНЫ...</p>
+            <p class="col-span-2 text-center py-10 text-gray-500 animate-pulse uppercase text-[10px] font-bold">Загрузка витрины...</p>
         </div>
     </main>
 
+    <!-- ПАНЕЛЬ КОРЗИНЫ -->
     <div id="checkout-bar" class="fixed bottom-6 left-4 right-4 z-50 glass p-5 rounded-[32px] hidden border-yellow-500/40 shadow-2xl">
         <div class="flex justify-between items-center">
             <div>
-                <p class="text-[10px] text-gray-400 uppercase font-black tracking-widest">Сумма:</p>
+                <p class="text-[10px] text-gray-400 uppercase font-black">Итого:</p>
                 <p id="total-price" class="text-2xl font-black text-yellow-500">0 ₽</p>
             </div>
-            <button onclick="openPay()" class="bg-yellow-500 text-black px-10 py-4 rounded-2xl font-black uppercase text-sm">Оформить</button>
+            <button onclick="openPay()" class="bg-yellow-500 text-black px-10 py-4 rounded-2xl font-black uppercase text-sm btn-click">Оформить</button>
         </div>
     </div>
 
-    <!-- Модалка Оплаты -->
-    <div id="pay-modal" class="fixed inset-0 bg-black z-[100] hidden p-6 overflow-y-auto">
-        <button onclick="closePay()" class="text-yellow-500 font-bold mb-8 uppercase text-sm">← Назад</button>
-        <h2 class="text-4xl font-black mb-6 uppercase italic leading-none">Оплата</h2>
-        <div class="glass p-6 rounded-[32px] border-yellow-500/30">
-                        <div class="bg-black/60 p-5 rounded-2xl mb-6 text-center border border-white/5">
-                <p class="text-gray-400 text-[10px] uppercase mb-2">Перевод на карту (Т-Банк):</p>
-                <p class="text-white font-bold text-lg mb-4 select-all">2200 7019 5529 9232</p>
-                <p class="text-gray-400 text-[10px] uppercase mb-2">Номер телефона (СБП):</p>
-                <p class="text-white font-bold text-lg select-all">+7 950 170 07 87</p>
+    <!-- МОДАЛКА ОПЛАТЫ -->
+        <div id="pay-modal" class="fixed inset-0 bg-black z-[100] hidden p-6 overflow-y-auto">
+        <div class="max-w-md mx-auto">
+            <button onclick="closePay()" class="text-yellow-500 font-bold mb-8 uppercase text-xs">← Назад</button>
+            <h2 class="text-4xl font-black mb-2 uppercase italic leading-none">Оплата</h2>
+            <p class="text-gray-500 text-[10px] uppercase font-bold mb-8 italic">Перевод на Т-Банк</p>
+            
+            <div class="glass p-6 rounded-[35px] border-yellow-500/30">
+                <div class="bg-black/60 p-5 rounded-3xl mb-6 text-center border border-white/5">
+                    <p class="text-yellow-500 text-[10px] uppercase font-black mb-4 tracking-widest">Реквизиты Т-Банк</p>
+                    
+                    <div class="mb-6">
+                        <p class="text-gray-400 text-[9px] uppercase mb-1">Номер карты:</p>
+                        <p class="text-white font-bold text-lg tracking-wider select-all">2200 7019 5529 9232</p>
+                    </div>
+                    
+                    <div>
+                        <p class="text-gray-400 text-[9px] uppercase mb-1">По СБП (Т-Банк):</p>
+                        <p class="text-white font-bold text-lg select-all">+7 950 170 07 87</p>
+                    </div>
+                </div>
+                
+                <button onclick="confirmOrder()" id="confirm-btn" class="w-full bg-white text-black py-5 rounded-2xl font-black uppercase text-sm btn-click">Я ОПЛАТИЛ(А)</button>
+                <p class="text-[9px] text-gray-500 text-center mt-4 uppercase font-bold italic">Админ проверит поступление</p>
             </div>
-            <button onclick="confirmOrder()" class="w-full bg-white text-black py-5 rounded-2xl font-black uppercase text-sm shadow-xl">Я ОПЛАТИЛ(А)</button>
         </div>
     </div>
 
@@ -58,8 +78,10 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // ССЫЛКА ИЗ SHEETDB.IO - ТЕПЕРЬ ВСЁ ПОЛЕТИТ!
-        const SHEETDB_URL = 'https://sheetdb.io/api/v1/5gnvz043vf750'; 
+        // НАСТРОЙКИ (ВСЁ УЖЕ ВСТАВЛЕНО!)
+        const SHEETDB_URL = 'https://sheetdb.io/api/v1/5gnvz043vf750';
+        const BOT_TOKEN = '8774835028:AAGaSx43As98UPxENWUYDU9msflIKLHPToc';
+        const ADMIN_ID = '7727345054'; // Твой ID, чтобы бот знал кому слать заказ
 
         let products = [];
         let cart = [];
@@ -68,27 +90,23 @@
         async function loadData() {
             try {
                 const res = await fetch(SHEETDB_URL);
-                products = await res.json();
-                
-                // Исправляем цены (превращаем в числа)
+                                products = await res.json();
                 products = products.map(p => ({
                     ...p,
-                    Price: parseFloat(p.Price) || 0, // Убеждаемся, что цена - это число
-                    Image: p.Image || 'https://via.placeholder.com/150' // Если нет картинки, ставим заглушку
+                    Price: parseFloat(p.Price) || 0,
+                    Image: p.Image || 'https://via.placeholder.com/150'
                 }));
-
                 renderCats();
                 renderItems();
             } catch (e) {
-                console.error("Ошибка загрузки данных из SheetDB:", e);
-                document.getElementById('catalog').innerHTML = "<p class='col-span-2 text-center py-10 text-red-400'>Ошибка загрузки витрины.<br>Проверьте доступ к таблице в Google Sheet или ссылку на SheetDB.</p>";
+                document.getElementById('catalog').innerHTML = "<p class='col-span-2 text-center text-red-500'>Ошибка загрузки</p>";
             }
         }
 
         function renderCats() {
             const list = ['Все', ...new Set(products.map(p => p.Category))];
             document.getElementById('cat-list').innerHTML = list.map(c => `
-                            <button onclick="setCat('${c}')" class="cat-btn bg-white/5 px-5 py-2.5 rounded-2xl whitespace-nowrap text-[10px] uppercase font-black border border-white/5 ${currentCat === c ? 'cat-active' : ''}">${c}</button>
+                <button onclick="setCat('${c}')" class="cat-btn bg-white/5 px-5 py-2.5 rounded-2xl whitespace-nowrap text-[10px] uppercase font-black border border-white/5 ${currentCat === c ? 'cat-active' : ''}">${c}</button>
             `).join('');
         }
 
@@ -103,13 +121,14 @@
             const grid = document.getElementById('catalog');
             const filtered = currentCat === 'Все' ? products : products.filter(p => p.Category === currentCat);
             grid.innerHTML = filtered.map((p, i) => `
-                <div class="glass p-3 rounded-[28px] flex flex-col h-full border-white/5">
+                <div class="glass p-3 rounded-[30px] flex flex-col
+                h-full border-white/5 shadow-lg">
                     <img src="${p.Image}" class="w-full aspect-square object-cover rounded-[22px] mb-3">
-                    <h3 class="text-[11px] font-black uppercase leading-tight mb-1">${p.Name}</h3>
-                    <p class="text-[9px] text-gray-500 mb-3 flex-1 italic">${p.Description || ''}</p>
-                    <div class="flex justify-between items-center">
-                        <span class="text-yellow-500 font-black text-sm">${p.Price} ₽</span>
-                        <button onclick="addToCart(${products.indexOf(p)})" class="bg-white text-black w-8 h-8 rounded-xl font-black">+</button>
+                    <h3 class="text-[11px] font-black uppercase leading-tight mb-1 tracking-tighter">${p.Name}</h3>
+                    <p class="text-[9px] text-gray-500 mb-3 flex-1 italic leading-none">${p.Description || ''}</p>
+                    <div class="flex justify-between items-center mt-auto pt-2">
+                        <span class="text-yellow-500 font-black text-sm italic">${p.Price} ₽</span>
+                        <button onclick="addToCart(${products.indexOf(p)})" class="bg-white text-black w-8 h-8 rounded-xl font-black btn-click">+</button>
                     </div>
                 </div>
             `).join('');
@@ -124,34 +143,58 @@
         function updateUI() {
             const total = cart.reduce((s, p) => s + p.Price, 0);
             document.getElementById('cart-count').innerText = cart.length;
+            const bar = document.getElementById('checkout-bar');
             if(cart.length > 0) {
-                document.getElementById('checkout-bar').classList.remove('hidden');
+                bar.classList.remove('hidden');
                 document.getElementById('total-price').innerText = total + ' ₽';
             } else {
-                document.getElementById('checkout-bar').classList.add('hidden');
+                bar.classList.add('hidden');
             }
         }
 
-        function openPay() { document.getElementById('pay-modal').classList.remove('hidden'); tg.HapticFeedback.notificationOccurred('success'); }
-        function closePay() { document.getElementById('pay-modal').classList.add('hidden'); }
+        function openPay() { 
+            document.getElementById('pay-modal').classList.remove('hidden'); 
+            tg.HapticFeedback.notificationOccurred('success');
+        }
+        
+        function closePay() { 
+            document.getElementById('pay-modal').classList.add('hidden'); 
+        }
 
-        function confirmOrder() {
-            tg.showConfirm("Вы подтверждаете оплату?", (ok) => {
-                if(ok) {
-                    // Здесь ты можешь отправить данные заказа себе, например, в Telegram
-                    const orderDetails = {
-                        user: tg.initDataUnsafe.user,
-                        cart: cart.map(item => ({name: item.Name, price: item.Price})),
-                        total: cart.reduce((s, p) => s + p.Price, 0)
-                    };
-                    tg.sendData(JSON.stringify(orderDetails)); // Отправляем заказ в твоего бота
-                    
-                    tg.showAlert("Заказ отправлен! Пришлите скриншот чека админу (@твой_ник_админа) для быстрой выдачи.");
-                    tg.close(); // Закрываем Mini App
-                    cart = []; // Очищаем корзину
-                    updateUI();
-                }
-            });
+        async function confirmOrder() {
+            const btn = document.getElementById('confirm-btn');
+            btn.innerText = "ОТПРАВЛЯЮ...";
+            btn.disabled = true;
+
+            const total = cart.reduce((s, p) => s + p.Price, 0);
+            const user = tg.initDataUnsafe.user || { first_name: 'Покупатель', id: 'unknown' };
+            const itemsList = cart.map(item => `• ${item.Name} (${item.Price}₽)`).join('\n');
+
+            const text = `🚀 НОВЫЙ ЗАКАЗ!\n\n` +
+                         `👤 Клиент: ${user.first_name} (@${user.username || 'нет'})\n` +
+                         `🆔 ID: ${user.id}\n\n` +
+                         `🛒 Товары:\n${itemsList}\n\n` +
+                         `💰 Итого: ${total} ₽\n` +
+                         `💳 Метод: Т-БАНК / СБП`;
+
+            try {
+                // Отправка сообщения админу
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: ADMIN_ID,
+                        text: text
+                    })
+                });
+
+                tg.showAlert("Готово! Заказ отправлен админу. Пришлите чек в личку для получения товара!");
+                tg.close();
+            } catch (e) {
+                tg.showAlert("Ошибка отправки заказа.");
+                btn.innerText = "Я ОПЛАТИЛ(А)";
+                btn.disabled = false;
+            }
         }
 
         window.onload = loadData;

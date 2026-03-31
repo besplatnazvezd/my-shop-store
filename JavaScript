@@ -1,0 +1,76 @@
+// Функция для отправки заказа
+async function sendOrder(event) {
+    event.preventDefault(); // Останавливаем перезагрузку страницы
+
+    const form = event.target;
+    const btn = form.querySelector('button');
+    const originalBtnText = btn.textContent;
+
+    // 1. Собираем данные из корзины (предположим, они в localStorage)
+    const cartData = JSON.parse(localStorage.getItem('cart')) || [];
+    if (cartData.length === 0) {
+        alert("Ваша корзина пуста!");
+        return;
+    }
+
+    // Блокируем кнопку, чтобы не нажали дважды
+    btn.disabled = true;
+    btn.textContent = "Отправка...";
+
+    // Формируем сообщение
+    let message = `🛍 Новый заказ!\n\n`;
+    cartData.forEach((item, index) => {
+        message += `${index + 1}. ${item.name} — ${item.price} руб.\n`;
+    });
+    
+    // Добавляем данные из полей формы (имя, телефон)
+    const formData = new FormData(form);
+    message += `\n👤 Клиент: ${formData.get('name')}`;
+    message += `\n📞 Телефон: ${formData.get('phone')}`;
+
+    // Настройки бота
+    const token = "ВАШ_ТОКЕН";
+    const chatId = "ВАШ_ID";
+    const url = `https://api.telegram.org/bot${token}/sendMessage`;
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: chatId,
+                parse_mode: 'html',
+                text: message
+            })
+        });
+
+        if (response.ok) {
+            alert("Заказ успешно отправлен!");
+
+            // --- ВОТ ЗДЕСЬ ИДЕТ ПРОРАБОТКА ПОВТОРНОЙ ПОКУПКИ ---
+            
+            // 2. Очищаем форму
+            form.reset(); 
+
+            // 3. Очищаем корзину в памяти браузера
+            localStorage.removeItem('cart'); 
+
+            // 4. Обновляем визуальную корзину на сайте (вызываем вашу функцию отрисовки)
+            if (typeof updateCartUI === 'function') {
+                updateCartUI(); 
+            }
+
+        } else {
+            alert("Ошибка при отправке. Попробуйте снова.");
+        }
+    } catch (error) {
+        alert("Произошла ошибка соединения.");
+    } finally {
+        // 5. Всегда возвращаем кнопку в рабочее состояние
+        btn.disabled = false;
+        btn.textContent = originalBtnText;
+    }
+}
+
+// Привязываем событие к форме (оно будет работать бесконечное количество раз)
+document.getElementById('order-form').addEventListener('submit', sendOrder);

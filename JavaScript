@@ -74,3 +74,36 @@ async function sendOrder(event) {
 
 // Привязываем событие к форме (оно будет работать бесконечное количество раз)
 document.getElementById('order-form').addEventListener('submit', sendOrder);
+// Настройки (замените на свои)
+const token = "8774835028:AAGaSx43As98UPxENWUYDU9msflIKLHPToc";
+const chatId = "7727345054"; // Не ID бота, а ваш!
+
+async function sendOrder(event) {
+    event.preventDefault();
+    
+    // ... остальной код сбора данных ...
+
+    const message = 🚀 НОВЫЙ ЗАКАЗ!\n\n + 
+                    👤 Клиент: ${name}\n + 
+                    📞 Телефон: ${phone};
+
+    try {
+        await fetch(https://api.telegram.org/bot${token}/sendMessage, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: chatId,
+                parse_mode: 'html',
+                text: message
+            })
+        });
+        
+        // После успешной отправки ОБЯЗАТЕЛЬНО очищаем всё для повторной покупки
+        event.target.reset(); // Очистить поля формы
+        localStorage.removeItem('cart'); // Очистить корзину в памяти
+        alert("Заказ отправлен!");
+        
+    } catch (error) {
+        console.error("Ошибка:", error);
+    }
+}

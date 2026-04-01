@@ -54,40 +54,53 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-                // --- ТВОИ НАСТРОЙКИ ---
+                        // --- ТВОИ НАСТРОЙКИ ---
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbzl2AehfvRtwWWz_6XDx96dsVing3RxzKf7X0afJ5HpgwUJCEFhYvTeWtxWa378tPJO/exec';
-        // Используем прокси, чтобы не было "Ошибки связи"
-       // const SHEETDB_URL = 'https://api.allorigins.win/get?url=' + encodeURIComponent(GAS_URL);
         
+        // Используем RAW прокси (самый стабильный)
+        const PROXY_URL = 'https://api.allorigins.win/raw?url=';
+
         const BOT_TOKEN = '8730430332:AAGff_PCX2059O3EUWG-d9C19uTqcH4sAZ4';
         const ADMIN_ID = '7727345054';
         const BOT_USER = 'BossStore_robot';
 
-        // ... остальной код с реквизитами остается как был ...
+        let products = [];
+        let cart = [];
+        let currentCat = 'Все';
 
-            async function loadData() {
-                try {
-                    // Теперь фетчим напрямую с GAS_URL, т.к. там есть CORS заголовки!
-                    const res = await fetch(GAS_URL); 
-                    
-                    if (!res.ok) {
-                        // Более детальная ошибка для отладки
-                        const errorText = await res.text(); 
-                        throw new Error(`Ошибка сети: ${res.status} ${res.statusText}. Ответ сервера: ${errorText.substring(0, 100)}...`);
-                    }
-                    
-                    // Данные приходят сразу чистые
-                    const rawProducts = await res.json();
-                    
-                    products = rawProducts.map(p => ({
-                        ...p,
-                        Name: p.Название || 'Без названия',
-                        Description: p.Описание || '',
-                        Price: parseFloat(p.Цена) || 0,
-                        Category: p.Категория || 'Все',
-                        Image: p.Картинка || 'https://via.placeholder.com/150'
-                    }));
+        async function loadData() {
+            const catalogEl = document.getElementById('catalog');
+            try {
+                // Запрос через RAW прокси
+                const res = await fetch(PROXY_URL + encodeURIComponent(GAS_URL));
+                if (!res.ok) throw new Error('Google не отвечает');
+                
+                const rawData = await res.json();
+                
+                products = rawData.map(p => ({
+                    ...p,
+                    Name: p.Название || p.Name || 'Без названия',
+                    Description: p.Описание || p.Description || '',
+                    Price: parseFloat(p.Цена || p.Price) || 0,
+                    Category: p.Категория || p.Category || 'Все',
+                    Image: p.Картинка || p.Image || 'https://via.placeholder.com/150'
+                }));
 
+                renderCats();
+                renderItems();
+            } catch (e) {
+                console.error('Ошибка:', e);
+                // Рисуем ошибку КРАСИВО, чтобы не портить дизайн
+                catalogEl.innerHTML = `
+                    <div class="col-span-2 text-center py-10">
+                        <p class="text-red-500 font-bold">ОШИБКА ЗАГРУЗКИ ТАБЛИЦЫ</p>
+                        <p class="text-[8px] text-gray-500 uppercase mt-2">Проверь VPN или доступ к Google</p>
+                        <button onclick="location.reload()" class="mt-4 bg-yellow-500/10 text-yellow-500 px-4 py-2 rounded-xl text-[10px]">Повторить</button>
+                    </div>
+                `;
+            }
+        }
+        
                     renderCats();
                     renderItems();
                 } catch (e) {

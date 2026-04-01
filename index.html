@@ -88,10 +88,9 @@
         tg.expand();
 
         // --- ТВОИ НАСТРОЙКИ ---
-        const SHEETDB_URL = 'https://sheetdb.io/api/v1/5gnvz043vf750';
-        const BOT_TOKEN = '8774835028:AAGaSx43As98UPxENWUYDU9msflIKLHPToc';
-        const ADMIN_ID = '7727345054'; 
-        const ADMIN_USERNAME = 'nmproda'; // <--- ВПИШИ СВОЙ НИК БЕЗ @ (например: boss_store_admin)
+        const BOT_TOKEN = '8730430332:AAGff_PCX2059o3EUwG-d9C19uTqcH4sAZ4';
+const ADMIN_ID = '7727345054';
+const YOOMONEY_WALLET = '4100119121976236'; // Ваш кошелек // <--- ВПИШИ СВОЙ НИК БЕЗ @ (например: boss_store_admin)
         // ----------------------
 
         let products = [];
@@ -175,36 +174,57 @@
         }
 
         async function confirmOrder() {
-            const btn = document.getElementById('confirm-btn');
-            btn.innerText = "ОТПРАВЛЯЮ..."; btn.disabled = true;
+            async function confirmOrder() {
+    const btn = document.getElementById('confirm-btn');
+    const total = cart.reduce((s, p) => s + p.Price, 0);
 
-            const total = cart.reduce((s, p) => s + p.Price, 0);
-            const user = tg.initDataUnsafe.user || { first_name: 'Покупатель', id: 'unknown' };
-            const itemsList = cart.map(item => `• ${item.Name} (${item.Price}₽)`).join('\n');
+    if (cart.length === 0) {
+        tg.showAlert("Ваша корзина пуста!");
+        return;
+    }
 
-            const text = `🚀 НОВЫЙ ЗАКАЗ!\n\n` +
-                         `👤 Клиент: ${user.first_name}\n` +
-                         `🔗 Личка: [ССЫЛКА](tg://user?id=${user.id})\n` +
-                         `👤 Ник: @${user.username || 'отсутствует'}\n\n` +
-                         `🛒 Товары:\n${itemsList}\n\n` +
-                         `💰 Итого: ${total} ₽\n` +
-                         `💳 Т-БАНК / СБП`;
+    btn.innerText = "ОФОРМЛЯЕМ...";
+    btn.disabled = true;
 
-            try {
-                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ chat_id: ADMIN_ID, text: text, parse_mode: 'Markdown' })
-                });
-                tg.showAlert("Ваш заказ принят! Теперь ОБЯЗАТЕЛЬНО отправьте скриншот чека в личные сообщения админу.");
-                tg.close();
-            } catch (e) { 
-                tg.showAlert("Ошибка отправки заказа."); 
-                btn.innerText = "Я оплатил(а)"; 
-                btn.disabled = false; 
+    const user = tg.initDataUnsafe.user || { first_name: 'Покупатель', id: 'unknown' };
+    const itemsList = cart.map(item => `• ${item.Name} (${item.Price}₽)`).join('\n');
+
+    const text = `🚀 НОВЫЙ ЗАКАЗ!\n\n` +
+                 `👤 Клиент: ${user.first_name}\n` +
+                 `🆔 ID: ${user.id}\n` +
+                 `🛒 Товары:\n${itemsList}\n\n` +
+                 `💰 Итого: ${total} ₽\n` +
+                 `💳 Статус: Ожидает оплаты через ЮMoney`;
+
+    try {
+        // 1. Отправляем сообщение вам в Telegram
+        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: ADMIN_ID,
+                text: text,
+                parse_mode: 'Markdown'
+            })
+        });
+
+        // 2. Ссылка на оплату ЮMoney
+        const paymentUrl = `https://yoomoney.ru/transfer/process/success?receiver=${YOOMONEY_WALLET}&sum=${total}&details=Заказ_BossStore_ID${user.id}`;
+
+        // 3. Очищаем корзину (чтобы можно было купить снова)
+        cart = [];
+        updateUI(); // Обнуляем интерфейс
+        closePay(); // Закрываем модалку
+
+        // 4. Переходим на оплату
+        window.location.href = paymentUrl;
+
+    } catch (e) {
+        tg.showAlert("Ошибка отправки заказа.");
+        btn.innerText = "Я оплатил(а)";
+        btn.disabled = false;
+    }
             }
-        }
-
         window.onload = loadData;
     </script>
 </body>

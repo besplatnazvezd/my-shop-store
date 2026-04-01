@@ -23,8 +23,8 @@
             <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1 italic">Digital Agency</p>
         </div>
         <div class="flex gap-2">
-            <!-- КНОПКА ПОДДЕРЖКИ - ТЕПЕРЬ ВЕДЕТ НА @Boss_storesvzbot -->
-            <button onclick="tg.openTelegramLink('https://t.me/Boss_storesvzbot')" class="bg-yellow-500/10 px-3 py-2 rounded-xl text-[10px] font-black border border-yellow-500/20 text-yellow-500 uppercase italic tracking-widest">Поддержка</button>
+            <!-- ПОДДЕРЖКА НА nmproda -->
+            <button onclick="tg.openTelegramLink('https://t.me/nmproda')" class="bg-yellow-500/10 px-3 py-2 rounded-xl text-[10px] font-black border border-yellow-500/20 text-yellow-500 uppercase italic tracking-widest">Поддержка</button>
             <div class="bg-white/10 px-3 py-2 rounded-xl text-xs font-bold border border-white/10">🛒 <span id="cart-count">0</span></div>
         </div>
     </header>
@@ -43,31 +43,11 @@
     <div id="checkout-bar" class="fixed bottom-6 left-4 right-4 z-50 glass p-5 rounded-[32px] hidden border-yellow-500/40 shadow-2xl shadow-yellow-500/10">
         <div class="flex justify-between items-center">
             <div>
-                             <p class="text-[10px] text-gray-400 uppercase font-black mb-1">К оплате:</p>
+                                <p class="text-[10px] text-gray-400 uppercase font-black mb-1">К оплате:</p>
                 <p id="total-price" class="text-2xl font-black text-yellow-500 italic leading-none">0 ₽</p>
             </div>
-            <button onclick="openPay()" class="bg-yellow-500 text-black px-10 py-4 rounded-2xl font-black uppercase text-sm btn-click shadow-lg shadow-yellow-500/20 italic tracking-tighter">Оформить</button>
-        </div>
-    </div>
-
-    <!-- МОДАЛКА ОПЛАТЫ -->
-    <div id="pay-modal" class="fixed inset-0 bg-black z-[100] hidden p-6 overflow-y-auto">
-        <div class="max-w-md mx-auto">
-            <button onclick="closePay()" class="text-yellow-500 font-bold mb-8 uppercase text-[10px] tracking-widest">← Назад к покупкам</button>
-            <h2 class="text-5xl font-black mb-1 uppercase italic leading-none text-white">ОПЛАТА</h2>
-            <p class="text-gray-500 text-[10px] uppercase font-bold mb-8 italic tracking-widest text-yellow-500/50">Boss Store Checkout</p>
-
-            <div class="glass p-6 rounded-[40px] border-yellow-500/30 shadow-2xl">
-                <!-- СУММА -->
-                <div class="text-center mb-8 bg-yellow-500 p-5 rounded-3xl border border-yellow-500/20 shadow-lg shadow-yellow-500/10">
-                    <p class="text-black text-[10px] uppercase font-black mb-1 opacity-60 italic">СУММА К ПЕРЕВОДУ:</p>
-                    <p id="modal-total-price" class="text-4xl font-black text-black italic leading-none">0 ₽</p>
-                </div>
-
-                <!-- КНОПКИ -->
-                <button onclick="confirmOrder()" id="confirm-btn" class="w-full bg-white text-black py-5 rounded-2xl font-black uppercase text-sm btn-click shadow-xl mb-4 italic">Я оплатил(а)</button>
-                <button onclick="tg.openTelegramLink('https://t.me/Boss_storesvzbot')" class="w-full bg-white/5 text-gray-500 py-3 rounded-2xl font-bold uppercase text-[9px] tracking-widest border border-white/5 italic">Проблема с оплатой? Пишите в поддержку</button>
-            </div>
+            <!-- Кнопка сразу вызывает оформление -->
+            <button onclick="confirmOrder()" id="main-confirm-btn" class="bg-yellow-500 text-black px-10 py-4 rounded-2xl font-black uppercase text-sm btn-click shadow-lg shadow-yellow-500/20 italic tracking-tighter">Оформить</button>
         </div>
     </div>
 
@@ -77,9 +57,15 @@
 
         // --- ВАШИ НАСТРОЙКИ ---
         const SHEETDB_URL = 'https://sheetdb.io/api/v1/5gnvz043vf750';
-                const BOT_TOKEN = '8730430332:AAGff_PCX2059o3EUwG-d9C19uTqcH4sAZ4';
-        const ADMIN_ID = '7727345054';
-        const YOOMONEY_WALLET = '4100119121976236'; // Ваш кошелек для переброса на оплату
+        const BOT_TOKEN = '8730430332:AAGff_PCX2059o3EUwG-d9C19uTqcH4sAZ4'; 
+        const ADMIN_ID = '7727345054'; 
+        
+        // Реквизиты, которые бот скинет клиенту
+        const REKVIZITY = `💳 РЕКВИЗИТЫ ДЛЯ ОПЛАТЫ:\n\n` +
+                          `🔹 Карта Т-Банк: 2200 7019 5529 9232\n` +
+                          `🔹 По номеру (СБП): +7 950 170 07 87\n` +
+                          `🔹 ЮMoney: 4100119121976236\n\n` +
+                          `👉 Оплатите удобным способом и пришлите скриншот чека в поддержку: @nmproda`;
 
         let products = [];
         let cart = [];
@@ -88,8 +74,8 @@
         async function loadData() {
             try {
                 const res = await fetch(SHEETDB_URL);
-                const data = await res.json();
-                products = data.map(p => ({
+                products = await res.json();
+                products = products.map(p => ({
                     ...p,
                     Price: parseFloat(p.Price) || 0,
                     Image: p.Image || 'https://via.placeholder.com/150'
@@ -104,7 +90,7 @@
         function renderCats() {
             const list = ['Все', ...new Set(products.map(p => p.Category))];
             document.getElementById('cat-list').innerHTML = list.map(c => `
-                <button onclick="setCat('${c}')" class="cat-btn bg-white/5 px-5 py-2.5 rounded-2xl whitespace-nowrap text-[10px] uppercase font-black border border-white/5 ${currentCat === c ? 'cat-active' : ''}">${c}</button>
+                            <button onclick="setCat('${c}')" class="cat-btn bg-white/5 px-5 py-2.5 rounded-2xl whitespace-nowrap text-[10px] uppercase font-black border border-white/5 ${currentCat === c ? 'cat-active' : ''}">${c}</button>
             `).join('');
         }
 
@@ -126,7 +112,7 @@
                     <div class="flex justify-between items-center mt-auto pt-2 border-t border-white/5">
                         <span class="text-yellow-500 font-black text-[14px] italic tracking-tighter">${p.Price} ₽</span>
                         <button onclick="addToCart(${products.indexOf(p)})" class="bg-white text-black w-8 h-8 rounded-xl font-black btn-click shadow-md">+</button>
-                    </div>
+                        </div>
                 </div>
             `).join('');
         }
@@ -141,72 +127,64 @@
             const total = cart.reduce((s, p) => s + p.Price, 0);
             document.getElementById('cart-count').innerText = cart.length;
             document.getElementById('total-price').innerText = total + ' ₽';
-            document.getElementById('modal-total-price').innerText = total + ' ₽';
             
             const bar = document.getElementById('checkout-bar');
-            if (cart.length > 0) {
-                bar.classList.remove('hidden');
-            } else {
-                bar.classList.add('hidden');
-            }
+            if (cart.length > 0) bar.classList.remove('hidden');
+            else bar.classList.add('hidden');
         }
 
-        function openPay() {
-            document.getElementById('pay-modal').classList.remove('hidden');
-            tg.HapticFeedback.notificationOccurred('success');
-        }
-
-        function closePay() {
-            document.getElementById('pay-modal').classList.add('hidden');
-        }
-
-        // ОСНОВНАЯ ФУНКЦИЯ - ОТПРАВКА И ПЕРЕХОД К ОПЛАТЕ
+        // ГЛАВНАЯ ФУНКЦИЯ: ОФОРМЛЕНИЕ
         async function confirmOrder() {
-            const btn = document.getElementById('confirm-btn');
+            const btn = document.getElementById('main-confirm-btn');
             const total = cart.reduce((s, p) => s + p.Price, 0);
             
             if (cart.length === 0) return;
 
-            btn.innerText = "ОТПРАВЛЯЮ...";
+            btn.innerText = "ОФОРМЛЯЕМ...";
             btn.disabled = true;
 
             const user = tg.initDataUnsafe.user || { first_name: 'Покупатель', id: 'unknown', username: '' };
             const itemsList = cart.map(item => `• ${item.Name} (${item.Price}₽)`).join('\n');
 
-            const text = `🚀 НОВЫЙ ЗАКАЗ!\n\n` +
-                         `👤 Клиент: ${user.first_name}\n` +
-                         `🆔 ID: ${user.id}\n` +
-                         `🔗 Ник: @${user.username || 'отсутствует'}\n\n` +
-                         `🛒 Товары:\n${itemsList}\n\n` +
-                         `💰 Итого: ${total} ₽\n` +
-                         `💳 Способ: ЮMoney`;
+            // 1. Сообщение вам (Админу)
+            const adminText = `🚀 НОВЫЙ ЗАКАЗ!\n\n` +
+                              `👤 Клиент: ${user.first_name}\n` +
+                              `🆔 ID: ${user.id}\n` +
+                              `🔗 Ник: @${user.username || 'нет'}\n\n` +
+                              `🛒 Товары:\n${itemsList}\n\n` +
+                              `💰 Итого: ${total} ₽`;
+
+            // 2. Сообщение Клиенту (Реквизиты)
+            const userText = `✅ Ваш заказ на сумму ${total} ₽ принят!\n\n${REKVIZITY}`;
 
             try {
-                // 1. Отправляем сообщение в ваш бот
+                // Отправляем админу
                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chat_id: ADMIN_ID,
-                        text: text,
-                        parse_mode: 'Markdown'
-                        })
+                    body: JSON.stringify({ chat_id: ADMIN_ID, text: adminText, parse_mode: 'Markdown' })
                 });
 
-                // 2. Ссылка на оплату ЮMoney
-                const paymentUrl = `https://yoomoney.ru/transfer/process/success?receiver=${YOOMONEY_WALLET}&sum=${total}&details=Заказ_от_ID${user.id}`;
+                // Отправляем клиенту (через того же бота)
+                if (user.id !== 'unknown') {
+                    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ chat_id: user.id, text: userText })
+                    });
+                }
 
-                // 3. ОЧИСТКА КОРЗИНЫ ДЛЯ ПОВТОРНОЙ ПОКУПКИ
+                tg.showAlert("Заказ оформлен! Бот прислал вам реквизиты для оплаты в личные сообщения.");
+
+                // --- ОЧИСТКА ДЛЯ ПОВТОРНОЙ ПОКУПКИ ---
                 cart = [];
                 updateUI();
 
-                // 4. ПЕРЕХОД НА ОПЛАТУ
-                window.location.href = paymentUrl;
-
             } catch (e) {
-                tg.showAlert("Ошибка отправки заказа.");
-                btn.innerText = "Я оплатил(а)";
+                tg.showAlert("Заказ ушел админу, но бот не смог написать вам в личку. Пожалуйста, напишите в поддержку @nmproda");
+            } finally {
                 btn.disabled = false;
+                btn.innerText = "Оформить";
             }
         }
 

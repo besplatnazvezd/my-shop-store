@@ -23,14 +23,16 @@
             <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1 italic">Digital Agency</p>
         </div>
         <div class="flex gap-2">
-            <!-- КНОПКА ПОДДЕРЖКИ - ВЕДЕТ В ЛИЧКУ -->
-            <button onclick="contactAdmin()" class="bg-yellow-500/10 px-3 py-2 rounded-xl text-[10px] font-black border border-yellow-500/20 text-yellow-500 uppercase italic tracking-widest">Поддержка</button>
+            <!-- КНОПКА ПОДДЕРЖКИ - ТЕПЕРЬ ВЕДЕТ НА @Boss_storesvzbot -->
+            <button onclick="tg.openTelegramLink('https://t.me/Boss_storesvzbot')" class="bg-yellow-500/10 px-3 py-2 rounded-xl text-[10px] font-black border border-yellow-500/20 text-yellow-500 uppercase italic tracking-widest">Поддержка</button>
             <div class="bg-white/10 px-3 py-2 rounded-xl text-xs font-bold border border-white/10">🛒 <span id="cart-count">0</span></div>
         </div>
     </header>
 
+    <!-- КАТЕГОРИИ -->
     <div id="cat-list" class="flex gap-2 overflow-x-auto no-scrollbar p-4 sticky top-[72px] z-40 bg-black/50 backdrop-blur-sm border-b border-white/5"></div>
 
+    <!-- ВИТРИНА -->
     <main class="p-4 pb-48">
         <div id="catalog" class="grid grid-cols-2 gap-4">
             <p class="col-span-2 text-center py-10 text-gray-500 animate-pulse uppercase text-[10px] font-bold">Загрузка витрины...</p>
@@ -41,8 +43,8 @@
     <div id="checkout-bar" class="fixed bottom-6 left-4 right-4 z-50 glass p-5 rounded-[32px] hidden border-yellow-500/40 shadow-2xl shadow-yellow-500/10">
         <div class="flex justify-between items-center">
             <div>
-                <p class="text-[10px] text-gray-400 uppercase font-black mb-1">К оплате:</p>
-                                <p id="total-price" class="text-2xl font-black text-yellow-500 italic leading-none">0 ₽</p>
+                             <p class="text-[10px] text-gray-400 uppercase font-black mb-1">К оплате:</p>
+                <p id="total-price" class="text-2xl font-black text-yellow-500 italic leading-none">0 ₽</p>
             </div>
             <button onclick="openPay()" class="bg-yellow-500 text-black px-10 py-4 rounded-2xl font-black uppercase text-sm btn-click shadow-lg shadow-yellow-500/20 italic tracking-tighter">Оформить</button>
         </div>
@@ -54,31 +56,17 @@
             <button onclick="closePay()" class="text-yellow-500 font-bold mb-8 uppercase text-[10px] tracking-widest">← Назад к покупкам</button>
             <h2 class="text-5xl font-black mb-1 uppercase italic leading-none text-white">ОПЛАТА</h2>
             <p class="text-gray-500 text-[10px] uppercase font-bold mb-8 italic tracking-widest text-yellow-500/50">Boss Store Checkout</p>
-            
+
             <div class="glass p-6 rounded-[40px] border-yellow-500/30 shadow-2xl">
                 <!-- СУММА -->
                 <div class="text-center mb-8 bg-yellow-500 p-5 rounded-3xl border border-yellow-500/20 shadow-lg shadow-yellow-500/10">
-                    <p class="text-black text-[10px] uppercase font-black tracking-widest mb-1 opacity-60 italic">СУММА К ПЕРЕВОДУ:</p>
-                    <p id="modal-total-price" class="text-4xl font-black text-black italic leading-none tracking-tighter">0 ₽</p>
-                </div>
-
-                <!-- РЕКВИЗИТЫ -->
-                <div class="bg-black/60 p-5 rounded-3xl mb-6 border border-white/5 text-center shadow-inner">
-                    <p class="text-yellow-500 text-[10px] uppercase font-black mb-4 tracking-widest italic underline underline-offset-4 decoration-yellow-500/20">Реквизиты Т-Банк</p>
-                    <div class="mb-4">
-                        <p class="text-gray-500 text-[9px] uppercase mb-1 font-bold">Номер карты (Т-Банк):</p>
-                        <p class="text-white font-bold text-lg tracking-wider select-all">2200 7019 5529 9232</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-500 text-[9px] uppercase mb-1 font-bold">По СБП (Т-Банк):</p>
-                                                <p class="text-white font-bold text-lg select-all">+7 950 170 07 87</p>
-                    </div>
+                    <p class="text-black text-[10px] uppercase font-black mb-1 opacity-60 italic">СУММА К ПЕРЕВОДУ:</p>
+                    <p id="modal-total-price" class="text-4xl font-black text-black italic leading-none">0 ₽</p>
                 </div>
 
                 <!-- КНОПКИ -->
                 <button onclick="confirmOrder()" id="confirm-btn" class="w-full bg-white text-black py-5 rounded-2xl font-black uppercase text-sm btn-click shadow-xl mb-4 italic">Я оплатил(а)</button>
-                
-                <button onclick="contactAdmin()" class="w-full bg-white/5 text-gray-500 py-3 rounded-2xl font-bold uppercase text-[9px] tracking-widest border border-white/5 italic">Проблема с оплатой? Пишите в поддержку</button>
+                <button onclick="tg.openTelegramLink('https://t.me/Boss_storesvzbot')" class="w-full bg-white/5 text-gray-500 py-3 rounded-2xl font-bold uppercase text-[9px] tracking-widest border border-white/5 italic">Проблема с оплатой? Пишите в поддержку</button>
             </div>
         </div>
     </div>
@@ -87,11 +75,11 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // --- ТВОИ НАСТРОЙКИ ---
-        const BOT_TOKEN = '8730430332:AAGff_PCX2059o3EUwG-d9C19uTqcH4sAZ4';
-const ADMIN_ID = '7727345054';
-const YOOMONEY_WALLET = '4100119121976236'; // Ваш кошелек // <--- ВПИШИ СВОЙ НИК БЕЗ @ (например: boss_store_admin)
-        // ----------------------
+        // --- ВАШИ НАСТРОЙКИ ---
+        const SHEETDB_URL = 'https://sheetdb.io/api/v1/5gnvz043vf750';
+                const BOT_TOKEN = '8730430332:AAGff_PCX2059o3EUwG-d9C19uTqcH4sAZ4';
+        const ADMIN_ID = '7727345054';
+        const YOOMONEY_WALLET = '4100119121976236'; // Ваш кошелек для переброса на оплату
 
         let products = [];
         let cart = [];
@@ -100,8 +88,8 @@ const YOOMONEY_WALLET = '4100119121976236'; // Ваш кошелек // <--- В�
         async function loadData() {
             try {
                 const res = await fetch(SHEETDB_URL);
-                products = await res.json();
-                products = products.map(p => ({
+                const data = await res.json();
+                products = data.map(p => ({
                     ...p,
                     Price: parseFloat(p.Price) || 0,
                     Image: p.Image || 'https://via.placeholder.com/150'
@@ -121,7 +109,9 @@ const YOOMONEY_WALLET = '4100119121976236'; // Ваш кошелек // <--- В�
         }
 
         function setCat(c) {
-            currentCat = c; renderCats(); renderItems();
+            currentCat = c;
+            renderCats();
+            renderItems();
             tg.HapticFeedback.impactOccurred('light');
         }
 
@@ -149,82 +139,77 @@ const YOOMONEY_WALLET = '4100119121976236'; // Ваш кошелек // <--- В�
 
         function updateUI() {
             const total = cart.reduce((s, p) => s + p.Price, 0);
-            const totalText = total.toLocaleString('ru-RU') + ' ₽';
             document.getElementById('cart-count').innerText = cart.length;
-            document.getElementById('modal-total-price').innerText = totalText;
+            document.getElementById('total-price').innerText = total + ' ₽';
+            document.getElementById('modal-total-price').innerText = total + ' ₽';
+            
             const bar = document.getElementById('checkout-bar');
-            if(cart.length > 0) {
+            if (cart.length > 0) {
                 bar.classList.remove('hidden');
-                document.getElementById('total-price').innerText = totalText;
-            } else { bar.classList.add('hidden'); }
+            } else {
+                bar.classList.add('hidden');
+            }
         }
 
-        function openPay() { 
-            document.getElementById('pay-modal').classList.remove('hidden'); 
+        function openPay() {
+            document.getElementById('pay-modal').classList.remove('hidden');
             tg.HapticFeedback.notificationOccurred('success');
         }
-        
-        function closePay() { 
-            document.getElementById('pay-modal').classList.add('hidden'); 
+
+        function closePay() {
+            document.getElementById('pay-modal').classList.add('hidden');
         }
 
-        // ФУНКЦИЯ СВЯЗИ С АДМИНОМ (ЛИЧКА)
-        function contactAdmin() {
-            tg.openTelegramLink(`https://t.me/${ADMIN_USERNAME}`);
-        }
-
+        // ОСНОВНАЯ ФУНКЦИЯ - ОТПРАВКА И ПЕРЕХОД К ОПЛАТЕ
         async function confirmOrder() {
-            async function confirmOrder() {
-    const btn = document.getElementById('confirm-btn');
-    const total = cart.reduce((s, p) => s + p.Price, 0);
+            const btn = document.getElementById('confirm-btn');
+            const total = cart.reduce((s, p) => s + p.Price, 0);
+            
+            if (cart.length === 0) return;
 
-    if (cart.length === 0) {
-        tg.showAlert("Ваша корзина пуста!");
-        return;
-    }
+            btn.innerText = "ОТПРАВЛЯЮ...";
+            btn.disabled = true;
 
-    btn.innerText = "ОФОРМЛЯЕМ...";
-    btn.disabled = true;
+            const user = tg.initDataUnsafe.user || { first_name: 'Покупатель', id: 'unknown', username: '' };
+            const itemsList = cart.map(item => `• ${item.Name} (${item.Price}₽)`).join('\n');
 
-    const user = tg.initDataUnsafe.user || { first_name: 'Покупатель', id: 'unknown' };
-    const itemsList = cart.map(item => `• ${item.Name} (${item.Price}₽)`).join('\n');
+            const text = `🚀 НОВЫЙ ЗАКАЗ!\n\n` +
+                         `👤 Клиент: ${user.first_name}\n` +
+                         `🆔 ID: ${user.id}\n` +
+                         `🔗 Ник: @${user.username || 'отсутствует'}\n\n` +
+                         `🛒 Товары:\n${itemsList}\n\n` +
+                         `💰 Итого: ${total} ₽\n` +
+                         `💳 Способ: ЮMoney`;
 
-    const text = `🚀 НОВЫЙ ЗАКАЗ!\n\n` +
-                 `👤 Клиент: ${user.first_name}\n` +
-                 `🆔 ID: ${user.id}\n` +
-                 `🛒 Товары:\n${itemsList}\n\n` +
-                 `💰 Итого: ${total} ₽\n` +
-                 `💳 Статус: Ожидает оплаты через ЮMoney`;
+            try {
+                // 1. Отправляем сообщение в ваш бот
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: ADMIN_ID,
+                        text: text,
+                        parse_mode: 'Markdown'
+                        })
+                });
 
-    try {
-        // 1. Отправляем сообщение вам в Telegram
-        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                chat_id: ADMIN_ID,
-                text: text,
-                parse_mode: 'Markdown'
-            })
-        });
+                // 2. Ссылка на оплату ЮMoney
+                const paymentUrl = `https://yoomoney.ru/transfer/process/success?receiver=${YOOMONEY_WALLET}&sum=${total}&details=Заказ_от_ID${user.id}`;
 
-        // 2. Ссылка на оплату ЮMoney
-        const paymentUrl = `https://yoomoney.ru/transfer/process/success?receiver=${YOOMONEY_WALLET}&sum=${total}&details=Заказ_BossStore_ID${user.id}`;
+                // 3. ОЧИСТКА КОРЗИНЫ ДЛЯ ПОВТОРНОЙ ПОКУПКИ
+                cart = [];
+                updateUI();
 
-        // 3. Очищаем корзину (чтобы можно было купить снова)
-        cart = [];
-        updateUI(); // Обнуляем интерфейс
-        closePay(); // Закрываем модалку
+                // 4. ПЕРЕХОД НА ОПЛАТУ
+                window.location.href = paymentUrl;
 
-        // 4. Переходим на оплату
-        window.location.href = paymentUrl;
-
-    } catch (e) {
-        tg.showAlert("Ошибка отправки заказа.");
-        btn.innerText = "Я оплатил(а)";
-        btn.disabled = false;
-    }
+            } catch (e) {
+                tg.showAlert("Ошибка отправки заказа.");
+                btn.innerText = "Я оплатил(а)";
+                btn.disabled = false;
             }
+        }
+
         window.onload = loadData;
     </script>
 </body>

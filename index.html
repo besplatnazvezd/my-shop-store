@@ -57,7 +57,7 @@
                 // --- ТВОИ НАСТРОЙКИ ---
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbzl2AehfvRtwWWz_6XDx96dsVing3RxzKf7X0afJ5HpgwUJCEFhYvTeWtxWa378tPJO/exec';
         // Используем прокси, чтобы не было "Ошибки связи"
-        const SHEETDB_URL = 'https://api.allorigins.win/get?url=' + encodeURIComponent(GAS_URL);
+       // const SHEETDB_URL = 'https://api.allorigins.win/get?url=' + encodeURIComponent(GAS_URL);
         
         const BOT_TOKEN = '8730430332:AAGff_PCX2059O3EUWG-d9C19uTqcH4sAZ4';
         const ADMIN_ID = '7727345054';
@@ -65,29 +65,40 @@
 
         // ... остальной код с реквизитами остается как был ...
 
-        async function loadData() {
-            try {
-                // Новый, более надежный прокси
-                const proxy = 'https://corsproxy.io/?';
-                const cleanUrl = encodeURIComponent(GAS_URL);
-                
-                const res = await fetch(proxy + cleanUrl);
-                
-                // Проверяем, что ответ пришел нормальный
-                if (!res.ok) throw new Error('Ошибка сервера');
-                
-                // В этом прокси данные приходят сразу, без лишних оберток
-                const rawProducts = await res.json();
-                
-                products = rawProducts.map(p => ({
-                    ...p,
-                    Name: p.Название || 'Без названия',
-                    Description: p.Описание || '',
-                    Price: parseFloat(p.Цена) || 0,
-                    Category: p.Категория || 'Все',
-                    Image: p.Картинка || 'https://via.placeholder.com/150'
-                }));
+            async function loadData() {
+                try {
+                    // Теперь фетчим напрямую с GAS_URL, т.к. там есть CORS заголовки!
+                    const res = await fetch(GAS_URL); 
+                    
+                    if (!res.ok) {
+                        // Более детальная ошибка для отладки
+                        const errorText = await res.text(); 
+                        throw new Error(`Ошибка сети: ${res.status} ${res.statusText}. Ответ сервера: ${errorText.substring(0, 100)}...`);
+                    }
+                    
+                    // Данные приходят сразу чистые
+                    const rawProducts = await res.json();
+                    
+                    products = rawProducts.map(p => ({
+                        ...p,
+                        Name: p.Название || 'Без названия',
+                        Description: p.Описание || '',
+                        Price: parseFloat(p.Цена) || 0,
+                        Category: p.Категория || 'Все',
+                        Image: p.Картинка || 'https://via.placeholder.com/150'
+                    }));
 
+                    renderCats();
+                    renderItems();
+                } catch (e) {
+                    console.error('Детали ошибки:', e);
+                    document.getElementById('catalog').innerHTML = 
+                    `<div class='col-span-2 text-center text-red-500'>
+                        <p>Ошибка связи с базой данных.</p>
+                        <p style="font-size: 8px;">${e.message || 'Неизвестная ошибка. Проверь Google Apps Script!'}</p>
+                    </div>`;
+                }
+                        }
                 renderCats();
                 renderItems();
             } catch (e) {

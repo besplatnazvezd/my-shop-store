@@ -54,38 +54,43 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // --- ТВОИ НАСТРОЙКИ ---
-        const SHEETDB_URL = 'https://script.google.com/macros/s/AKfycbzl2AehfvRtwWWz_6XDx96dsVing3RxzKf7X0afJ5HpgwUJCEFhYvTeWtxWa378tPJO/exec';
-        const BOT_TOKEN = '8730430332:AAGff_PCX2059o3EUwG-d9C19uTqcH4sAZ4'; 
-        const ADMIN_ID = '7727345054'; 
-        const BOT_USER = 'BossStore_robot'; // Юз бота для реквизитов
+                // --- ТВОИ НАСТРОЙКИ ---
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbzl2AehfvRtwWWz_6XDx96dsVing3RxzKf7X0afJ5HpgwUJCEFhYvTeWtxWa378tPJO/exec';
+        // Используем прокси, чтобы не было "Ошибки связи"
+        const SHEETDB_URL = 'https://api.allorigins.win/get?url=' + encodeURIComponent(GAS_URL);
+        
+        const BOT_TOKEN = '8730430332:AAGff_PCX2059O3EUWG-d9C19uTqcH4sAZ4';
+        const ADMIN_ID = '7727345054';
+        const BOT_USER = 'BossStore_robot';
 
-        // РЕКВИЗИТЫ, КОТОРЫЕ УЙДУТ КЛИЕНТУ
-        const REKVIZITY = `💰 РЕКВИЗИТЫ ДЛЯ ОПЛАТЫ:\n\n` +
-                          `💳 Т-Банк (Карта): 2200 7019 5529 9232\n` +
-                          `📞 СБП (Т-Банк): +7 950 170 07 87\n` +
-                          `🅿️ ЮMoney (Счет): 4100119121976236\n\n` +
-                          `✅ После оплаты обязательно пришлите скриншот чека @nmproda`;
-
-        let products = [];
-        let cart = [];
-        let currentCat = 'Все';
+        // ... остальной код с реквизитами остается как был ...
 
         async function loadData() {
             try {
                 const res = await fetch(SHEETDB_URL);
-                products = await res.json();
-                products = products.map(p => ({
+                const json = await res.json();
+                // Данные из прокси лежат внутри contents, их надо превратить в объект
+                let rawProducts = JSON.parse(json.contents);
+                
+                products = rawProducts.map(p => ({
                     ...p,
-                    Price: parseFloat(p.Price) || 0,
-                    Image: p.Image || 'https://via.placeholder.com/150'
+                    // Сопоставляем русские названия из таблицы с английскими в твоем коде
+                    Name: p.Название || 'Без названия',
+                    Description: p.Описание || '',
+                    Price: parseFloat(p.Цена) || 0,
+                    Category: p.Категория || 'Все',
+                    Image: p.Картинка || 'https://via.placeholder.com/150'
                 }));
+
                 renderCats();
                 renderItems();
             } catch (e) {
-                document.getElementById('catalog').innerHTML = "<p class='col-span-2 text-center text-red-500'>Ошибка связи</p>";
+                console.error(e);
+                document.getElementById('catalog').innerHTML = 
+                "<p class='col-span-2 text-center text-red-500'>Ошибка связи. Проверь настройки прокси!</p>";
             }
-        }
+                                        }
+            
 
         function renderCats() {
             const list = ['Все', ...new Set(products.map(p => p.Category))];

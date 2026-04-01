@@ -1,71 +1,23 @@
-// --- ВАШИ ДАННЫЕ (УЖЕ ВПИСАНЫ) ---
+// --- ВАШИ ДАННЫЕ ---
 const botToken = "8730430332:AAGff_PCX2059o3EUwG-d9C19uTqcH4sAZ4";
 const myAdminId = "7727345054"; 
 const myYooMoney = "4100119121976236"; 
 
-// 1. Инициализация корзины
-let cart = JSON.parse(localStorage.getItem('cart')) || [];
-
-// 2. Функция добавления товара в корзину
-function addToCart(name, price) {
-    cart.push({ name: name, price: price });
-    saveCart();
-    renderCart();
-    alert(name + " добавлен в корзину!");
-}
-
-// 3. Сохранение корзины
-function saveCart() {
-    localStorage.setItem('cart', JSON.stringify(cart));
-}
-
-// 4. Удаление товара
-function removeFromCart(index) {
-    cart.splice(index, 1);
-    saveCart();
-    renderCart();
-}
-
-// 5. Отрисовка корзины на экране
-function renderCart() {
-    const cartContainer = document.getElementById('cart-items');
-    const totalElement = document.getElementById('cart-total');
-    
-    if (!cartContainer) return;
-
-    cartContainer.innerHTML = '';
-    let total = 0;
-
-    cart.forEach((item, index) => {
-        const itemDiv = document.createElement('div');
-        itemDiv.className = 'cart-item';
-        itemDiv.innerHTML = `
-            <span>${item.name} - ${item.price} руб.</span>
-            <button type="button" onclick="removeFromCart(${index})">❌</button>
-        `;
-        cartContainer.appendChild(itemDiv);
-        total += parseFloat(item.price);
-    });
-
-    if (totalElement) {
-        totalElement.textContent = total + " руб.";
-    }
-}
-
-// 6. ФУНКЦИЯ ОФОРМЛЕНИЯ ЗАКАЗА И ПЕРЕХОДА К ОПЛАТЕ
+// 1. ФУНКЦИЯ ОФОРМЛЕНИЯ ЗАКАЗА И ПЕРЕХОДА К ОПЛАТЕ
 async function sendOrderAndPay(event) {
-    event.preventDefault(); // Останавливаем перезагрузку страницы
+    event.preventDefault(); // Чтобы страница не перезагрузилась
 
     const form = event.target;
     const btn = form.querySelector('button');
 
-    // Проверяем корзину
+    // Собираем товары из корзины (localStorage)
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
     if (cart.length === 0) {
         alert("Ваша корзина пуста!");
         return;
     }
 
-    // Собираем товары для сообщения
+    // Считаем сумму и формируем список товаров
     let itemList = "";
     let totalSum = 0;
     cart.forEach((item, index) => {
@@ -83,12 +35,12 @@ async function sendOrderAndPay(event) {
                     `👤 <b>Клиент:</b> ${name}\n` +
                     `📞 <b>Телефон:</b> ${phone}`;
 
-    // Блокируем кнопку
+    // Блокируем кнопку на время отправки
     btn.disabled = true;
-    btn.textContent = "Создаем счет...";
+    btn.textContent = "Секунду...";
 
     try {
-        // Отправляем данные вам в Telegram
+        // 2. Отправляем уведомление вам в Telegram
         const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -100,32 +52,26 @@ async function sendOrderAndPay(event) {
         });
 
         if (response.ok) {
-            // Формируем ссылку на оплату в ЮMoney
-            // details - это описание платежа, которое увидит клиент
-            const paymentUrl = `https://yoomoney.ru/transfer/process/success?receiver=${myYooMoney}&sum=${totalSum}&details=Заказ_BossStore_${phone}`;
+            // 3. Формируем ссылку на оплату в ЮMoney
+            const paymentUrl = `https://yoomoney.ru/transfer/process/success?receiver=${myYooMoney}&sum=${totalSum}&details=Заказ_BossStore_тел_${phone}`;
 
-            alert("Заказ принят! Сейчас вы будете перенаправлены на страницу оплаты.");
-
-            // --- ОЧИСТКА ДАННЫХ (ЧТОБЫ МОЖНО БЫЛО КУПИТЬ СНОВА) ---
+            // 4. ОЧИСТКА ДЛЯ ПОВТОРНОЙ ПОКУПКИ (важно!)
             form.reset(); 
-            cart = []; // Очищаем массив в коде
-            localStorage.removeItem('cart'); // Очищаем память браузера
-            renderCart(); // Обнуляем корзину на экране
+            localStorage.removeItem('cart'); 
+            
+            // Если у вас на сайте есть функция, которая рисует корзину, вызываем её, чтобы она стала пустой
+            if (typeof renderCart === 'function') renderCart();
 
-            // ПЕРЕХОД К ОПЛАТЕ
+            // 5. ПЕРЕХОД К ОПЛАТЕ
             window.location.href = paymentUrl;
 
         } else {
-            alert("Ошибка связи с ботом. Проверьте, нажали ли вы START в боте @Boss_storesvzbot");
+            alert("Ошибка. Проверьте, запущен ли бот @Boss_storesvzbot");
         }
     } catch (error) {
-        alert("Произошла ошибка сети. Проверьте интернет.");
+        alert("Ошибка сети. Попробуйте еще раз.");
     } finally {
-        // Возвращаем кнопку в рабочее состояние (на случай, если клиент вернется назад)
         btn.disabled = false;
         btn.textContent = "Оформить заказ";
     }
 }
-
-// Запуск отрисовки при загрузке страницы
-document.addEventListener('DOMContentLoaded', renderCart);

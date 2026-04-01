@@ -51,85 +51,30 @@
     </div>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-
-                        // --- ТВОИ НАСТРОЙКИ ---
-        const GAS_URL = 'https://script.google.com/macros/s/AKfycbzl2AehfvRtwWWz_6XDx96dsVing3RxzKf7X0afJ5HpgwUJCEFhYvTeWtxWa378tPJO/exec';
-        
-        // Используем RAW прокси (самый стабильный)
-        const PROXY_URL = 'https://api.allorigins.win/raw?url=';
-
-        const BOT_TOKEN = '8730430332:AAGff_PCX2059O3EUWG-d9C19uTqcH4sAZ4';
-        const ADMIN_ID = '7727345054';
-        const BOT_USER = 'BossStore_robot';
-
-        let products = [];
-        let cart = [];
-        let currentCat = 'Все';
-
-        async function loadData() {
-            const catalogEl = document.getElementById('catalog');
-            try {
-                // Запрос через RAW прокси
-                const res = await fetch(PROXY_URL + encodeURIComponent(GAS_URL));
-                if (!res.ok) throw new Error('Google не отвечает');
-                
-                const rawData = await res.json();
-                
-                products = rawData.map(p => ({
-                    ...p,
-                    Name: p.Название || p.Name || 'Без названия',
-                    Description: p.Описание || p.Description || '',
-                    Price: parseFloat(p.Цена || p.Price) || 0,
-                    Category: p.Категория || p.Category || 'Все',
-                    Image: p.Картинка || p.Image || 'https://via.placeholder.com/150'
-                }));
-
-                renderCats();
-                renderItems();
-            } catch (e) {
-                console.error('Ошибка:', e);
-                // Рисуем ошибку КРАСИВО, чтобы не портить дизайн
-                catalogEl.innerHTML = `
-                    <div class="col-span-2 text-center py-10">
-                        <p class="text-red-500 font-bold">ОШИБКА ЗАГРУЗКИ ТАБЛИЦЫ</p>
-                        <p class="text-[8px] text-gray-500 uppercase mt-2">Проверь VPN или доступ к Google</p>
-                        <button onclick="location.reload()" class="mt-4 bg-yellow-500/10 text-yellow-500 px-4 py-2 rounded-xl text-[10px]">Повторить</button>
-                    </div>
-                `;
+                document.getElementById('catalog').innerHTML = "<p class='col-span-2 text-center text-red-500'>ОШИБКА. Проверь VPN!</p>";
             }
         }
-        
-                    renderCats();
-                    renderItems();
-                } catch (e) {
-                    console.error('Детали ошибки:', e);
-                    document.getElementById('catalog').innerHTML = 
-                    `<div class='col-span-2 text-center text-red-500'>
-                        <p>Ошибка связи с базой данных.</p>
-                        <p style="font-size: 8px;">${e.message || 'Неизвестная ошибка. Проверь Google Apps Script!'}</p>
-                    </div>`;
-                }
-                        }
-                renderCats();
-                renderItems();
-            } catch (e) {
-                console.error('Детали ошибки:', e);
-                document.getElementById('catalog').innerHTML = 
-                `<div class='col-span-2 text-center text-red-500'>
-                    <p>Ошибка связи с базой данных.</p>
-                    <p style="font-size: 8px;">${e.message}</p>
-                </div>`;
-            }
-        }
-        
-            
 
         function renderCats() {
             const list = ['Все', ...new Set(products.map(p => p.Category))];
             document.getElementById('cat-list').innerHTML = list.map(c => `
-            </div>
+                <div onclick="currentCat='${c}';renderItems();" class="px-4 py-2 bg-white/5 rounded-xl text-[10px] uppercase font-bold border border-white/5 btn-click">
+                    ${c}
+                </div>
+            `).join('');
+        }
+
+        function renderItems() {
+            const filtered = currentCat === 'Все' ? products : products.filter(p => p.Category === currentCat);
+            document.getElementById('catalog').innerHTML = filtered.map((p, idx) => `
+                <div class="bg-white/5 border border-white/10 rounded-3xl p-4 glass animate-in">
+                    <img src="${p.Image}" class="w-full h-32 object-cover rounded-2xl mb-3">
+                    <h3 class="text-[12px] font-black italic uppercase leading-none mb-1">${p.Name}</h3>
+                    <p class="text-[9px] text-gray-500 mb-3">${p.Description}</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-yellow-500 font-black italic">${p.Price} ₽</span>
+                        <button onclick="addToCart(${idx})" class="bg-yellow-500 text-black px-4 py-2 rounded-xl text-[10px] font-bold uppercase btn-click">В корзину</button>
+                    </div>
                 </div>
             `).join('');
         }
@@ -147,6 +92,11 @@
             const bar = document.getElementById('checkout-bar');
             if (cart.length > 0) bar.classList.remove('hidden');
             else bar.classList.add('hidden');
+        }
+
+        // ... функция confirmOrder остается такой же, как у тебя ...
+
+        window.onload = loadData;
         }
 
         async function confirmOrder() {

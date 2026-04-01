@@ -67,14 +67,20 @@
 
         async function loadData() {
             try {
-                const res = await fetch(SHEETDB_URL);
-                const json = await res.json();
-                // Данные из прокси лежат внутри contents, их надо превратить в объект
-                let rawProducts = JSON.parse(json.contents);
+                // Новый, более надежный прокси
+                const proxy = 'https://corsproxy.io/?';
+                const cleanUrl = encodeURIComponent(GAS_URL);
+                
+                const res = await fetch(proxy + cleanUrl);
+                
+                // Проверяем, что ответ пришел нормальный
+                if (!res.ok) throw new Error('Ошибка сервера');
+                
+                // В этом прокси данные приходят сразу, без лишних оберток
+                const rawProducts = await res.json();
                 
                 products = rawProducts.map(p => ({
                     ...p,
-                    // Сопоставляем русские названия из таблицы с английскими в твоем коде
                     Name: p.Название || 'Без названия',
                     Description: p.Описание || '',
                     Price: parseFloat(p.Цена) || 0,
@@ -85,11 +91,15 @@
                 renderCats();
                 renderItems();
             } catch (e) {
-                console.error(e);
+                console.error('Детали ошибки:', e);
                 document.getElementById('catalog').innerHTML = 
-                "<p class='col-span-2 text-center text-red-500'>Ошибка связи. Проверь настройки прокси!</p>";
+                `<div class='col-span-2 text-center text-red-500'>
+                    <p>Ошибка связи с базой данных.</p>
+                    <p style="font-size: 8px;">${e.message}</p>
+                </div>`;
             }
-                                        }
+        }
+        
             
 
         function renderCats() {

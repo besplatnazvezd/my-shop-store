@@ -12,83 +12,85 @@
         :root { --gold: #FFD700; --bg: #000; }
         body { font-family: 'Montserrat', sans-serif; background: var(--bg); color: #fff; padding-bottom: 120px; overflow-x: hidden; }
         
-        .boss-card { background: rgba(255, 215, 0, 0.03); border: 1px solid rgba(255, 215, 0, 0.1); backdrop-filter: blur(15px); border-radius: 25px; }
-        .btn-gold { background: linear-gradient(45deg, #FFD700, #BA8B02); color: #000; font-weight: 900; text-transform: uppercase; border-radius: 12px; }
+        .boss-card { background: rgba(255, 215, 0, 0.03); border: 1px solid rgba(255, 215, 0, 0.1); border-radius: 30px; overflow: hidden; }
+        .btn-gold { background: linear-gradient(45deg, #FFD700, #BA8B02); color: #000; font-weight: 900; text-transform: uppercase; border-radius: 15px; transition: 0.3s; }
+        .btn-gold:active { transform: scale(0.95); }
 
-        /* Поле ввода количества */
-        .q-input { background: #000; border: 1px solid rgba(255,215,0,0.3); color: var(--gold); font-weight: 900; text-align: center; border-radius: 8px; width: 60px; outline: none; }
-        .q-input:focus { border-color: var(--gold); box-shadow: 0 0 5px var(--gold); }
+        /* ИНПУТ КОЛИЧЕСТВА */
+        .q-input { background: #000; border: 1.5px solid rgba(255,215,0,0.4); color: var(--gold); font-weight: 900; text-align: center; border-radius: 10px; width: 70px; outline: none; padding: 5px 0; }
 
+        /* КАТЕГОРИИ */
         .cat-container { display: flex; overflow-x: auto; gap: 20px; padding: 15px 20px; scrollbar-width: none; }
         .cat-item { color: #fff; opacity: 0.4; font-size: 13px; font-weight: 700; white-space: nowrap; border-bottom: 2px solid transparent; }
         .cat-item.active { opacity: 1; color: var(--gold); border-bottom: 2px solid var(--gold); }
 
-        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(5,5,5,0.98); border-top: 1px solid rgba(255,215,0,0.1); padding: 12px 10px 30px 10px; display: flex; justify-content: space-around; z-index: 5000; border-radius: 25px 25px 0 0; }
+        /* МЕНЮ */
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(5,5,5,0.98); border-top: 1px solid rgba(255,215,0,0.1); padding: 12px 10px 30px 10px; display: flex; justify-content: space-around; z-index: 5000; border-radius: 30px 30px 0 0; }
         .nav-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #444; transition: 0.3s; }
         .nav-btn.active { color: var(--gold); }
 
-        /* РУЛЕТКА */
+        /* РУЛЕТКА ДЛЯ КЕЙСА */
         .roulette-container { position: relative; width: 100%; height: 120px; overflow: hidden; border-top: 2px solid rgba(255,215,0,0.2); border-bottom: 2px solid rgba(255,215,0,0.2); background: #050505; }
                 .roulette-track { display: flex; position: absolute; left: 0; top: 0; height: 100%; transition: transform 6s cubic-bezier(0.1, 0, 0, 1); }
         .item-card { min-width: 100px; height: 100%; border-right: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
 
-        #toast { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #000; padding: 12px 25px; border-radius: 50px; font-weight: 900; font-size: 10px; z-index: 10000; transition: 0.5s; }
+        #toast { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #000; padding: 12px 30px; border-radius: 50px; font-weight: 900; font-size: 11px; z-index: 10000; transition: 0.5s; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
 
     <div id="toast">ДОБАВЛЕНО! 🛒</div>
 
+    <!-- ШАПКА С АВТО-ПРИВЕТСТВИЕМ -->
     <header class="p-6 text-center">
-        <h1 class="text-2xl font-black italic uppercase text-yellow-500 tracking-tighter" id="greet-title">LOADING...</h1>
-        <p class="text-[8px] opacity-30 uppercase tracking-[4px] mt-1" id="boss-nickname">WELCOME, BOSS</p>
+        <h1 class="text-3xl font-black italic uppercase text-yellow-500 tracking-tighter" id="greet-title">LOADING...</h1>
+        <p class="text-[9px] opacity-30 uppercase tracking-[4px] mt-1" id="boss-nickname">WELCOME, BOSS</p>
     </header>
 
     <div id="cats-nav" class="cat-container"></div>
     <div id="app-content" class="px-5"></div>
 
     <!-- КОРЗИНА -->
-    <div id="cart-bar" class="fixed bottom-28 left-4 right-4 boss-card p-4 flex justify-between items-center hidden z-[1000] bg-black border-yellow-500/50 shadow-2xl">
-        <div><p id="total-price" class="text-2xl font-black text-yellow-500">0 ₽</p><p class="text-[7px] uppercase opacity-40 font-bold">ИТОГО</p></div>
-        <button onclick="openPay()" class="btn-gold px-8 py-4 text-[10px]">Оформить</button>
+    <div id="cart-bar" class="fixed bottom-28 left-4 right-4 boss-card p-5 flex justify-between items-center hidden z-[1000] bg-[#080808] border-yellow-500 shadow-2xl">
+        <div><p id="total-price" class="text-2xl font-black text-yellow-500">0 ₽</p><p class="text-[8px] uppercase opacity-40 font-bold">ИТОГО К ОПЛАТЕ</p></div>
+        <button onclick="openPay()" class="btn-gold px-10 py-4 text-[11px]">Оформить</button>
     </div>
 
     <!-- МОДАЛКА КЕЙСА -->
     <div id="case-modal" class="fixed inset-0 bg-black/98 z-[6000] hidden flex flex-col items-center justify-center p-6 text-center">
-        <h2 class="text-2xl font-black text-yellow-500 mb-6 italic text-center">MIDNIGHT MYSTERY</h2>
-        <div class="roulette-container mb-8"><div class="absolute left-50 top-0 bottom-0 w-1 bg-yellow-500 z-10 left-1/2 translate-x-[-50%] shadow-[0_0_10px_#FFD700]"></div><div id="roulette-track" class="roulette-track"></div></div>
+        <h2 class="text-2xl font-black text-yellow-500 mb-6 italic">MIDNIGHT MYSTERY</h2>
+        <div class="roulette-container mb-8"><div class="absolute left-1/2 top-0 bottom-0 w-1 bg-yellow-500 z-10 translate-x-[-50%] shadow-[0_0_15px_#FFD700]"></div><div id="roulette-track" class="roulette-track"></div></div>
         <div id="case-actions" class="w-full space-y-4">
-            <button onclick="spinCase()" id="spin-btn" class="w-full py-5 btn-gold text-xs">ОТКРЫТЬ (299 ₽)</button>
-                        <button onclick="closeCase()" class="w-full text-[9px] font-black opacity-30 uppercase">Закрыть</button>
+                        <button onclick="spinCase()" id="spin-btn" class="w-full py-5 btn-gold text-xs shadow-lg">ОТКРЫТЬ (299 ₽)</button>
+            <button onclick="closeCase()" class="w-full text-[10px] font-black opacity-30 uppercase">Закрыть</button>
         </div>
         <div id="win-display" class="hidden">
-            <h3 id="win-name" class="text-3xl font-black mb-8 text-white uppercase tracking-tighter">ПРЕДМЕТ</h3>
-            <button id="claim-btn" class="px-12 py-5 btn-gold text-sm">ЗАБРАТЬ ПРИЗ</button>
+            <h3 id="win-name" class="text-3xl font-black mb-8 text-white uppercase italic">ПРЕДМЕТ</h3>
+            <button id="claim-btn" class="px-14 py-5 btn-gold text-sm">ЗАБРАТЬ ПРИЗ</button>
         </div>
     </div>
 
+    <!-- НИЖНЕЕ МЕНЮ -->
     <nav class="nav-bar">
-        <div onclick="nav('shop')" id="n-shop" class="nav-btn active"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" stroke-width="2"/></svg><span class="text-[9px] font-black">ШОП</span></div>
-        <div onclick="nav('scratch')" id="n-scratch" class="nav-btn"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-width="2"/></svg><span class="text-[9px] font-black">УДАЧА</span></div>
-        <div onclick="nav('status')" id="n-status" class="nav-btn"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-width="2"/></svg><span class="text-[9px] font-black">СТАТУС</span></div>
+        <div onclick="nav('shop')" id="n-shop" class="nav-btn active"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" stroke-width="2"/></svg><span class="text-[9px] font-black">ШОП</span></div>
+        <div onclick="nav('scratch')" id="n-scratch" class="nav-btn"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-width="2"/></svg><span class="text-[9px] font-black">УДАЧА</span></div>
+        <div onclick="nav('status')" id="n-status" class="nav-btn"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-width="2"/></svg><span class="text-[9px] font-black">СТАТУС</span></div>
+        <div onclick="nav('support')" id="n-support" class="nav-btn"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke-width="2"/></svg><span class="text-[9px] font-black">СВЯЗЬ</span></div>
     </nav>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready(); tg.expand();
 
-        const BOT_TOKEN = '8730430332:AAGff_PCX2059o3EUwG-d9C19uTqcH4sAZ4';
-        const ADMIN_ID = '8553862867';
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/1q9vPlWM9t934ACzIwbZU4_EDtvpJdfO09-jodyIi9Ew/export?format=csv';
-
-        let state = JSON.parse(localStorage.getItem('boss_v20')) || { cart: [], discount: 0, lastScratch: 0, totalSpent: 0, history: [], regDate: new Date().toLocaleDateString() };
+        let state = JSON.parse(localStorage.getItem('boss_v30')) || { cart: [], discount: 0, lastScratch: 0, totalSpent: 0, history: [], regDate: new Date().toLocaleDateString() };
         let products = [];
         let currentCat = 'Все';
 
-        const save = () => localStorage.setItem('boss_v20', JSON.stringify(state));
+        const save = () => localStorage.setItem('boss_v30', JSON.stringify(state));
 
         function showToast(txt) {
-            const t = document.getElementById('toast'); t.innerText = txt; t.style.top = '20px';
+            const t = document.getElementById('toast'); t.innerText = txt; t.style.top = '30px';
             setTimeout(() => t.style.top = '-100px', 2000);
         }
 
@@ -106,7 +108,13 @@
                 products = rows.map(r => {
                     const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                     if (!c[1]) return null;
-                    return { cat: c[0].replace(/"/g,'').trim(), name: c[1].replace(/"/g,'').trim(), price: parseFloat(c[2]) || 0, img: c[4] ? c[4].replace(/"/g,'').trim() : '' };
+                    return { 
+                        cat: c[0].replace(/"/g,'').trim(), 
+                        name: c[1].replace(/"/g,'').trim(), 
+                        price: parseFloat(c[2]) || 0, 
+                        desc: c[3] ? c[3].replace(/"/g,'').trim() : 'Официальный товар BOSS STORE',
+                        img: c[4] ? c[4].replace(/"/g,'').trim() : '' 
+                    };
                 }).filter(p => p);
                 nav('shop');
             } catch (e) { console.error(e); }
@@ -122,23 +130,26 @@
 
             if(page === 'shop') {
                 const isMid = new Date().getHours() === 0;
-                let html = isMid ? `<div onclick="openCase()" class="boss-card p-6 mb-6 border-purple-500/50 bg-purple-900/10 text-center"><h3 class="text-xl font-black italic">MYSTERY BOX</h3><p class="text-[8px] opacity-50 uppercase">ПОЛНОЧНЫЙ ЭКСКЛЮЗИВ</p></div>` : '';
+                let html = isMid ? `<div onclick="openCase()" class="boss-card p-8 mb-8 border-purple-500/50 bg-gradient-to-br from-purple-900/20 to-black text-center shadow-2xl shadow-purple-500/10"><h3 class="text-3xl font-black italic text-white">MYSTERY BOX</h3><p class="text-[10px] text-purple-400 font-bold uppercase mt-2 tracking-[3px]">ТОЛЬКО ЭТОЙ НОЧЬЮ</p></div>` : '';
                 
                 const unique = ['Все', ...new Set(products.map(p => p.cat))];
                 cats.innerHTML = unique.map(c => `<div onclick="setCat('${c}')" class="cat-item ${currentCat === c ? 'active' : ''}">${c}</div>`).join('');
                 
                 const filtered = currentCat === 'Все' ? products : products.filter(p => p.cat === currentCat);
-                html += `<div class="grid grid-cols-2 gap-4 pb-20">` + filtered.map((p, i) => {
+                html += `<div class="grid grid-cols-1 gap-6 pb-20">` + filtered.map((p, i) => {
                     const rIdx = products.indexOf(p);
-                    return `<div class="boss-card p-4 border-white/5 flex flex-col items-center">
-                        <img src="${p.img}" class="w-16 h-16 object-contain mb-3">
-                        <h3 class="text-[9px] font-black text-yellow-500 uppercase text-center h-6 overflow-hidden">${p.name}</h3>
-                        <div class="flex items-center gap-2 my-3">
-                            <span class="text-[8px] opacity-40 font-bold">КОЛ-ВО:</span>
-                            <input type="number" id="q-${rIdx}" value="1" min="1" class="q-input text-xs py-1">
+                    return `<div class="boss-card p-6 border-white/5 flex flex-col bg-[#050505]">
+                        <img src="${p.img}" class="w-full h-48 object-contain mb-4 rounded-2xl bg-white/5 p-4">
+                        <h3 class="text-lg font-black text-yellow-500 uppercase italic mb-1">${p.name}</h3>
+                        <p class="text-[10px] opacity-40 font-bold mb-4 leading-relaxed">${p.desc}</p>
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center gap-3">
+                                <span class="text-[10px] font-black opacity-30">КОЛ-ВО:</span>
+                                <input type="number" id="q-${rIdx}" value="1" min="1" class="q-input">
+                            </div>
+                            <p class="text-2xl font-black italic">${p.price} ₽</p>
                         </div>
-                        <p class="text-sm font-black mb-3">${p.price} ₽</p>
-                        <button onclick="addToCart(${rIdx})" class="w-full py-3 btn-gold text-[8px]">ДОБАВИТЬ</button>
+                        <button onclick="addToCart(${rIdx})" class="w-full py-5 btn-gold text-xs shadow-lg shadow-yellow-500/10">ДОБАВИТЬ В КОРЗИНУ</button>
                     </div>`;
                 }).join('') + `</div>`;
                 app.innerHTML = html;
@@ -146,25 +157,37 @@
 
             if(page === 'status') {
                 const rank = state.totalSpent < 1000 ? 'Новичок 🌱' : state.totalSpent < 5000 ? 'Бронза 🥉' : state.totalSpent < 15000 ? 'Серебро 🥈' : 'ЛЕГЕНДА 👑';
-                app.innerHTML = `<div class="boss-card p-6 border-yellow-500/20"><p class="text-[8px] font-black opacity-40 uppercase mb-2 text-yellow-500">КАРТОЧКА БОССА</p>
-                <h2 class="text-2xl font-black mb-6 uppercase">${rank}</h2>
-                <div class="space-y-4 text-[10px] font-bold uppercase">
-                    <div class="flex justify-between border-b border-white/5 pb-2"><span>ОБОРОТ</span><span>${state.totalSpent} ₽</span></div>
-                    <div class="flex justify-between border-b border-white/5 pb-2"><span>СКИДКА</span><span class="text-yellow-500">${state.discount}%</span></div>
-                    <div class="flex justify-between"><span>ID</span><span>${tg.initDataUnsafe.user?.id || '7727345054'}</span></div>
+                app.innerHTML = `<div class="boss-card p-8 border-yellow-500/20 mt-4 shadow-2xl"><p class="text-[9px] font-black text-yellow-500 uppercase mb-3 tracking-widest">КАРТОЧКА БОССА</p>
+                <h2 class="text-3xl font-black mb-8 uppercase italic">${rank}</h2>
+                <div class="space-y-5 text-[11px] font-bold uppercase">
+                    <div class="flex justify-between border-b border-white/5 pb-3"><span>ОБОРОТ</span><span class="text-white">${state.totalSpent} ₽</span></div>
+                    <div class="flex justify-between border-b border-white/5 pb-3"><span>ВАША СКИДКА</span><span class="text-yellow-500">${state.discount}%</span></div>
+                    <div class="flex justify-between"><span>ВАШ ID</span><span class="opacity-50">${tg.initDataUnsafe.user?.id || '7727345054'}</span></div>
                 </div></div>`;
             }
 
             if(page === 'scratch') {
                 const can = (Date.now() - state.lastScratch) > 86400000;
-                app.innerHTML = `<div class="text-center py-20"><div id="scratch-w" class="relative w-72 h-40 mx-auto boss-card overflow-hidden border-2 border-yellow-500">
-                <div class="flex items-center justify-center h-full text-3xl font-black text-yellow-500">${state.discount > 0 ? '-'+state.discount+'%' : '???'}</div>
-                ${can ? '<canvas id="scratch-canvas" class="absolute inset-0"></canvas>' : ''}</div><p class="mt-6 text-[9px] opacity-40 uppercase font-black tracking-[2px]">${can ? 'Сотри слой для получения скидки' : 'Возвращайся через 24 часа'}</p></div>`;
+                app.innerHTML = `<div class="text-center py-20 px-4">
+                <div id="scratch-w" class="relative w-full max-w-[320px] h-48 mx-auto boss-card overflow-hidden border-2 border-yellow-500/30">
+                <div class="flex items-center justify-center h-full text-4xl font-black text-yellow-500">${state.discount > 0 ? '-'+state.discount+'%' : '???'}</div>
+                ${can ? '<canvas id="scratch-canvas" class="absolute inset-0"></canvas>' : ''}</div>
+                <p class="mt-8 text-[11px] opacity-40 uppercase font-black tracking-[3px]">${can ? 'Сотри слой и забери бонус' : 'Лимит исчерпан. Жди 24 часа'}</p></div>`;
                 if(can) initScratch();
+            }
+
+            if(page === 'support') {
+                app.innerHTML = `<div class="py-10 space-y-4">
+                    <div onclick="window.open('https://t.me/nmproda')" class="boss-card p-10 flex items-center justify-between border-yellow-500/40">
+                        <div><h2 class="text-2xl font-black text-yellow-500">МЕНЕДЖЕР</h2><p class="text-[10px] opacity-30 font-black uppercase mt-1">ОТВЕТИМ НА ЛЮБОЙ ВОПРОС</p></div>
+                        <div class="text-5xl">👨‍💻</div>
+                    </div>
+                    <div class="text-center mt-10 opacity-20"><p class="text-[9px] font-black uppercase tracking-[5px]">BOSS STORE SYSTEM v3.0</p></div>
+                </div>`;
             }
         }
 
-        function setCat(c) { currentCat = c; nav('shop'); }
+        function setCat(c) { currentCat = c; nav('shop'); tg.HapticFeedback.impactOccurred('light'); }
 
         function addToCart(idx) {
             const p = products[idx];
@@ -173,7 +196,7 @@
             save(); updateCartUI();
             showToast(`ДОБАВЛЕНО: ${p.name} (${q} шт.)`);
             tg.HapticFeedback.notificationOccurred('success');
-            confetti({ particleCount: 30, spread: 60, origin: {y: 0.8}, colors: ['#FFD700'] });
+            confetti({ particleCount: 30, spread: 70, origin: {y: 0.9}, colors: ['#FFD700'] });
         }
 
         function updateCartUI() {
@@ -190,22 +213,22 @@
             {n: "ANTI-SCAM", r: "common"}, {n: "SITE/BOT DEV", r: "common"}, {n: "GHOST ACC", r: "epic"}
         ];
 
-        function openCase() { document.getElementById('case-modal')
-                             .classList.remove('hidden'); const t = document.getElementById('roulette-track'); t.style.transition = 'none'; t.style.transform = 'translateX(0)'; let h = ''; for(let i=0; i<80; i++) { const it = BOX_ITEMS[Math.floor(Math.random()*BOX_ITEMS.length)]; h += `<div class="item-card bg-white/5 min-w-[100px] border-r border-white/10"><div class="text-xl mb-1">🎁</div><p class="text-[8px] font-black">${it.n}</p></div>`; } t.innerHTML = h; }
+        function openCase() { document.getElementById('case-modal').classList.remove('hidden'); const t = document.getElementById('roulette-track'); t.style.transition = 'none'; t.style.transform = 'translateX(0)'; let h = ''; for(let i=0; i<80; i++) { const it = BOX_ITEMS[Math.floor(Math.random()*BOX_ITEMS.length)]; h += `<div class="item-card bg-white/5 min-w-[120px] border-r border-white/10"><div class="text-2xl mb-2">🎁</div><p class="text-[9px] font-black uppercase">${it.n}</p></div>`; } t.innerHTML = h; }
 
         function spinCase() {
             const t = document.getElementById('roulette-track');
             const res = BOX_ITEMS[Math.floor(Math.random()*BOX_ITEMS.length)];
             const cards = t.querySelectorAll('.item-card');
-            cards[70].innerHTML = `<div class="text-xl mb-1">👑</div><p class="text-yellow-500 font-black text-[10px]">${res.n}</p>`;
+            cards[70].innerHTML = `<div class="text-3xl mb-2">👑</div><p class="text-yellow-500 font-black text-[12px] uppercase">${res.n}</p>`;
             t.style.transition = 'transform 6s cubic-bezier(0.1, 0, 0, 1)';
-            t.style.transform = `translateX(-${(70 * 100) - window.innerWidth/2 + 50}px)`;
+            t.style.transform = `translateX(-${(70 * 120) - window.innerWidth/2 + 60}px)`;
             document.getElementById('spin-btn').disabled = true;
             setTimeout(() => {
-                confetti(); document.getElementById('case-actions').classList.add('hidden');
+                confetti({particleCount: 200, spread: 90}); 
+                document.getElementById('case-actions').classList.add('hidden');
                 document.getElementById('win-display').classList.remove('hidden');
                 document.getElementById('win-name').innerText = res.n;
-                document.getElementById('claim-btn').onclick = () => window.open(`https://t.me/nmproda?text=Босс, мне выпал ${res.n} в Мистери Боксе! Жду выдачу.`);
+                document.getElementById('claim-btn').onclick = () => window.open(`https://t.me/nmproda?text=Босс, мне выпал ${res.n} в полночном кейсе!`);
             }, 6500);
         }
 
@@ -213,16 +236,16 @@
 
         function initScratch() {
             const c = document.getElementById('scratch-canvas'); const ctx = c.getContext('2d');
-            c.width = 288; c.height = 160; ctx.fillStyle = '#333'; ctx.fillRect(0,0,288,160);
-            ctx.fillStyle = '#FFD700'; ctx.font = '900 12px Montserrat'; ctx.textAlign = 'center'; ctx.fillText('BOSS LUCK', 144, 85);
+            c.width = 320; c.height = 192; ctx.fillStyle = '#222'; ctx.fillRect(0,0,320,192);
+            ctx.fillStyle = '#FFD700'; ctx.font = '900 16px Montserrat'; ctx.textAlign = 'center'; ctx.fillText('BOSS LUCK', 160, 100);
             let active = false;
             const draw = (e) => {
                 if(!active) return; const r = c.getBoundingClientRect();
                 const x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
                 const y = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
-                ctx.globalCompositeOperation = 'destination-out'; ctx.beginPath(); ctx.arc(x,y,20,0,Math.PI*2); ctx.fill();
-                const d = ctx.getImageData(0,0,288,160).data; let t = 0; for(let i=3; i<d.length; i+=4) if(d[i] === 0) t++;
-                if(t > (d.length/4)*0.5) { active = false; c.remove(); state.discount = 2; state.lastScratch = Date.now(); save(); updateCartUI(); confetti(); }
+                ctx.globalCompositeOperation = 'destination-out'; ctx.beginPath(); ctx.arc(x,y,25,0,Math.PI*2); ctx.fill();
+                const d = ctx.getImageData(0,0,320,192).data; let t = 0; for(let i=3; i<d.length; i+=4) if(d[i] === 0) t++;
+                if(t > (d.length/4)*0.5) { active = false; c.remove(); state.discount = 3; state.lastScratch = Date.now(); save(); updateCartUI(); confetti(); }
             };
             c.onmousedown = c.ontouchstart = () => active = true; window.onmouseup = window.ontouchend = () => active = false;
             c.onmousemove = c.ontouchmove = draw;
@@ -232,12 +255,14 @@
             const user = tg.initDataUnsafe.user || {id: '7727345054', username: 'nmproda'};
             let total = 0; const list = state.cart.map(i => { total += i.price; return i.name; }).join(', ');
             const final = Math.floor(total * (1 - state.discount/100));
-            const msg = `Привет! Оплатил(а) ${final}₽ за [${list}]. Мой ID: ${user.id}`;
-            tg.showConfirm(`Перейти к оплате ${final} ₽?`, (ok) => {
+            const msg = `Босс! Оплатил(а) ${final}₽ за [${list}]. Мой ID: ${user.id}`;
+            tg.showConfirm(`Сумма к оплате: ${final} ₽. Оформить?`, (ok) => {
                 if(ok) {
-                    tg.showAlert("Реквизиты:\nСБП: +79501700787\nКарта: 2200701955299232\nПосле оплаты скинь чек менеджеру!");
-                    setTimeout(() => window.open(`https://t.me/nmproda?text=${encodeURIComponent(msg)}`), 2500);
-                    state.totalSpent += final; state.cart = []; save(); nav('shop');
+                    tg.showAlert("Реквизиты:\nСБП: +79501700787 (Т-Банк)\nКарта: 2200 7019 5529 9232\nЮMoney: 4100119121976236\n\nПосле оплаты скинь чек менеджеру!");
+                    setTimeout(() => {
+                        window.open(`https://t.me/nmproda?text=${encodeURIComponent(msg)}`);
+                        state.totalSpent += final; state.cart = []; save(); nav('shop');
+                    }, 3000);
                 }
             });
         }

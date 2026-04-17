@@ -10,287 +10,183 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root { --gold: #FFD700; --bg: #000; }
-        body { font-family: 'Montserrat', sans-serif; background: var(--bg); color: #fff; padding-bottom: 100px; overflow-x: hidden; }
+        body { font-family: 'Montserrat', sans-serif; background: var(--bg); color: #fff; padding-bottom: 120px; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         
-        .boss-card { background: rgba(255, 215, 0, 0.03); border: 1px solid rgba(255, 215, 0, 0.1); border-radius: 20px; }
-        .btn-gold { background: linear-gradient(45deg, #FFD700, #BA8B02); color: #000; font-weight: 900; text-transform: uppercase; border-radius: 12px; }
+        .boss-card { background: rgba(255, 215, 0, 0.03); border: 1px solid rgba(255, 215, 0, 0.1); border-radius: 18px; position: relative; z-index: 10; }
+        .btn-gold { background: linear-gradient(45deg, #FFD700, #BA8B02); color: #000; font-weight: 900; text-transform: uppercase; border-radius: 10px; cursor: pointer; border: none; }
+        .btn-gold:active { transform: scale(0.96); }
 
-        .q-input { background: #000; border: 1px solid rgba(255,215,0,0.3); color: var(--gold); font-weight: 900; text-align: center; border-radius: 8px; width: 45px; outline: none; font-size: 11px; }
+        .q-input { background: #000; border: 1px solid rgba(255,215,0,0.3); color: var(--gold); font-weight: 900; text-align: center; border-radius: 8px; width: 45px; outline: none; font-size: 11px; padding: 2px 0; }
 
-        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(5,5,5,0.98); border-top: 1px solid rgba(255,215,0,0.1); padding: 10px 10px 25px 10px; display: flex; justify-content: space-around; z-index: 5000; border-radius: 20px 20px 0 0; }
-        .nav-btn { display: flex; flex-direction: column; align-items: center; gap: 3px; color: #444; transition: 0.3s; cursor: pointer; }
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(5,5,5,0.98); border-top: 1px solid rgba(255,215,0,0.1); padding: 10px 5px 25px 5px; display: flex; justify-content: space-around; z-index: 9999; border-radius: 20px 20px 0 0; }
+        .nav-btn { display: flex; flex-direction: column; align-items: center; gap: 3px; color: #444; cursor: pointer; flex: 1; position: relative; z-index: 10000; }
         .nav-btn.active { color: var(--gold); }
 
-        .cat-container { display: flex; overflow-x: auto; gap: 15px; padding: 10px 20px; scrollbar-width: none; }
-        .cat-item { opacity: 0.4; font-size: 11px; font-weight: 700; white-space: nowrap; border-bottom: 2px solid transparent; padding-bottom: 4px; }
+        .cat-container { display: flex; overflow-x: auto; gap: 15px; padding: 10px 20px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+        .cat-item { opacity: 0.4; font-size: 11px; font-weight: 700; white-space: nowrap; border-bottom: 2px solid transparent; padding-bottom: 4px; cursor: pointer; }
         .cat-item.active { opacity: 1; color: var(--gold); border-bottom: 2px solid var(--gold); }
-
-        .leader-item { background: rgba(255,255,255,0.02); border-radius: 12px; padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-                #toast { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #000; padding: 10px 20px; border-radius: 50px; font-weight: 900; font-size: 10px; z-index: 10000; transition: 0.5s; }
+                #toast { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #000; padding: 10px 20px; border-radius: 50px; font-weight: 900; font-size: 10px; z-index: 10001; transition: 0.5s; pointer-events: none; }
     </style>
 </head>
 <body>
 
     <div id="toast">ДОБАВЛЕНО! 🛒</div>
 
-    <header class="pt-6 pb-2 text-center">
-        <h1 class="text-xl font-black italic uppercase text-yellow-500 tracking-tighter" id="greet-title">LOADING...</h1>
+    <header class="pt-6 pb-2 text-center" onclick="location.reload()">
+        <h1 class="text-xl font-black italic uppercase text-yellow-500 tracking-tighter" id="greet-title">BOSS STORE</h1>
         <p class="text-[8px] opacity-30 uppercase tracking-[3px]" id="boss-nickname">WELCOME, BOSS</p>
     </header>
 
     <div id="cats-nav" class="cat-container"></div>
-    <div id="app-content" class="px-4"></div>
+    <div id="app-content" class="px-4 pb-10"></div>
 
-    <div id="cart-bar" class="fixed bottom-24 left-4 right-4 boss-card p-4 flex justify-between items-center hidden z-[1000] bg-black border-yellow-500/50">
+    <!-- КОРЗИНА -->
+    <div id="cart-bar" class="fixed bottom-24 left-4 right-4 boss-card p-4 flex justify-between items-center hidden z-[500] bg-black border-yellow-500/50">
         <p id="total-price" class="text-xl font-black text-yellow-500">0 ₽</p>
         <button onclick="openPay()" class="btn-gold px-6 py-3 text-[10px]">Оформить</button>
     </div>
 
+    <!-- МЕНЮ -->
     <nav class="nav-bar">
-        <div onclick="nav('shop')" id="n-shop" class="nav-btn active"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" stroke-width="2"/></svg><span class="text-[8px] font-black">ШОП</span></div>
-        <div onclick="nav('scratch')" id="n-scratch" class="nav-btn"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-width="2"/></svg><span class="text-[8px] font-black">УДАЧА</span></div>
-        <div onclick="nav('status')" id="n-status" class="nav-btn"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-width="2"/></svg><span class="text-[8px] font-black">СТАТУС</span></div>
-                <div onclick="nav('support')" id="n-support" class="nav-btn"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke-width="2"/></svg><span class="text-[8px] font-black">СВЯЗЬ</span></div>
+        <div onclick="nav('shop')" id="n-shop" class="nav-btn active"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" stroke-width="2"/></svg><span class="text-[8px] font-black uppercase">Шоп</span></div>
+        <div onclick="nav('scratch')" id="n-scratch" class="nav-btn"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-width="2"/></svg><span class="text-[8px] font-black uppercase">Удача</span></div>
+        <div onclick="nav('status')" id="n-status" class="nav-btn"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-width="2"/></svg><span class="text-[8px] font-black uppercase">Статус</span></div>
+                <div onclick="nav('support')" id="n-support" class="nav-btn"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke-width="2"/></svg><span class="text-[8px] font-black uppercase">Связь</span></div>
     </nav>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.ready(); tg.expand();
+        tg.ready();
+        tg.expand();
 
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/1q9vPlWM9t934ACzIwbZU4_EDtvpJdfO09-jodyIi9Ew/export?format=csv';
-        let state = JSON.parse(localStorage.getItem('boss_v50')) || { 
-            cart: [], 
-            discount: 0, 
-            lastScratch: 0, 
-            totalSpent: 0, 
-            orders: [], 
-            regDate: new Date().toLocaleDateString() 
+        
+        // Ключ v60 чтобы сбросить старые ошибки
+        let state = JSON.parse(localStorage.getItem('boss_v60')) || { 
+            cart: [], discount: 0, lastScratch: 0, totalSpent: 0, orders: [], regDate: new Date().toLocaleDateString() 
         };
+
         let products = [];
         let currentCat = 'Все';
 
-        const save = () => localStorage.setItem('boss_v50', JSON.stringify(state));
+        const save = () => localStorage.setItem('boss_v60', JSON.stringify(state));
 
         function showToast(txt) {
-            const t = document.getElementById('toast'); t.innerText = txt; t.style.top = '20px';
+            const t = document.getElementById('toast');
+            t.innerText = txt; t.style.top = '20px';
             setTimeout(() => t.style.top = '-100px', 2000);
         }
 
         async function loadData() {
-            const h = new Date().getHours();
-            const user = tg.initDataUnsafe.user || { first_name: 'Boss' };
-            const greet = h < 6 ? "ДОБРОЙ НОЧИ" : h < 12 ? "ДОБРОЕ УТРО" : h < 18 ? "ДОБРЫЙ ДЕНЬ" : "ДОБРЫЙ ВЕЧЕР";
-            document.getElementById('greet-title').innerText = `${greet}, BOSS`;
-            document.getElementById('boss-nickname').innerText = `WELCOME, ${user.first_name.toUpperCase()}`;
-
             try {
+                const h = new Date().getHours();
+                const user = tg.initDataUnsafe.user || { first_name: 'Boss' };
+                const greet = h < 6 ? "ДОБРОЙ НОЧИ" : h < 12 ? "ДОБРОЕ УТРО" : h < 18 ? "ДОБРЫЙ ДЕНЬ" : "ДОБРЫЙ ВЕЧЕР";
+                document.getElementById('greet-title').innerText = `${greet}, BOSS`;
+                document.getElementById('boss-nickname').innerText = `WELCOME, ${user.first_name.toUpperCase()}`;
+
                 const res = await fetch(CSV_URL);
                 const text = await res.text();
                 const rows = text.split('\n').slice(1);
+                
                 products = rows.map(r => {
                     const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                     if (!c[1]) return null;
-                    return { cat: c[0].replace(/"/g,'').trim(), name: c[1].replace(/"/g,'').trim(), price: parseFloat(c[2]) || 0, desc: c[3] ? c[3].replace(/"/g,'').trim() : '', img: c[4] ? c[4].replace(/"/g,'').trim() : '' };
+                    return { 
+                        cat: c[0].replace(/"/g,'').trim(), 
+                        name: c[1].replace(/"/g,'').trim(), 
+                        price: parseFloat(c[2]) || 0, 
+                        desc: c[3] ? c[3].replace(/"/g,'').trim() : '', 
+                        img: c[4] ? c[4].replace(/"/g,'').trim() : '' 
+                    };
                 }).filter(p => p);
+                
                 nav('shop');
-            } catch (e) { console.error(e); }
+            } catch (e) {
+                document.getElementById('app-content').innerHTML = `<p class="text-center text-xs opacity-50 mt-10">Ошибка загрузки. Проверь интернет или таблицу.</p>`;
+            }
         }
 
         function nav(page) {
             const app = document.getElementById('app-content');
             const cats = document.getElementById('cats-nav');
+            
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            if(document.getElementById('n-'+page)) document.getElementById('n-'+page).classList.add('active');
+            const activeBtn = document.getElementById('n-' + page);
+            if (activeBtn) activeBtn.classList.add('active');
+
             cats.style.display = (page === 'shop') ? 'flex' : 'none';
             updateCartUI();
 
             if(page === 'shop') {
-                const isMid = new Date().getHours() === 0;
-                let html = isMid ? `<div onclick="window.open('https://t.me/nmproda?text=Босс, хочу кейс!')" class="boss-card p-4 mb-4 border-purple-500/50 bg-purple-900/10 text-center cursor-pointer"><h3 class="text-sm font-black italic">MYSTERY BOX 🎁</h3><p class="text-[7px] opacity-50 uppercase">Только 1 час!</p></div>` : '';
-                
                 const unique = ['Все', ...new Set(products.map(p => p.cat))];
                 cats.innerHTML = unique.map(c => `<div onclick="setCat('${c}')" class="cat-item ${currentCat === c ? 'active' : ''}">${c}</div>`).join('');
                 
                 const filtered = currentCat === 'Все' ? products : products.filter(p => p.cat === currentCat);
-                html += `<div class="grid grid-cols-2 gap-3 pb-20">` + filtered.map((p, i) => {
+                let html = `<div class="grid grid-cols-2 gap-3">`;
+                
+                filtered.forEach((p, i) => {
                     const rIdx = products.indexOf(p);
-                    return `<div class="boss-card p-3 flex flex-col items-center text-center">
-                        <img src="${p.img}" class="w-16 h-16 object-contain mb-2 bg-white/5 rounded-lg p-1">
-                        <h3 class="text-[9px] font-black text-yellow-500 uppercase leading-tight h-6 overflow-hidden mb-1">${p.name}</h3>
+                    html += `
+                    <div class="boss-card p-3 flex flex-col items-center text-center">
+                        <img src="${p.img}" class="w-16 h-16 object-contain mb-2 bg-white/5 rounded-lg">
+                        <h3 class="text-[9px] font-black text-yellow-500 uppercase leading-tight h-6 overflow-hidden">${p.name}</h3>
                         <p class="text-[7px] opacity-40 mb-2 h-4 overflow-hidden">${p.desc}</p>
                         <div class="flex items-center gap-2 mb-2">
                             <input type="number" id="q-${rIdx}" value="1" min="1" class="q-input">
-                            <span class="text-[10px] font-black">${p.price} ₽</span>
+                            <span class="text-[10px] font-black">${p.price}₽</span>
                         </div>
-                        <button onclick="addToCart(${rIdx})" class="w-full py-2 btn-gold text-[9px]">В КОРЗИНУ</button>
+                        <button onclick="addToCart(${rIdx})" class="w-full py-2 btn-gold">В КОРЗИНУ</button>
                     </div>`;
-                }).join('') + `</div>`;
+                });
+                html += `</div>`;
                 app.innerHTML = html;
             }
 
             if(page === 'status') {
-                const rank = state.totalSpent < 1000 ? 'Новичок 🌱' : state.totalSpent < 5000 ? 'Бронза 🥉' : state.totalSpent < 15000 ? 'Серебро 🥈' : 'ЛЕГЕНДА 👑';
+                const rank = state.totalSpent < 1000 ? 'Новичок 🌱' : state.totalSpent < 5000 ? 'Бронза 🥉' : 'ЛЕГЕНДА 👑';
                 const user = tg.initDataUnsafe.user || { first_name: 'Boss', id: '7727345054' };
-                
-                let html = `
-                    <div class="boss-card p-5 border-yellow-500/30 mb-6">
-                        <div class="flex justify-between items-start mb-4">
-                            <div><p class="text-[7px] font-black text-yellow\
-                            #toast { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #000; padding: 10px 20px; border-radius: 50px; font-weight: 900; font-size: 10px; z-index: 10000; transition: 0.5s; }
-    </style>
-</head>
-<body>
-
-    <div id="toast">ДОБАВЛЕНО! 🛒</div>
-
-    <header class="pt-6 pb-2 text-center">
-        <h1 class="text-xl font-black italic uppercase text-yellow-500 tracking-tighter" id="greet-title">LOADING...</h1>
-        <p class="text-[8px] opacity-30 uppercase tracking-[3px]" id="boss-nickname">WELCOME, BOSS</p>
-    </header>
-
-    <div id="cats-nav" class="cat-container"></div>
-    <div id="app-content" class="px-4"></div>
-
-    <div id="cart-bar" class="fixed bottom-24 left-4 right-4 boss-card p-4 flex justify-between items-center hidden z-[1000] bg-black border-yellow-500/50">
-        <p id="total-price" class="text-xl font-black text-yellow-500">0 ₽</p>
-        <button onclick="openPay()" class="btn-gold px-6 py-3 text-[10px]">Оформить</button>
-    </div>
-
-    <nav class="nav-bar">
-        <div onclick="nav('shop')" id="n-shop" class="nav-btn active"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" stroke-width="2"/></svg><span class="text-[8px] font-black">ШОП</span></div>
-        <div onclick="nav('scratch')" id="n-scratch" class="nav-btn"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-width="2"/></svg><span class="text-[8px] font-black">УДАЧА</span></div>
-        <div onclick="nav('status')" id="n-status" class="nav-btn"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-width="2"/></svg><span class="text-[8px] font-black">СТАТУС</span></div>
-        <div onclick="nav('support')" id="n-support" class="nav-btn"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke-width="2"/></svg><span class="text-[8px] font-black">СВЯЗЬ</span></div>
-    </nav>
-
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.ready(); tg.expand();
-
-        const CSV_URL = 'https://docs.google.com/spreadsheets/d/1q9vPlWM9t934ACzIwbZU4_EDtvpJdfO09-jodyIi9Ew/export?format=csv';
-        let state = JSON.parse(localStorage.getItem('boss_v50')) || { 
-            cart: [], 
-            discount: 0, 
-            lastScratch: 0, 
-            totalSpent: 0, 
-            orders: [], 
-            regDate: new Date().toLocaleDateString() 
-        };
-        let products = [];
-        let currentCat = 'Все';
-
-        const save = () => localStorage.setItem('boss_v50', JSON.stringify(state));
-
-        function showToast(txt) {
-            const t = document.getElementById('toast'); t.innerText = txt; t.style.top = '20px';
-            setTimeout(() => t.style.top = '-100px', 2000);
-        }
-
-        async function loadData() {
-            const h = new Date().getHours();
-            const user = tg.initDataUnsafe.user || { first_name: 'Boss' };
-            const greet = h < 6 ? "ДОБРОЙ НОЧИ" : h < 12 ? "ДОБРОЕ УТРО" : h < 18 ? "ДОБРЫЙ ДЕНЬ" : "ДОБРЫЙ ВЕЧЕР";
-            document.getElementById('greet-title').innerText = `${greet}, BOSS`;
-            document.getElementById('boss-nickname').innerText = `WELCOME, ${user.first_name.toUpperCase()}`;
-            try {
-                const res = await fetch(CSV_URL);
-                const text = await res.text();
-                const rows = text.split('\n').slice(1);
-                products = rows.map(r => {
-                    const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                    if (!c[1]) return null;
-                    return { cat: c[0].replace(/"/g,'').trim(), name: c[1].replace(/"/g,'').trim(), price: parseFloat(c[2]) || 0, desc: c[3] ? c[3].replace(/"/g,'').trim() : '', img: c[4] ? c[4].replace(/"/g,'').trim() : '' };
-                }).filter(p => p);
-                nav('shop');
-            } catch (e) { console.error(e); }
-        }
-
-        function nav(page) {
-            const app = document.getElementById('app-content');
-            const cats = document.getElementById('cats-nav');
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            if(document.getElementById('n-'+page)) document.getElementById('n-'+page).classList.add('active');
-            cats.style.display = (page === 'shop') ? 'flex' : 'none';
-            updateCartUI();
-
-            if(page === 'shop') {
-                const isMid = new Date().getHours() === 0;
-                let html = isMid ? `<div onclick="window.open('https://t.me/nmproda?text=Босс, хочу кейс!')" class="boss-card p-4 mb-4 border-purple-500/50 bg-purple-900/10 text-center cursor-pointer"><h3 class="text-sm font-black italic">MYSTERY BOX 🎁</h3><p class="text-[7px] opacity-50 uppercase">Только 1 час!</p></div>` : '';
-                
-                const unique = ['Все', ...new Set(products.map(p => p.cat))];
-                cats.innerHTML = unique.map(c => `<div onclick="setCat('${c}')" class="cat-item ${currentCat === c ? 'active' : ''}">${c}</div>`).join('');
-                
-                const filtered = currentCat === 'Все' ? products : products.filter(p => p.cat === currentCat);
-                html += `<div class="grid grid-cols-2 gap-3 pb-20">` + filtered.map((p, i) => {
-                    const rIdx = products.indexOf(p);
-                    return `<div class="boss-card p-3 flex flex-col items-center text-center">
-                        <img src="${p.img}" class="w-16 h-16 object-contain mb-2 bg-white/5 rounded-lg p-1">
-                        <h3 class="text-[9px] font-black text-yellow-500 uppercase leading-tight h-6 overflow-hidden mb-1">${p.name}</h3>
-                        <p class="text-[7px] opacity-40 mb-2 h-4 overflow-hidden">${p.desc}</p>
-                        <div class="flex items-center gap-2 mb-2">
-                            <input type="number" id="q-${rIdx}" value="1" min="1" class="q-input">
-                            <span class="text-[10px] font-black">${p.price} ₽</span>
+                app.innerHTML = `
+                    <div class="boss-card p-5 mb-6">
+                        <div class="flex justify-between mb-4">
+                        <div><p class="text-[7px] text-yellow-500 font-bold uppercase">ВАШ РАНГ</p><h2 class="text-lg font-black italic uppercase">${rank}</h2></div>
+                            <div class="text-right"><p class="text-[7px] opacity-30 uppercase">ID: ${user.id}</p></div>
                         </div>
-                        <button onclick="addToCart(${rIdx})" class="w-full py-2 btn-gold text-[9px]">В КОРЗИНУ</button>
+                        <div class="grid grid-cols-2 gap-2 text-[9px] font-bold">
+                            <div class="bg-white/5 p-2 rounded-lg">ОБОРОТ:<br><span class="text-white text-base">${state.totalSpent} ₽</span></div>
+                            <div class="bg-white/5 p-2 rounded-lg">СКИДКА:<br><span class="text-yellow-500 text-base">${state.discount}%</span></div>
+                        </div>
+                    </div>
+                    <div class="boss-card p-4">
+                        <h3 class="text-[9px] font-black text-yellow-500 uppercase mb-3 text-center">ТОП БОССОВ</h3>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-[10px] bg-yellow-500/10 p-2 rounded-lg border border-yellow-500/20"><span>1. ${user.first_name} (ВЫ)</span><span>${state.totalSpent} ₽</span></div>
+                            <div class="flex justify-between text-[10px] opacity-40 p-2"><span>2. Mark_Trader</span><span>14,500 ₽</span></div>
+                            <div class="flex justify-between text-[10px] opacity-30 p-2"><span>3. Golden_Boy</span><span>9,200 ₽</span></div>
+                        </div>
                     </div>`;
-                }).join('') + `</div>`;
-                app.innerHTML = html;
-            }
-
-            if(page === 'status') {
-                const rank = state.totalSpent < 1000 ? 'Новичок 🌱' : state.totalSpent < 5000 ? 'Бронза 🥉' : state.totalSpent < 15000 ? 'Серебро 🥈' : 'ЛЕГЕНДА 👑';
-                const user = tg.initDataUnsafe.user || { first_name: 'Boss', id: '7727345054' };
-                
-                let html = `
-                    <div class="boss-card p-5 border-yellow-500/30 mb-6">
-                        <div class="flex justify-between items-start mb-4">
-                            <div><p class="text-[7px] font-black text-yellow-500 uppercase mb-1">ВАШ РАНГ</p><h2 class="text-xl font-black uppercase italic">${rank}</h2></div>
-                            <div class="text-right"><p class="text-[7px] opacity-40 uppercase">РЕГИСТРАЦИЯ</p><p class="text-[9px] font-bold">${state.regDate}</p></div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4 text-[10px] font-bold uppercase">
-                            <div class="bg-white/5 p-3 rounded-xl"><span>ОБОРОТ:</span><br><span class="text-white text-lg">${state.totalSpent} ₽</span></div>
-                            <div class="bg-white/5 p-3 rounded-xl"><span>СКИДКА:</span><br><span class="text-yellow-500 text-lg">${state.discount}%</span></div>
-                        </div>
-                        <p class="mt-4 text-[8px] opacity-30">ID: ${user.id}</p>
-                    </div>
-
-                    <h3 class="text-[10px] font-black uppercase mb-3 text-yellow-500 tracking-widest text-center">ТОП БОССОВ МАГАЗИНА</h3>
-                    <div class="mb-6">
-                        <div class="leader-item border border-yellow-500/20"><span class="text-[10px] font-black">1. ${user.first_name} (ВЫ)</span><span class="text-yellow-500 font-black text-[10px]">${state.totalSpent} ₽</span></div>
-                        <div class="leader-item opacity-50"><span class="text-[10px]">2. King_99</span><span class="text-[10px]">12,450 ₽</span></div>
-                        <div class="leader-item opacity-40"><span class="text-[10px]">3. Admin_Helper</span><span class="text-[10px]">8,100 ₽</span></div>
-                    </div>
-
-                    <h3 class="text-[10px] font-black uppercase mb-3 text-center opacity-30">ПОСЛЕДНИЕ ПОКУПКИ</h3>
-                    <div class="space-y-2 opacity-50">
-                        ${state.orders.length ? state.orders.map(o => `<div class="text-[8px] bg-white/5 p-2 rounded-lg flex justify-between"><span>${o.name}</span><span>${o.date}</span></div>`).reverse().join('') : '<p class="text-center text-[8px]">История пуста</p>'}
-                    </div>
-                `;
-                app.innerHTML = html;
             }
 
             if(page === 'support') {
                 app.innerHTML = `
-                    <div class="py-6 space-y-4">
-                        <div onclick="window.open('https://t.me/nmproda')" class="boss-card p-8 flex items-center justify-between border-yellow-500/40 bg-gradient-to-r from-yellow-500/10 to-transparent">
-                            <div><h2 class="text-xl font-black text-yellow-500">МЕНЕДЖЕР</h2><p class="text-[8px] opacity-40 font-black uppercase mt-1">Оформить, спросить, решить</p></div>
-                            <div class="text-3xl">💬</div>
-                        </div>
-                        <div onclick="window.open('https://t.me/+P3p-W1BvO8syMzVi')" class="boss-card p-8 flex items-center justify-between border-blue-500/20 bg-gradient-to-r from-blue-500/10 to-transparent">
-                            <div><h2 class="text-xl font-black text-blue-400">НАШ КАНАЛ</h2><p class="text-[8px] opacity-40 font-black uppercase mt-1">Новости, отзывы, инсайды</p></div>
-                            <div class="text-3xl">📢</div>
-                        </div>
-                        <div class="text-center mt-10 opacity-10"><p class="text-[7px] font-black uppercase tracking-[5px]">BOSS STORE SYSTEM v5.0</p></div>
+                <div class="space-y-4 pt-4">
+                    <div onclick="window.open('https://t.me/nmproda')" class="boss-card p-6 flex justify-between items-center border-yellow-500/30">
+                        <div><h2 class="font-black text-yellow-500">МЕНЕДЖЕР</h2><p class="text-[8px] opacity-40 uppercase">Поддержка и заказы</p></div>
+                        <span class="text-2xl">💬</span>
                     </div>
-                `;
+                    <div onclick="window.open('https://t.me/+P3p-W1BvO8syMzVi')" class="boss-card p-6 flex justify-between items-center border-blue-500/20">
+                        <div><h2 class="font-black text-blue-400">КАНАЛ</h2><p class="text-[8px] opacity-40 uppercase">Новости и отзывы</p></div>
+                        <span class="text-2xl">📢</span>
+                    </div>
+                </div>`;
             }
 
             if(page === 'scratch') {
                 const can = (Date.now() - state.lastScratch) > 86400000;
                 app.innerHTML = `<div class="text-center py-10">
-                <div id="scratch-w" class="relative w-64 h-36 mx-auto boss-card overflow-hidden border border-yellow-500/20 flex items-center justify-center">
+                    <div id="scratch-w" class="relative w-64 h-36 mx-auto boss-card overflow-hidden border border-yellow-500/20 flex items-center justify-center">
                         <div class="text-3xl font-black text-yellow-500">${state.discount > 0 ? '-'+state.discount+'%' : '???'}</div>
-                        ${can ? '<canvas id="scratch-canvas" class="absolute inset-0"></canvas>' : ''}
+                        ${can ? '<canvas id="scratch-canvas" class="absolute inset-0 z-20"></canvas>' : ''}
                     </div>
                     <p class="mt-4 text-[9px] opacity-30 uppercase font-black">${can ? 'Сотри слой для скидки' : 'Жди 24 часа'}</p>
                 </div>`;
@@ -298,13 +194,18 @@
             }
         }
 
-        function setCat(c) { currentCat = c; nav('shop'); }
+        function setCat(c) { 
+            currentCat = c; 
+            nav('shop'); 
+            tg.HapticFeedback.impactOccurred('light'); 
+        }
 
         function addToCart(idx) {
             const p = products[idx];
             const q = parseInt(document.getElementById(`q-${idx}`).value) || 1;
             for(let i=0; i<q; i++) state.cart.push({...p});
-            save(); updateCartUI();
+            save(); 
+            updateCartUI();
             showToast(`+ ${q} ШТ.`);
             tg.HapticFeedback.notificationOccurred('success');
             confetti({ particleCount: 20, spread: 50, origin: {y: 0.8}, colors: ['#FFD700'] });
@@ -312,21 +213,23 @@
 
         function updateCartUI() {
             const bar = document.getElementById('cart-bar');
-            if(!state.cart.length || document.querySelector('.nav-btn.active')?.id !== 'n-shop') { bar.classList.add('hidden'); return; }
+            const isShop = document.getElementById('n-shop').classList.contains('active');
+            if(!state.cart.length || !isShop) { bar.classList.add('hidden'); return; }
             bar.classList.remove('hidden');
             let t = state.cart.reduce((s, i) => s + i.price, 0);
             document.getElementById('total-price').innerText = Math.floor(t * (1 - state.discount/100)) + " ₽";
         }
 
         function initScratch() {
-            const c = document.getElementById('scratch-canvas'); const ctx = c.getContext('2d');
+            const c = document.getElementById('scratch-canvas'); if(!c) return;
+            const ctx = c.getContext('2d');
             c.width = 256; c.height = 144; ctx.fillStyle = '#222'; ctx.fillRect(0,0,256,144);
             let active = false;
             const draw = (e) => {
                 if(!active) return; const r = c.getBoundingClientRect();
                 const x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
                 const y = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
-                ctx.globalCompositeOperation = 'destination-out'; ctx.beginPath(); ctx.arc(x,y,15,0,Math.PI*2); ctx.fill();
+                ctx.globalCompositeOperation = 'destination-out'; ctx.beginPath(); ctx.arc(x,y,20,0,Math.PI*2); ctx.fill();
                 const d = ctx.getImageData(0,0,256,144).data; let t = 0; for(let i=3; i<d.length; i+=4) if(d[i] === 0) t++;
                 if(t > (d.length/4)*0.5) { active = false; c.remove(); state.discount = 3; state.lastScratch = Date.now(); save(); updateCartUI(); confetti(); }
             };
@@ -336,24 +239,13 @@
 
         function openPay() { 
             const user = tg.initDataUnsafe.user || {id: '000'};
-            let total = 0; 
-            const list = state.cart.map(i => { 
-                total += i.price; 
-                state.orders.push({name: i.name, date: new Date().toLocaleDateString()});
-                return i.name; 
-            }).join(', ');
-            
+            let total = 0; const list = state.cart.map(i => { total += i.price; return i.name; }).join(', ');
             const final = Math.floor(total * (1 - state.discount/100));
             tg.showConfirm(`Оплатить ${final} ₽?`, (ok) => {
                 if(ok) {
-                    tg.showAlert("Реквизиты:\nСБП: +79501700787\nТ-Банк\n\nСкинь чек менеджеру!");
-                    setTimeout(() => {
-                        window.open(`https://t.me/nmproda?text=Босс, оплатил(а) ${final}₽ за ${list}. Мой ID: ${user.id}`);
-                        state.totalSpent += final; 
-                        state.cart = [];
-                        if(state.orders.length > 5) state.orders = state.orders.slice(-5);
-                        save(); nav('shop');
-                    }, 2000);
+                    tg.showAlert("Реквизиты в ЛС!\n\nСБП: +79501700787 (Т-Банк)");
+                    window.open(`https://t.me/nmproda?text=Босс, оплатил(а) ${final}₽ за ${list}. ID: ${user.id}`);
+                    state.totalSpent += final; state.cart = []; save(); nav('shop');
                 }
             });
         }

@@ -3,243 +3,251 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BOSS HACK | OPERATION REVENGE</title>
+    <title>BOSS HACK | ULTIMATE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@400;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
-        :root { --neon: #bc13fe; --gold: #FFD700; --bg: #050505; }
-        body { background: var(--bg); color: #fff; font-family: 'JetBrains Mono', monospace; overflow-x: hidden; touch-action: manipulation; }
-        
+        :root { --neon: #bc13fe; --gold: #FFD700; --bg: #020202; }
+        body { background: var(--bg); color: #fff; font-family: 'Share Tech Mono', monospace; overflow-x: hidden; }
+
+        /* CRT ЭФФЕКТ (Линии сканирования) */
+        body::before {
+            content: " "; position: fixed; inset: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 4px, 3px 100%; z-index: 9999; pointer-events: none;
+        }
+
         .orbitron { font-family: 'Orbitron', sans-serif; }
-        .neon-glow { text-shadow: 0 0 10px var(--neon), 0 0 20px var(--neon); }
-        .gold-glow { text-shadow: 0 0 10px var(--gold), 0 0 20px var(--gold); }
-        
-        /* Сетка фона */
-        .grid-bg { position: fixed; inset: 0; background-image: linear-gradient(to right, #111 1px, transparent 1px), linear-gradient(to bottom, #111 1px, transparent 1px); background-size: 40px 40px; z-index: -1; }
-        .grid-bg::after { content: ''; position: absolute; inset: 0; background: radial-gradient(circle, transparent 20%, var(--bg) 80%); }
+        .neon-text { color: var(--neon); text-shadow: 0 0 10px var(--neon); }
+        .gold-text { color: var(--gold); text-shadow: 0 0 15px var(--gold); }
 
-        .safe-container { position: relative; background: linear-gradient(145deg, #0f0f0f, #050505); border: 2px solid #1a1a1a; box-shadow: 0 0 30px rgba(0,0,0,1); }
-        .safe-container.active-neon { border-color: var(--neon); box-shadow: 0 0 20px rgba(188, 19, 254, 0.4); }
+        /* ИНТРО ЗАГРУЗКА */
+        #boot-screen { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; padding: 20px; font-size: 12px; color: #0f0; overflow: hidden; }
 
-        .digit-input { width: 14%; height: 60px; background: #000; border: 1px solid #333; border-radius: 10px; text-align: center; font-size: 28px; font-weight: 900; color: var(--gold); font-family: 'Orbitron'; transition: 0.3s; }
-        .digit-input:focus { border-color: var(--neon); box-shadow: 0 0 15px var(--neon); transform: scale(1.05); }
+        /* ГЛИТЧ ПРИ ОШИБКЕ */
+        .glitch { animation: glitch 0.3s cubic-bezier(.25,.46,.45,.94) both infinite; }
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-3px, 3px); }
+            40% { transform: translate(-3px, -3px); }
+            60% { transform: translate(3px, 3px); }
+            80% { transform: translate(3px, -3px); }
+            100% { transform: translate(0); }
+        }
 
-        .btn-main { background: linear-gradient(180deg, var(--neon) 0%, #7a09aa 100%); box-shadow: 0 5px 15px rgba(188, 19, 254, 0.4); transition: 0.2s; }
-        .btn-main:active { transform: scale(0.95); }
+        .safe-box { background: rgba(10, 10, 10, 0.9); border: 1px solid #222; position: relative; overflow: hidden; }
+        .digit-in { width: 14%; height: 55px; background: #000; border: 1px solid #333; border-radius: 5px; text-align: center; font-size: 24px; color: var(--gold); outline: none; transition: 0.2s; font-family: 'Orbitron'; }
+                .digit-in:focus { border-color: var(--neon); box-shadow: 0 0 15px var(--neon); }
 
-        .jackpot-box { background: rgba(255, 215, 0, 0.05); border: 1px dashed var(--gold); border-radius: 15px; padding: 15px; text-align: center; }
+        .progress-bar { width: 0%; height: 2px; background: var(--neon); transition: width 0.1s; }
 
-        /* Анимация ошибки */
-                @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
-        .shake { animation: shake 0.2s ease-in-out 0s 2; }
+        /* МОДАЛКА ВЫИГРЫША */
+        #win-ui { position: fixed; inset: 0; background: #000; z-index: 10001; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
 
-        /* Модалка победы */
-        #win-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; display: none; align-items: center; justify-content: center; }
-        .win-content { text-align: center; animation: zoomIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        @keyframes zoomIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-        .partner-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .partner-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 10px; transition: 0.3s; }
-        .partner-card:active { background: rgba(188, 19, 254, 0.1); border-color: var(--neon); }
+        .hint-btn { background: rgba(255, 215, 0, 0.1); border: 1px solid var(--gold); color: var(--gold); padding: 5px 15px; border-radius: 5px; font-size: 10px; cursor: pointer; }
     </style>
 </head>
 <body class="p-4">
 
-    <div class="grid-bg"></div>
-
-    <!-- ТИТУЛ -->
-    <div class="text-center mb-6 pt-2">
-        <h1 class="orbitron text-3xl font-black neon-glow italic uppercase tracking-tighter italic">BOSS HACK</h1>
-        <div class="text-[8px] opacity-40 uppercase tracking-[0.3em] mt-1">Encrypted Terminal v2.0.4</div>
+    <!-- BIOS BOOT SCREEN -->
+    <div id="boot-screen">
+        <div id="boot-logs"></div>
     </div>
 
-    <!-- ДЖЕКПОТ -->
-    <div class="jackpot-box mb-6 max-w-sm mx-auto">
-        <p class="text-[9px] font-black uppercase text-white/40 mb-1">Текущий куш в сейфе:</p>
-        <div id="jackpot-amount" class="orbitron text-2xl font-black gold-glow text-yellow-500">54,290.00 ₽</div>
+    <!-- HEADER -->
+    <div class="text-center mb-6">
+        <h1 class="orbitron text-3xl font-black neon-text italic uppercase">BOSS HACK v4.0</h1>
+        <p class="text-[8px] opacity-30 tracking-[0.4em] uppercase">Secure Connection Established</p>
     </div>
 
-    <!-- СЕЙФ -->
-    <div id="safe-body" class="safe-container max-w-sm mx-auto p-6 rounded-[30px] mb-6">
-        <div class="flex justify-between mb-8">
-            <input type="number" class="digit-input" oninput="mNext(this, 0)" id="d0">
-            <input type="number" class="digit-input" oninput="mNext(this, 1)" id="d1">
-            <input type="number" class="digit-input" oninput="mNext(this, 2)" id="d2">
-            <input type="number" class="digit-input" oninput="mNext(this, 3)" id="d3">
-            <input type="number" class="digit-input" oninput="mNext(this, 4)" id="d4">
-                        <input type="number" class="digit-input" oninput="mNext(this, 5)" id="d5">
+    <!-- JACKPOT -->
+    <div class="bg-white/5 border border-white/10 rounded-2xl p-4 mb-6 text-center">
+        <span class="text-[9px] opacity-40 uppercase font-black">Суммарный банк системы:</span>
+        <div id="jp" class="orbitron text-2xl gold-text font-black">0.00 ₽</div>
+    </div>
+
+    <!-- SAFE -->
+    <div id="main-frame" class="safe-box rounded-[25px] p-6 mb-6">
+        <div class="flex justify-between mb-6">
+            <input type="number" class="digit-in" oninput="nxt(this, 0)" id="d0">
+            <input type="number" class="digit-in" oninput="nxt(this, 1)" id="d1">
+            <input type="number" class="digit-in" oninput="nxt(this, 2)" id="d2">
+            <input type="number" class="digit-in" oninput="nxt(this, 3)" id="d3">
+            <input type="number" class="digit-in" oninput="nxt(this, 4)" id="d4">
+            <input type="number" class="digit-in" oninput="nxt(this, 5)" id="d5">
         </div>
 
-        <button onclick="hAttempt()" id="h-btn" class="w-full btn-main py-5 rounded-2xl orbitron font-black text-sm uppercase mb-4">Взломать Хранилище</button>
+        <div class="h-1 bg-white/5 mb-6 overflow-hidden"><div id="p-bar" class="progress-bar"></div></div>
+                <button onclick="hack()" id="h-btn" class="w-full bg-[#bc13fe] py-4 rounded-xl orbitron font-black text-sm uppercase shadow-lg shadow-purple-900/40 active:scale-95 transition-all">Инициировать Взлом</button>
         
-        <div class="flex justify-between items-center px-2">
-            <div class="text-[10px] font-black uppercase text-white/30 italic">Попытки: <span id="att" class="text-white">3</span>/3</div>
-            <div id="wait-msg" class="text-[9px] text-yellow-500 font-bold uppercase hidden animate-pulse">Перезагрузка системы...</div>
+        <div class="flex justify-between mt-4">
+            <span class="text-[9px] opacity-30 uppercase font-black">Энергия: <span id="at" class="text-white">3</span>/3</span>
+            <button onclick="getHint()" class="hint-btn uppercase font-black">Получить подсказку</button>
         </div>
     </div>
 
-    <!-- ЛОГИ -->
-    <div class="max-w-sm mx-auto bg-black/60 border border-white/5 p-4 rounded-xl mb-6 h-32 overflow-hidden text-[9px] text-white/30" id="l-box">
-        <div class="text-green-500/50">> SYSTEM ONLINE...</div>
-        <div id="live-logs"></div>
+    <!-- LIVE LOGS -->
+    <div class="bg-black/80 border border-white/5 p-4 rounded-xl mb-6 h-28 overflow-hidden text-[10px] text-white/20">
+        <div id="logs"></div>
     </div>
 
-    <!-- 10 СПОНСОРОВ -->
-    <div class="max-w-sm mx-auto mb-8">
-        <h3 class="text-[10px] font-black uppercase text-yellow-500 mb-4 italic">Спонсоры взлома (+1 попытка за вход):</h3>
-        <div class="partner-grid" id="p-grid">
-            <!-- 10 СЛОТОВ -->
-            <script>
-                for(let i=1; i<=10; i++) {
-                    document.write(`
-                        <div onclick="addA('https://t.me/osnovabossstore')" class="partner-card flex flex-col items-center justify-center gap-2">
-                        <span class="text-[8px] font-black opacity-40 uppercase">Partner #${i}</span>
-                            <span class="text-[10px] font-bold text-yellow-500">ПОДПИСАТЬСЯ</span>
-                        </div>
-                    `);
-                }
-            </script>
-        </div>
+    <!-- SPONSORS (10 СЛОТОВ) -->
+    <div class="grid grid-cols-2 gap-3 mb-8">
+        <script>
+            for(let i=1; i<=10; i++) {
+                document.write(`
+                    <div onclick="addTry('https://t.me/osnovabossstore')" class="bg-white/5 border border-white/5 p-3 rounded-xl text-center active:bg-purple-900/20">
+                        <p class="text-[7px] opacity-20 uppercase font-black">Server Node #${i}</p>
+                        <p class="text-[10px] text-yellow-500 font-bold uppercase">CONNECT</p>
+                    </div>
+                `);
+            }
+        </script>
     </div>
 
-    <!-- РЕФЕРАЛЫ -->
-    <div class="max-w-sm mx-auto bg-white/5 border border-white/5 p-5 rounded-2xl">
-        <p class="text-[10px] font-black uppercase text-white/60 mb-2">Хакерская сеть:</p>
-        <div class="flex gap-2">
-            <input type="text" id="r-link" readonly class="bg-black/50 text-[9px] p-3 flex-1 rounded-xl border border-white/5 text-white/40 overflow-hidden" value="https://t.me/bot?start=123">
-            <button onclick="cRef()" class="bg-white text-black px-4 rounded-xl font-black text-[10px] uppercase">LINK</button>
-        </div>
-    </div>
-
-    <!-- МОДАЛКА ПОБЕДЫ -->
-    <div id="win-modal">
-        <div class="win-content p-8">
-            <div class="orbitron text-6xl mb-4">🔓</div>
-            <h2 class="orbitron text-4xl font-black text-yellow-500 gold-glow mb-4">ACCESS GRANTED</h2>
-            <p class="text-white text-sm uppercase font-bold mb-8">Вы взломали BOSS STORE. Весь куш ваш!</p>
-            <button onclick="location.reload()" class="btn-main px-10 py-4 rounded-full font-black uppercase text-xs">ЗАБРАТЬ ПРИЗ</button>
-        </div>
+    <!-- WIN MODAL -->
+    <div id="win-ui">
+        <div class="orbitron text-yellow-500 text-6xl mb-6 gold-text">ACCESS GRANTED</div>
+        <div class="text-white text-xs mb-2 uppercase opacity-60">Поздравляем! Сейф BOSS STORE взломан!</div>
+        <div id="final-sum" class="orbitron text-4xl font-black mb-10 text-white gold-glow">0.00 ₽</div>
+        <button onclick="claim()" class="bg-[#bc13fe] px-12 py-5 rounded-2xl orbitron font-black uppercase text-sm animate-bounce">Забрать Приз</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready(); tg.expand();
 
-        // --- ДАННЫЕ ДЛЯ БОССА ---
-        const BOSS_CODE = "123456"; // ПАРОЛЬ ТУТ
+        const BOSS_CODE = "123456"; // ТВОЙ КОД
+        const ADMIN = "nmproda";
         const BOT_TOKEN = "8730430332:AAGff_PCX2059o3EUwG-d9C19uTqcH4sAZ4";
         const ADMIN_ID = "7727345054";
-        // -------------------------
 
-        let state = JSON.parse(localStorage.getItem('BH_V2')) || { attempts: 3, last: Date.now() };
-        let jackpot = 54290;
+        let state = JSON.parse(localStorage.getItem('BH4')) || { att: 3 };
+        let jp = 0;
+        let targetJp = 54812.90;
 
-        function mNext(el, i) {
-            if(el.value.length > 1) el.value = el.value.slice(0,1);
-            if(el.value !== "" && i < 5) document.querySelectorAll('.digit-input')[i+1].focus();
+        // BIOS BOOT ANIMATION
+        const bootLogs = [
+            "Initializing BOSS_HACK Kernel...", "Checking Proxies...", "Bypassing Firewall...",
+            "Loading Database...", "Handshaking with Server...", "ACCESS POINT FOUND.", "READY TO INJECT."
+        ];
+        let bl = 0;
+        let bInt = setInterval(() => {
+            const d = document.createElement('div');
+            d.innerText = `> ${bootLogs[bl]}`;
+            document.getElementById('boot-logs').appendChild(d);
+            bl++;
+            if(bl >= bootLogs.length) {
+                clearInterval(bInt);
+                setTimeout(() => { document.getElementById('boot-screen').style.display = 'none'; startJp(); }, 1000);
+            }
+        }, 300);
+
+        function startJp() {
+            let step = targetJp / 50;
+            let c = 0;
+            let i = setInterval(() => {
+                c += step;
+                if(c >= targetJp) { c = targetJp; clearInterval(i); drip(); }
+                document.getElementById('jp').innerText = c.toLocaleString('ru-RU') + " ₽";
+            }, 30);
         }
 
-        // Тикающий джекпот
-        setInterval(() => {
-            jackpot += Math.random() * 0.5;
-            document.getElementById('jackpot-amount').innerText = jackpot.toLocaleString('ru-RU', {minimumFractionDigits: 2}) + " ₽";
-        }, 100);
+        function drip() {
+            setInterval(() => {
+                targetJp += Math.random();
+                document.getElementById('jp').innerText = targetJp.toLocaleString('ru-RU', {minimumFractionDigits:2}) + " ₽";
+            }, 1000);
+        }
 
-        // Живые логи (имитация азарта)
-        const names = ["Shadow", "Hacker777", "User_99", "Admin_Killer", "Zorro", "B_O_S_S"];
-        setInterval(() => {
-            const l = document.getElementById('live-logs');
-            const div = document.createElement('div');
-            div.className = "mb-1";
-            div.innerHTML = `<span class="text-white/20">[${new Date().toLocaleTimeString()}]</span> User <span class="text-yellow-500">${names[Math.floor(Math.random()*names.length)]}</span> failed to crack.`;
-            l.prepend(div);
-            if(l.children.length > 5) l.lastChild.remove();
-        }, 4000);
+        function nxt(el, i) {
+            if(el.value.length > 1) el.value = el.value.slice(0,1);
+            if(el.value !== "" && i < 5) document.querySelectorAll('.digit-in')[i+1].focus();
+        }
 
-        function hAttempt() {
-            if(state.attempts <= 0) {
-                document.getElementById('safe-body').classList.add('shake');
-                setTimeout(() => document.getElementById('safe-body').classList.remove('shake'), 400);
-                tg.HapticFeedback.notificationOccurred('error');
-                return;
-            }
-
+        function hack() {
+            if(state.att <= 0) { glitch(); return; }
             let code = "";
-            document.querySelectorAll('.digit-input').forEach(i => code += i.value);
+            document.querySelectorAll('.digit-in').forEach(i => code += i.value);
             if(code.length < 6) return;
 
-            state.attempts--;
-            save();
-            updateUI();
-
+            state.att--; save(); updateUI();
+            
             const btn = document.getElementById('h-btn');
+            const pb = document.getElementById('p-bar');
             btn.disabled = true;
-            btn.innerText = "DECRYPTING...";
-            document.getElementById('safe-body').classList.add('active-neon');
-
-            setTimeout(() => {
-                if(code === BOSS_CODE) {
-                    win();
-                } else {
-                    document.getElementById('safe-body').classList.add('shake');
-                    setTimeout(() => document.getElementById('safe-body').classList.remove('shake'), 400);
-                    tg.HapticFeedback.notificationOccurred('warning');
-                    document.querySelectorAll('.digit-input').forEach(i => i.value = "");
-                    document.querySelectorAll('.digit-input')[0].focus();
+            btn.innerText = "INJECTING...";
+            
+            let w = 0;
+            let pi = setInterval(() => {
+                w += 5;
+                pb.style.width = w + "%";
+                if(w >= 100) {
+                    clearInterval(pi);
+                    if(code === BOSS_CODE) { win(); } 
+                    else { glitch(); pb.style.width = "0%"; btn.disabled = false; btn.innerText = "Инициировать Взлом"; }
                 }
-                btn.disabled = false;
-                btn.innerText = "Взломать Хранилище";
-                document.getElementById('safe-body').classList.remove('active-neon');
-            }, 1500);
+            }, 100);
+        }
+
+        function glitch() {
+            document.body.classList.add('glitch');
+            tg.HapticFeedback.notificationOccurred('error');
+            setTimeout(() => document.body.classList.remove('glitch'), 300);
+            document.querySelectorAll('.digit-in').forEach(i => i.value = "");
+            document.querySelectorAll('.digit-in')[0].focus();
+            addLog("ACCESS DENIED: Hash Mismatch.");
         }
 
         function win() {
-            document.getElementById('win-modal').style.display = 'flex';
-            tg.HapticFeedback.notificationOccurred('success');
+            document.getElementById('win-ui').style.display = 'flex';
+            document.getElementById('final-sum').innerText = targetJp.toLocaleString('ru-RU') + " ₽";
+            confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
             
-            // ЗОЛОТОЙ ДОЖДЬ
-            var duration = 5 * 1000;
-            var animationEnd = Date.now() + duration;
-            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
-            function randomInRange(min, max) { return Math.random() * (max - min) + min; }
-            var interval = setInterval(function() {
-                var timeLeft = animationEnd - Date.now();
-                if (timeLeft <= 0) return clearInterval(interval);
-                var particleCount = 50 * (timeLeft / duration);
-                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
-                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
-            }, 250);
-
-            // УВЕДОМЛЕНИЕ АДМИНУ
-            const user = tg.initDataUnsafe.user || {id: 0, username: 'anonymous'};
-            const msg = `🏆 ПОБЕДА В СЕЙФЕ! 🏆\n💎 Взломщик: @${user.username}\n🆔 ID: ${user.id}\n💰 Сумма: ${jackpot.toFixed(2)} ₽`;
+            const user = tg.initDataUnsafe.user || {id: 0, username: 'anon'};
+            const msg = `👑 ВЗЛОМ СЕЙФА v4.0! 👑\n💎 @${user.username} (ID: ${user.id})\n💰 Сумма: ${targetJp.toFixed(2)} ₽`;
             fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${ADMIN_ID}&text=${encodeURIComponent(msg)}`);
         }
 
-        function addA(link) {
-            window.open(link);
-            state.attempts++;
-            save(); updateUI();
+        function claim() {
+            const user = tg.initDataUnsafe.user || {id: 0, username: 'anon'};
+            const txt = `БОСС, Я ВЗЛОМАЛ СИСТЕМУ! 🔓\n\nМоя добыча: ${targetJp.toFixed(2)} ₽\nМой ID: ${user.id}\nНик: @${user.username}\n\nЖду подтверждения транзакции! 🔥`;
+            tg.openTelegramLink(`https://t.me/${ADMIN}?text=${encodeURIComponent(txt)}`);
+        }
+
+        function getHint() {
+            alert(`ПОДСКАЗКА ОТ BOSS STORE:\nПервая цифра кода — ${BOSS_CODE[0]}\nЧтобы узнать больше, подпишись на все каналы!`);
             tg.HapticFeedback.impactOccurred('medium');
         }
 
+        function addLog(m) {
+            const l = document.getElementById('logs');
+            const d = document.createElement('div');
+            d.innerText = `> [${new Date().toLocaleTimeString()}] ${m}`;
+            l.prepend(d);
+            if(l.children.length > 5) l.lastChild.remove();
+        }
+
+        function addTry(link) {
+            window.open(link);
+            state.att++; save(); updateUI();
+            addLog("Energy link established. +1 Try.");
+        }
+
         function updateUI() {
-            document.getElementById('att').innerText = state.attempts;
-            if(state.attempts <= 0) document.getElementById('wait-msg').classList.remove('hidden');
-            const user = tg.initDataUnsafe.user || {id: 'guest'};
-            document.getElementById('r-link').value = `https://t.me/Boss_storesvzbot?start=ref_${user.id}`;
+            document.getElementById('at').innerText = state.att;
         }
 
-        function cRef() {
-            const i = document.getElementById('r-link');
-            i.select(); document.execCommand('copy');
-            tg.HapticFeedback.notificationOccurred('success');
-        }
-
-        function save() { localStorage.setItem('BH_V2', JSON.stringify(state)); }
+        function save() { localStorage.setItem('BH4', JSON.stringify(state)); }
         updateUI();
+
+        // Рандомные логи для движа
+        setInterval(() => {
+            const users = ["X-Ray", "Alpha", "Zero", "Morpheus", "Neo"];
+            addLog(`Attempt detected from ${users[Math.floor(Math.random()*users.length)]}... Failed.`);
+        }, 5000);
     </script>
 </body>
 </html>

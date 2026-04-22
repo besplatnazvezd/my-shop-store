@@ -117,7 +117,7 @@
         tg.ready(); tg.expand();
 
         // --- НАСТРОЙКИ БОССА ---
-        const BOSS_CODE = "123456"; 
+        const BOSS_CODE = "270320"; 
         const ADMIN_USER = "nmproda"; 
         const ADMIN_ID = "7727345054";
         const BOT_TOKEN = "8730430332:AAGff_PCX2059o3EUwG-d9C19uTqcH4sAZ4";
@@ -137,7 +137,7 @@
         ];
 
         let state = JSON.parse(localStorage.getItem('BOSS_V5_DATA')) || { att: 3, lastD: new Date().toDateString(), total: 0 };
-        let prize = 1500;
+        let prize = 1000;
         let isRunning = false;
 
         // ПРОВЕРКА ОБНОВЛЕНИЯ
@@ -177,7 +177,7 @@
                 prize -= 0.85; // Скорость уменьшения денег
                 if(prize <= 0) { prize = 0; isRunning = false; }
                 document.getElementById('prize-display').innerText = prize.toFixed(2) + " ₽";
-                document.getElementById('prize-bar').style.width = (prize / 1500 * 100) + "%";
+                document.getElementById('prize-bar').style.width = (prize / 1000 * 100) + "%";
             }, 1000);
         }
 

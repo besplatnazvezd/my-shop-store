@@ -2,197 +2,244 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BOSS HACK | OPERATION REVENGE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@400;800&display=swap" rel="stylesheet">
     <style>
-        :root { --neon: #bc13fe; --gold: #FFD700; }
-        body { background: #050505; color: #fff; font-family: 'JetBrains Mono', monospace; overflow-x: hidden; }
-        .neon-border { border: 1px solid var(--neon); box-shadow: 0 0 15px rgba(188, 19, 254, 0.3); }
-        .neon-text { color: var(--neon); text-shadow: 0 0 10px var(--neon); }
-        .btn-hack { background: var(--neon); color: #fff; font-weight: 800; transition: 0.3s; }
-        .btn-hack:disabled { opacity: 0.3; cursor: not-allowed; }
-        .digit-input { width: 45px; height: 60px; background: #111; border: 2px solid #222; border-radius: 8px; text-align: center; font-size: 24px; font-weight: 900; color: var(--gold); outline: none; }
-        .digit-input:focus { border-color: var(--neon); box-shadow: 0 0 10px var(--neon); }
-        .log-box { height: 120px; overflow-y: auto; font-size: 10px; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px; color: #555; }
-        @keyframes scan { 0% { top: 0%; } 100% { top: 100%; } }
-        .scanner { position: absolute; width: 100%; height: 2px; background: var(--neon); box-shadow: 0 0 15px var(--neon); animation: scan 3s linear infinite; z-index: 10; pointer-events: none; }
+        :root { --neon: #bc13fe; --gold: #FFD700; --bg: #050505; }
+        body { background: var(--bg); color: #fff; font-family: 'JetBrains Mono', monospace; overflow-x: hidden; touch-action: manipulation; }
+        
+        .orbitron { font-family: 'Orbitron', sans-serif; }
+        .neon-glow { text-shadow: 0 0 10px var(--neon), 0 0 20px var(--neon); }
+        .gold-glow { text-shadow: 0 0 10px var(--gold), 0 0 20px var(--gold); }
+        
+        /* Сетка фона */
+        .grid-bg { position: fixed; inset: 0; background-image: linear-gradient(to right, #111 1px, transparent 1px), linear-gradient(to bottom, #111 1px, transparent 1px); background-size: 40px 40px; z-index: -1; }
+        .grid-bg::after { content: ''; position: absolute; inset: 0; background: radial-gradient(circle, transparent 20%, var(--bg) 80%); }
+
+        .safe-container { position: relative; background: linear-gradient(145deg, #0f0f0f, #050505); border: 2px solid #1a1a1a; box-shadow: 0 0 30px rgba(0,0,0,1); }
+        .safe-container.active-neon { border-color: var(--neon); box-shadow: 0 0 20px rgba(188, 19, 254, 0.4); }
+
+        .digit-input { width: 14%; height: 60px; background: #000; border: 1px solid #333; border-radius: 10px; text-align: center; font-size: 28px; font-weight: 900; color: var(--gold); font-family: 'Orbitron'; transition: 0.3s; }
+        .digit-input:focus { border-color: var(--neon); box-shadow: 0 0 15px var(--neon); transform: scale(1.05); }
+
+        .btn-main { background: linear-gradient(180deg, var(--neon) 0%, #7a09aa 100%); box-shadow: 0 5px 15px rgba(188, 19, 254, 0.4); transition: 0.2s; }
+        .btn-main:active { transform: scale(0.95); }
+
+        .jackpot-box { background: rgba(255, 215, 0, 0.05); border: 1px dashed var(--gold); border-radius: 15px; padding: 15px; text-align: center; }
+
+        /* Анимация ошибки */
+                @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+        .shake { animation: shake 0.2s ease-in-out 0s 2; }
+
+        /* Модалка победы */
+        #win-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; display: none; align-items: center; justify-content: center; }
+        .win-content { text-align: center; animation: zoomIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes zoomIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        .partner-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .partner-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 10px; transition: 0.3s; }
+        .partner-card:active { background: rgba(188, 19, 254, 0.1); border-color: var(--neon); }
     </style>
 </head>
 <body class="p-4">
 
-    <div class="scanner"></div>
+    <div class="grid-bg"></div>
 
-    <!-- HEADER -->
-    <div class="text-center mb-8 pt-4">
-        <h1 class="text-2xl font-black italic italic neon-text uppercase">BOSS HACK</h1>
-        <p class="text-[9px] opacity-50 uppercase tracking-widest">System Status: Protected by 128-bit Encryption</p>
+    <!-- ТИТУЛ -->
+    <div class="text-center mb-6 pt-2">
+        <h1 class="orbitron text-3xl font-black neon-glow italic uppercase tracking-tighter italic">BOSS HACK</h1>
+        <div class="text-[8px] opacity-40 uppercase tracking-[0.3em] mt-1">Encrypted Terminal v2.0.4</div>
     </div>
 
-    <!-- SAFE DISPLAY -->
-    <div class="relative max-w-sm mx-auto neon-border bg-[#0d0d0d] p-6 rounded-3xl mb-6">
-        <div class="flex justify-between mb-8" id="input-group">
-            <input type="number" maxlength="1" class="digit-input" oninput="moveNext(this, 0)">
-            <input type="number" maxlength="1" class="digit-input" oninput="moveNext(this, 1)">
-            <input type="number" maxlength="1" class="digit-input" oninput="moveNext(this, 2)">
-                        <input type="number" maxlength="1" class="digit-input" oninput="moveNext(this, 3)">
-            <input type="number" maxlength="1" class="digit-input" oninput="moveNext(this, 4)">
-            <input type="number" maxlength="1" class="digit-input" oninput="moveNext(this, 5)">
+    <!-- ДЖЕКПОТ -->
+    <div class="jackpot-box mb-6 max-w-sm mx-auto">
+        <p class="text-[9px] font-black uppercase text-white/40 mb-1">Текущий куш в сейфе:</p>
+        <div id="jackpot-amount" class="orbitron text-2xl font-black gold-glow text-yellow-500">54,290.00 ₽</div>
+    </div>
+
+    <!-- СЕЙФ -->
+    <div id="safe-body" class="safe-container max-w-sm mx-auto p-6 rounded-[30px] mb-6">
+        <div class="flex justify-between mb-8">
+            <input type="number" class="digit-input" oninput="mNext(this, 0)" id="d0">
+            <input type="number" class="digit-input" oninput="mNext(this, 1)" id="d1">
+            <input type="number" class="digit-input" oninput="mNext(this, 2)" id="d2">
+            <input type="number" class="digit-input" oninput="mNext(this, 3)" id="d3">
+            <input type="number" class="digit-input" oninput="mNext(this, 4)" id="d4">
+                        <input type="number" class="digit-input" oninput="mNext(this, 5)" id="d5">
         </div>
 
-        <button onclick="tryHack()" id="hack-btn" class="w-full btn-hack py-4 rounded-xl uppercase tracking-tighter mb-4">Взломать Сейф</button>
+        <button onclick="hAttempt()" id="h-btn" class="w-full btn-main py-5 rounded-2xl orbitron font-black text-sm uppercase mb-4">Взломать Хранилище</button>
         
-        <div class="flex justify-between text-[10px] font-bold uppercase">
-            <span>Попытки: <span id="att-count" class="text-white">3</span>/3</span>
-            <span id="timer" class="text-yellow-500 hidden">Сброс через 24ч</span>
+        <div class="flex justify-between items-center px-2">
+            <div class="text-[10px] font-black uppercase text-white/30 italic">Попытки: <span id="att" class="text-white">3</span>/3</div>
+            <div id="wait-msg" class="text-[9px] text-yellow-500 font-bold uppercase hidden animate-pulse">Перезагрузка системы...</div>
         </div>
     </div>
 
-    <!-- LOGS -->
-    <div class="max-w-sm mx-auto log-box mb-6" id="logs">
-        <div>[SYSTEM]: Инициализация протоколов...</div>
-        <div>[SYSTEM]: Подключение к BOSS STORE... OK</div>
+    <!-- ЛОГИ -->
+    <div class="max-w-sm mx-auto bg-black/60 border border-white/5 p-4 rounded-xl mb-6 h-32 overflow-hidden text-[9px] text-white/30" id="l-box">
+        <div class="text-green-500/50">> SYSTEM ONLINE...</div>
+        <div id="live-logs"></div>
     </div>
 
-    <!-- AD & PARTNERS -->
+    <!-- 10 СПОНСОРОВ -->
     <div class="max-w-sm mx-auto mb-8">
-        <h3 class="text-[10px] font-black uppercase text-yellow-500 mb-3 italic">Спонсоры взлома (Подпишись для бонуса):</h3>
-        <div class="space-y-2">
-            <!-- РЕКЛАМА ТУТ -->
-            <div class="flex justify-between items-center bg-white/5 p-3 rounded-xl border border-white/5">
-                <span class="text-[10px] font-bold uppercase">BOSS CHANNEL</span>
-                <button onclick="openPartner('https://t.me/osnovabossstore')" class="text-[10px] bg-yellow-500 text-black px-3 py-1 rounded-lg font-black">+1 ШАНС</button>
-            </div>
-             <div class="flex justify-between items-center bg-white/5 p-3 rounded-xl border border-white/5">
-                <span class="text-[10px] font-bold uppercase">ADMIN CHAT</span>
-                <button onclick="openPartner('https://t.me/nmproda')" class="text-[10px] bg-yellow-500 text-black px-3 py-1 rounded-lg font-black">+1 ШАНС</button>
-            </div>
+        <h3 class="text-[10px] font-black uppercase text-yellow-500 mb-4 italic">Спонсоры взлома (+1 попытка за вход):</h3>
+        <div class="partner-grid" id="p-grid">
+            <!-- 10 СЛОТОВ -->
+            <script>
+                for(let i=1; i<=10; i++) {
+                    document.write(`
+                        <div onclick="addA('https://t.me/osnovabossstore')" class="partner-card flex flex-col items-center justify-center gap-2">
+                        <span class="text-[8px] font-black opacity-40 uppercase">Partner #${i}</span>
+                            <span class="text-[10px] font-bold text-yellow-500">ПОДПИСАТЬСЯ</span>
+                        </div>
+                    `);
+                }
+            </script>
         </div>
     </div>
 
-    <!-- REF SYSTEM -->
-    <div class="max-w-sm mx-auto neon-border p-4 rounded-2xl bg-white/5">
-        <h3 class="text-[10px] font-black uppercase mb-2 italic">Хакерская сеть (Рефералы):</h3>
-                <p class="text-[8px] opacity-50 mb-3 uppercase">За каждого друга — 1 попытка взлома!</p>
+    <!-- РЕФЕРАЛЫ -->
+    <div class="max-w-sm mx-auto bg-white/5 border border-white/5 p-5 rounded-2xl">
+        <p class="text-[10px] font-black uppercase text-white/60 mb-2">Хакерская сеть:</p>
         <div class="flex gap-2">
-            <input type="text" id="ref-link" readonly class="text-[9px] bg-black border border-white/10 p-2 flex-1 rounded-lg" value="https://boss-hack.ru/?ref=123">
-            <button onclick="copyRef()" class="bg-white text-black px-4 py-2 rounded-lg font-black text-[9px] uppercase">Копировать</button>
+            <input type="text" id="r-link" readonly class="bg-black/50 text-[9px] p-3 flex-1 rounded-xl border border-white/5 text-white/40 overflow-hidden" value="https://t.me/bot?start=123">
+            <button onclick="cRef()" class="bg-white text-black px-4 rounded-xl font-black text-[10px] uppercase">LINK</button>
+        </div>
+    </div>
+
+    <!-- МОДАЛКА ПОБЕДЫ -->
+    <div id="win-modal">
+        <div class="win-content p-8">
+            <div class="orbitron text-6xl mb-4">🔓</div>
+            <h2 class="orbitron text-4xl font-black text-yellow-500 gold-glow mb-4">ACCESS GRANTED</h2>
+            <p class="text-white text-sm uppercase font-bold mb-8">Вы взломали BOSS STORE. Весь куш ваш!</p>
+            <button onclick="location.reload()" class="btn-main px-10 py-4 rounded-full font-black uppercase text-xs">ЗАБРАТЬ ПРИЗ</button>
         </div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.ready();
+        tg.ready(); tg.expand();
 
-        // --- НАСТРОЙКИ ДЛЯ БОССА ---
-        const BOSS_CODE = "716302"; // МЕНЯЙ КОД ТУТ
+        // --- ДАННЫЕ ДЛЯ БОССА ---
+        const BOSS_CODE = "123456"; // ПАРОЛЬ ТУТ
         const BOT_TOKEN = "8730430332:AAGff_PCX2059o3EUwG-d9C19uTqcH4sAZ4";
         const ADMIN_ID = "7727345054";
-        // ---------------------------
+        // -------------------------
 
-        let state = JSON.parse(localStorage.getItem('BOSS_HACK_STATE')) || {
-            attempts: 3,
-            lastReset: Date.now(),
-            totalHacks: 0
-        };
+        let state = JSON.parse(localStorage.getItem('BH_V2')) || { attempts: 3, last: Date.now() };
+        let jackpot = 54290;
 
-        function moveNext(el, idx) {
+        function mNext(el, i) {
             if(el.value.length > 1) el.value = el.value.slice(0,1);
-            if(el.value !== "" && idx < 5) {
-                document.querySelectorAll('.digit-input')[idx+1].focus();
-            }
+            if(el.value !== "" && i < 5) document.querySelectorAll('.digit-input')[i+1].focus();
         }
 
-        function addLog(msg) {
-            const logs = document.getElementById('logs');
+        // Тикающий джекпот
+        setInterval(() => {
+            jackpot += Math.random() * 0.5;
+            document.getElementById('jackpot-amount').innerText = jackpot.toLocaleString('ru-RU', {minimumFractionDigits: 2}) + " ₽";
+        }, 100);
+
+        // Живые логи (имитация азарта)
+        const names = ["Shadow", "Hacker777", "User_99", "Admin_Killer", "Zorro", "B_O_S_S"];
+        setInterval(() => {
+            const l = document.getElementById('live-logs');
             const div = document.createElement('div');
-            div.innerText = `[${new Date().toLocaleTimeString()}]: ${msg}`;
-            logs.prepend(div);
-        }
+            div.className = "mb-1";
+            div.innerHTML = `<span class="text-white/20">[${new Date().toLocaleTimeString()}]</span> User <span class="text-yellow-500">${names[Math.floor(Math.random()*names.length)]}</span> failed to crack.`;
+            l.prepend(div);
+            if(l.children.length > 5) l.lastChild.remove();
+        }, 4000);
 
-        async function tryHack() {
+        function hAttempt() {
             if(state.attempts <= 0) {
-                addLog("ОШИБКА: Нет энергии для взлома!");
+                document.getElementById('safe-body').classList.add('shake');
+                setTimeout(() => document.getElementById('safe-body').classList.remove('shake'), 400);
+                tg.HapticFeedback.notificationOccurred('error');
                 return;
             }
 
-            const inputs = document.querySelectorAll('.digit-input');
             let code = "";
-            inputs.forEach(i => code += i.value);
-
-            if(code.length < 6) {
-                addLog("ОШИБКА: Введите 6 цифр!");
-                return;
-            }
+            document.querySelectorAll('.digit-input').forEach(i => code += i.value);
+            if(code.length < 6) return;
 
             state.attempts--;
             save();
             updateUI();
 
-            addLog(`Инициализация взлома кода ${code}...`);
-            
-            // Реалистичная задержка
-            const btn = document.getElementById('hack-btn');
+            const btn = document.getElementById('h-btn');
             btn.disabled = true;
             btn.innerText = "DECRYPTING...";
+            document.getElementById('safe-body').classList.add('active-neon');
 
-            setTimeout(async () => {
+            setTimeout(() => {
                 if(code === BOSS_CODE) {
-                    addLog("ДОСТУП РАЗРЕШЕН! СЕЙФ ОТКРЫТ!");
-                    tg.HapticFeedback.notificationOccurred('success');
-                    alert("ВЫ ВЗЛОМАЛИ СЕЙФ! СКРИНШОТ В ЛС АДМИНУ!");
-                    
-                    // Уведомление Боссу
-                    const user = tg.initDataUnsafe.user || {id: 0, username: 'unknown'};
-                    const msg = `💎 КТО-ТО ВЗЛОМАЛ СЕЙФ! 💎\nКод: ${code}\nЮзер: @${user.username}\nID: ${user.id}`;
-                    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${ADMIN_ID}&text=${encodeURIComponent(msg)}`);
+                    win();
                 } else {
-                    addLog("ОШИБКА: Неверный код. Система заблокирована.");
-                    tg.HapticFeedback.notificationOccurred('error');
-                    inputs.forEach(i => i.value = "");
-                    inputs[0].focus();
+                    document.getElementById('safe-body').classList.add('shake');
+                    setTimeout(() => document.getElementById('safe-body').classList.remove('shake'), 400);
+                    tg.HapticFeedback.notificationOccurred('warning');
+                    document.querySelectorAll('.digit-input').forEach(i => i.value = "");
+                    document.querySelectorAll('.digit-input')[0].focus();
                 }
                 btn.disabled = false;
-                btn.innerText = "Взломать Сейф";
-            }, 2000);
+                btn.innerText = "Взломать Хранилище";
+                document.getElementById('safe-body').classList.remove('active-neon');
+            }, 1500);
         }
 
-        function openPartner(link) {
+        function win() {
+            document.getElementById('win-modal').style.display = 'flex';
+            tg.HapticFeedback.notificationOccurred('success');
+            
+            // ЗОЛОТОЙ ДОЖДЬ
+            var duration = 5 * 1000;
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+            function randomInRange(min, max) { return Math.random() * (max - min) + min; }
+            var interval = setInterval(function() {
+                var timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) return clearInterval(interval);
+                var particleCount = 50 * (timeLeft / duration);
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
+
+            // УВЕДОМЛЕНИЕ АДМИНУ
+            const user = tg.initDataUnsafe.user || {id: 0, username: 'anonymous'};
+            const msg = `🏆 ПОБЕДА В СЕЙФЕ! 🏆\n💎 Взломщик: @${user.username}\n🆔 ID: ${user.id}\n💰 Сумма: ${jackpot.toFixed(2)} ₽`;
+            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${ADMIN_ID}&text=${encodeURIComponent(msg)}`);
+        }
+
+        function addA(link) {
             window.open(link);
-            addLog("Проверка подписки... Шанс добавлен!");
             state.attempts++;
-            save();
-            updateUI();
+            save(); updateUI();
+            tg.HapticFeedback.impactOccurred('medium');
         }
 
         function updateUI() {
-            document.getElementById('att-count').innerText = state.attempts;
-            // Сброс через 24 часа
-            const now = Date.now();
-            if(now - state.lastReset > 86400000) {
-                state.attempts = 3;
-                state.lastReset = now;
-                save();
-            }
-            // Генерация реф ссылки
+            document.getElementById('att').innerText = state.attempts;
+            if(state.attempts <= 0) document.getElementById('wait-msg').classList.remove('hidden');
             const user = tg.initDataUnsafe.user || {id: 'guest'};
-            document.getElementById('ref-link').value = `https://t.me/Boss_storesvzbot?start=ref_${user.id}`;
+            document.getElementById('r-link').value = `https://t.me/Boss_storesvzbot?start=ref_${user.id}`;
         }
 
-        function copyRef() {
-            const input = document.getElementById('ref-link');
-            input.select();
-            document.execCommand('copy');
-            tg.HapticFeedback.impactOccurred('medium');
-            alert("Ссылка скопирована!");
+        function cRef() {
+            const i = document.getElementById('r-link');
+            i.select(); document.execCommand('copy');
+            tg.HapticFeedback.notificationOccurred('success');
         }
 
-        function save() { localStorage.setItem('BOSS_HACK_STATE', JSON.stringify(state)); }
-        
+        function save() { localStorage.setItem('BH_V2', JSON.stringify(state)); }
         updateUI();
-        addLog("Система готова к дешифровке.");
     </script>
 </body>
 </html>

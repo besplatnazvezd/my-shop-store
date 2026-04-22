@@ -3,105 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BOSS HACK | TIME ATTACK V4.0</title>
+    <title>BOSS HACK V5.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
-        :root { --neon: #bc13fe; --gold: #FFD700; --bg: #020202; }
-        body { background: var(--bg); color: #fff; font-family: 'Share Tech Mono', monospace; overflow: hidden; }
+        :root { --neon: #bc13fe; --gold: #FFD700; --bg: #050505; }
+        body { background: var(--bg); color: #fff; font-family: 'Share Tech Mono', monospace; margin: 0; padding: 0; overflow-x: hidden; }
         
         /* CRT Эффект */
-        body::before {
+        body::after {
             content: " "; position: fixed; inset: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-            background-size: 100% 3px, 2px 100%; z-index: 999; pointer-events: none;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
+            background-size: 100% 3px, 3px 100%; z-index: 999; pointer-events: none;
         }
 
         .neon-text { color: var(--neon); text-shadow: 0 0 10px var(--neon); }
         .gold-text { color: var(--gold); text-shadow: 0 0 15px var(--gold); }
         
-        .tab-btn { padding: 10px; border-bottom: 2px solid transparent; transition: 0.3s; font-size: 10px; font-weight: 800; opacity: 0.5; }
-        .tab-btn.active { border-color: var(--neon); opacity: 1; color: var(--neon); }
+        .tab-btn { padding: 12px; opacity: 0.4; font-size: 11px; font-weight: 800; border-bottom: 2px solid transparent; transition: 0.3s; }
+        .tab-btn.active { opacity: 1; color: var(--neon); border-bottom-color: var(--neon); }
 
-        .digit-in { width: 14%; height: 50px; background: #000; border: 1px solid #333; border-radius: 8px; text-align: center; font-size: 22px; color: var(--gold); font-family: 'Orbitron'; outline: none; }
+        .digit-in { width: 14%; height: 50px; background: #111; border: 1px solid #333; border-radius: 8px; text-align: center; font-size: 22px; color: var(--gold); font-family: 'Orbitron'; outline: none; }
         .digit-in:focus { border-color: var(--neon); box-shadow: 0 0 10px var(--neon); }
 
-        #win-ui { position: fixed; inset: 0; background: #000; z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; }
-        .glitch { animation: gl 0.2s infinite; }
-        @keyframes gl { 0% { transform: translate(0); } 50% { transform: translate(-2px, 2px); } 100% { transform: translate(2px, -2px); } }
+        #boot-screen { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: monospace; color: #0f0; }
 
-        #boot-screen { position: fixed; inset: 0; background: #000; z-index: 5000; padding: 20px; font-size: 10px; color: #0f0; }
+        .channel-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; max-height: 300px; overflow-y: auto; padding-right: 5px; }
+        .channel-grid::-webkit-scrollbar { width: 3px; }
+        .channel-grid::-webkit-scrollbar-thumb { background: var(--neon); }
+                #win-ui { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
     </style>
 </head>
 <body class="p-4">
 
-    <!-- ЗАГРУЗКА -->
-    <div id="boot-screen"></div>
+    <!-- ЗАГРУЗОЧНЫЙ ЭКРАН -->
+    <div id="boot-screen">
+        <div class="text-xl mb-2">LOADING BOSS HACK V5.0...</div>
+        <div id="boot-status" class="text-[10px] opacity-50">INITIALIZING KERNEL</div>
+    </div>
 
-    <!-- НАВИГАЦИЯ -->
+    <!-- ОСНОВНОЙ КОНТЕНТ (СКРЫТ ИЗНАЧАЛЬНО) -->
+    <div id="app-content" style="display: none;">
+        
+        <!-- НАВИГАЦИЯ -->
         <div class="flex justify-around mb-6 border-b border-white/5">
-        <button onclick="showPage('terminal')" id="t-btn" class="tab-btn active uppercase tracking-widest italic">Терминал</button>
-        <button onclick="showPage('stats')" id="s-btn" class="tab-btn uppercase tracking-widest italic">Статистика</button>
+            <button onclick="switchTab('term')" id="tab-term" class="tab-btn active uppercase tracking-widest">ТЕРМИНАЛ</button>
+            <button onclick="switchTab('stat')" id="tab-stat" class="tab-btn uppercase tracking-widest">СТАТИСТИКА</button>
+        </div>
+
+        <!-- ТЕРМИНАЛ -->
+        <div id="page-term">
+            <div class="text-center mb-6">
+                <h1 class="orbitron text-2xl font-black neon-text uppercase italic">BOSS HACK V5.0</h1>
+                <p class="text-[9px] opacity-30 uppercase tracking-[0.2em]">System Version: 5.0.1 Stable</p>
+            </div>
+
+            <!-- ТАЮЩИЙ КУШ -->
+            <div class="bg-white/5 border border-white/10 rounded-2xl p-5 mb-6 text-center relative overflow-hidden">
+                <p class="text-[10px] opacity-40 uppercase font-black mb-1">Доступный куш (Уменьшается):</p>
+                <div id="prize-display" class="orbitron text-3xl font-black gold-text italic">1500.00 ₽</div>
+                <div id="prize-bar" class="absolute bottom-0 left-0 h-[2px] bg-red-600 transition-all duration-1000" style="width: 100%"></div>
+            </div>
+
+            <!-- ВВОД -->
+            <div class="bg-[#0a0a0a] border border-white/5 p-6 rounded-[25px] mb-6">
+                <div class="flex justify-between mb-6">
+                    <input type="number" class="digit-in" oninput="nxt(this, 0)" id="d0">
+                    <input type="number" class="digit-in" oninput="nxt(this, 1)" id="d1">
+                                        <input type="number" class="digit-in" oninput="nxt(this, 2)" id="d2">
+                    <input type="number" class="digit-in" oninput="nxt(this, 3)" id="d3">
+                    <input type="number" class="digit-in" oninput="nxt(this, 4)" id="d4">
+                    <input type="number" class="digit-in" oninput="nxt(this, 5)" id="d5">
+                </div>
+                <button onclick="tryHack()" id="h-btn" class="w-full bg-[#bc13fe] py-4 rounded-xl font-black text-sm uppercase shadow-lg shadow-purple-900/40">Взломать Хранилище</button>
+                <div class="text-[9px] mt-4 opacity-40 uppercase font-black">Доступные попытки: <span id="att-count" class="text-white">3</span>/3</div>
+            </div>
+
+            <!-- 20 КАНАЛОВ -->
+            <div class="mb-4 text-[10px] font-black gold-text uppercase italic">Спонсоры (+1 попытка):</div>
+            <div class="channel-grid" id="channels-list"></div>
+        </div>
+
+        <!-- СТАТИСТИКА -->
+        <div id="page-stat" class="hidden">
+            <h2 class="text-center orbitron text-xl font-black gold-text mb-8 uppercase">ДАННЫЕ ВЗЛОМА</h2>
+            <div class="space-y-4">
+                <div class="bg-white/5 p-5 rounded-2xl border border-white/5">
+                    <p class="text-[10px] opacity-30 uppercase mb-1">Твои взломы сегодня:</p>
+                    <p id="stat-attempts" class="text-3xl font-black neon-text italic">0</p>
+                </div>
+                <div class="bg-white/5 p-5 rounded-2xl border border-white/5">
+                    <p class="text-[10px] opacity-30 uppercase mb-1">Статус сервера:</p>
+                    <p class="text-[10px] text-green-500 font-black uppercase">ONLINE - DAILY RESET ACTIVE</p>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <!-- ТЕРМИНАЛ -->
-    <div id="terminal-page">
-        <div class="text-center mb-6">
-            <h1 class="font-black text-2xl neon-text uppercase italic">BOSS HACK 5.0</h1>
-            <p class="text-[8px] opacity-30 uppercase">Time Sensitive Decryption</p>
-        </div>
-
-        <!-- КУШ КОТОРЫЙ ТАЕТ -->
-        <div class="bg-white/5 border border-white/10 rounded-2xl p-4 mb-6 text-center relative overflow-hidden">
-            <div class="text-[9px] opacity-40 uppercase font-black mb-1">Остаток в сейфе (уменьшается):</div>
-            <div id="timer-prize" class="text-3xl font-black gold-text font-['Orbitron']">1500.00 ₽</div>
-            <div class="absolute bottom-0 left-0 h-[2px] bg-red-500 transition-all duration-1000" id="time-bar" style="width: 100%"></div>
-        </div>
-
-        <!-- ВВОД КОДА -->
-        <div class="bg-[#0a0a0a] border border-white/5 p-6 rounded-[25px] mb-6">
-            <div class="flex justify-between mb-6">
-                <input type="number" class="digit-in" oninput="nxt(this, 0)" id="d0">
-                <input type="number" class="digit-in" oninput="nxt(this, 1)" id="d1">
-                <input type="number" class="digit-in" oninput="nxt(this, 2)" id="d2">
-                <input type="number" class="digit-in" oninput="nxt(this, 3)" id="d3">
-                <input type="number" class="digit-in" oninput="nxt(this, 4)" id="d4">
-                <input type="number" class="digit-in" oninput="nxt(this, 5)" id="d5">
-            </div>
-            <button onclick="hack()" id="h-btn" class="w-full bg-[#bc13fe] py-4 rounded-xl font-black text-sm uppercase shadow-lg shadow-purple-900/40 active:scale-95 transition-all">Взломать Хранилище</button>
-            <div class="text-[9px] mt-4 opacity-40 uppercase font-black">Доступная Энергия: <span id="at" class="text-white">3</span>/3</div>
-        </div>
-                <!-- КАНАЛЫ (10 ШТУК) -->
-        <div class="grid grid-cols-2 gap-2 mb-8" id="channels-box"></div>
-    </div>
-
-    <!-- СТАТИСТИКА -->
-    <div id="stats-page" class="hidden">
-        <h2 class="text-center font-black gold-text uppercase mb-6">Анализ Системы</h2>
-        <div class="space-y-4">
-            <div class="bg-white/5 p-4 rounded-xl border border-white/10">
-                <p class="text-[10px] opacity-40 uppercase">Всего попыток (Глобально):</p>
-                <p class="text-2xl font-black italic italic uppercase">1,482,903</p>
-            </div>
-            <div class="bg-white/5 p-4 rounded-xl border border-white/10">
-                <p class="text-[10px] opacity-40 uppercase">Твои попытки за сегодня:</p>
-                <p id="my-attempts" class="text-2xl font-black italic italic uppercase neon-text">0</p>
-            </div>
-            <div class="bg-white/5 p-4 rounded-xl border border-white/10">
-                <p class="text-[10px] opacity-40 uppercase">Статус обновления:</p>
-                <p class="text-[10px] text-green-500 uppercase font-black italic">Ежедневный сброс активен (00:00 МСК)</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- WIN MODAL -->
+    <!-- ОКНО ПОБЕДЫ -->
     <div id="win-ui">
-        <h2 class="text-yellow-500 text-5xl font-black gold-text mb-4 italic italic">UNLOCKED</h2>
-        <p class="text-xs uppercase mb-8">Вы успели забрать:</p>
-        <div id="final-prize" class="text-4xl font-black mb-10 text-white italic italic">0.00 ₽</div>
-        <button onclick="claim()" class="bg-[#bc13fe] px-12 py-5 rounded-2xl font-black uppercase text-sm animate-bounce">Получить Выплату</button>
+        <div class="orbitron text-yellow-500 text-6xl mb-4 gold-text italic">🔓</div>
+        <h2 class="orbitron text-3xl font-black gold-text mb-2 uppercase">ВЗЛОМАНО!</h2>
+        <p class="text-[10px] uppercase opacity-60 mb-8">Вы успели вытащить из сейфа:</p>
+        <div id="win-amount" class="orbitron text-5xl font-black text-white mb-12">0.00 ₽</div>
+        <button onclick="claimPrize()" class="bg-[#bc13fe] px-12 py-5 rounded-2xl orbitron font-black uppercase text-sm animate-pulse">Забрать Приз</button>
     </div>
 
     <script>
@@ -114,68 +122,62 @@
         const ADMIN_ID = "7727345054";
         const BOT_TOKEN = "8730430332:AAGff_PCX2059o3EUwG-d9C19uTqcH4sAZ4";
 
-        // РЕДАКТИРУЙ КАНАЛЫ ТУТ
+        // РЕДАКТИРУЙ КАНАЛЫ ТУТ (20 ШТУК)
         const CHANNELS = [
-            { name: "BOSS CHANNEL", url: "https://t.me/osnovabossstore" },
-            { name: "ADMIN LITS", url: "https://t.me/nmproda" },
-            { name: "PROMO SLOT #3", url: "https://t.me/osnovabossstore" },
-            { name: "PROMO SLOT #4", url: "https://t.me/osnovabossstore" },
-            { name: "PROMO SLOT #5", url: "https://t.me/osnovabossstore" },
-            { name: "PROMO SLOT #6", url: "https://t.me/osnovabossstore" },
-            { name: "PROMO SLOT #7", url: "https://t.me/osnovabossstore" },
-            { name: "PROMO SLOT #8", url: "https://t.me/osnovabossstore" },
-            { name: "PROMO SLOT #9", url: "https://t.me/osnovabossstore" },
-            { name: "PROMO SLOT #10", url: "https://t.me/osnovabossstore" }
+            { n: "BOSS CH", u: "https://t.me/osnovabossstore" }, { n: "ADMIN", u: "https://t.me/nmproda" },
+            { n: "SLOT #3", u: "https://t.me/osnovabossstore" }, { n: "SLOT #4", u: "https://t.me/osnovabossstore" },
+            { n: "SLOT #5", u: "https://t.me/osnovabossstore" }, { n: "SLOT #6", u: "https://t.me/osnovabossstore" },
+            { n: "SLOT #7", u: "https://t.me/osnovabossstore" }, { n: "SLOT #8", u: "https://t.me/osnovabossstore" },
+            { n: "SLOT #9", u: "https://t.me/osnovabossstore" }, { n: "SLOT #10", u: "https://t.me/osnovabossstore" },
+            { n: "SLOT #11", u: "https://t.me/osnovabossstore" }, { n: "SLOT #12", u: "https://t.me/osnovabossstore" },
+            { n: "SLOT #13", u: "https://t.me/osnovabossstore" }, { n: "SLOT #14", u: "https://t.me/osnovabossstore" },
+            { n: "SLOT #15", u: "https://t.me/osnovabossstore" }, { n: "SLOT #16", u: "https://t.me/osnovabossstore" },
+            { n: "SLOT #17", u: "https://t.me/osnovabossstore" }, { n: "SLOT #18", u: "https://t.me/osnovabossstore" },
+            { n: "SLOT #19", u: "https://t.me/osnovabossstore" }, { n: "SLOT #20", u: "https://t.me/osnovabossstore" }
         ];
 
-        let state = JSON.parse(localStorage.getItem('BH5_DATA')) || { 
-            att: 3, 
-            lastDate: new Date().toLocaleDateString(),
-            totalDone: 0 
-        };
-
+        let state = JSON.parse(localStorage.getItem('BOSS_V5_DATA')) || { att: 3, lastD: new Date().toDateString(), total: 0 };
         let prize = 1500;
-        let gameActive = false;
+        let isRunning = false;
 
-        // ПРОВЕРКА ЕЖЕДНЕВНОГО ОБНОВЛЕНИЯ
-        if(state.lastDate !== new Date().toLocaleDateString()) {
+        // ПРОВЕРКА ОБНОВЛЕНИЯ
+        if(state.lastD !== new Date().toDateString()) {
             state.att = 3;
-            state.lastDate = new Date().toLocaleDateString();
+            state.lastD = new Date().toDateString();
             save();
         }
 
-        // РИСУЕМ КАНАЛЫ
-        const cBox = document.getElementById('channels-box');
+        // РЕНДЕР КАНАЛОВ
+        const grid = document.getElementById('channels-list');
         CHANNELS.forEach(c => {
-            cBox.innerHTML += `
-                <div onclick="addTry('${c.url}')" class="bg-white/5 border border-white/5 p-3 rounded-xl text-center active:bg-purple-900/40">
-                    <p class="text-[9px] text-yellow-500 font-bold uppercase">${c.name}</p>
+            grid.innerHTML += `
+                <div onclick="addA('${c.u}')" class="bg-white/5 border border-white/5 p-3 rounded-xl text-center active:bg-purple-900/30 transition-all">
+                    <p class="text-[9px] font-black text-yellow-500 uppercase truncate">${c.n}</p>
                     <p class="text-[6px] opacity-30 uppercase">+1 ШАНС</p>
                 </div>
             `;
         });
 
-        // BIOS BOOT
-        const boot = document.getElementById('boot-screen');
-        const lines = ["> INITIALIZING KERNEL...", "> CHECKING DATE...", "> RECOVERY ATTEMPTS...", "> READY."];
-        let l = 0;
-        let bi = setInterval(() => {
-            boot.innerHTML += `<div>${lines[l]}</div>`;
-            l++;
-            if(l >= lines.length) {
-                clearInterval(bi);
-                setTimeout(() => { boot.style.display = 'none'; startGame(); }, 800);
-            }
-        }, 300);
+        // ЗАПУСК (Убираем черный экран)
+        window.onload = () => {
+            setTimeout(() => {
+                document.getElementById('boot-status').innerText = "HANDSHAKE OK";
+                setTimeout(() => {
+                    document.getElementById('boot-screen').style.display = 'none';
+                    document.getElementById('app-content').style.display = 'block';
+                    startTimer();
+                }, 800);
+            }, 1000);
+        };
 
-        function startGame() {
-            gameActive = true;
-            let timer = setInterval(() => {
-                if(!gameActive) { clearInterval(timer); return; }
-                prize -= 0.75; // Скорость убывания
-                if(prize <= 0) { prize = 0; gameActive = false; }
-                document.getElementById('timer-prize').innerText = prize.toFixed(2) + " ₽";
-                document.getElementById('time-bar').style.width = (prize / 1500 * 100) + "%";
+        function startTimer() {
+            isRunning = true;
+            let tick = setInterval(() => {
+                if(!isRunning) { clearInterval(tick); return; }
+                prize -= 0.85; // Скорость уменьшения денег
+                if(prize <= 0) { prize = 0; isRunning = false; }
+                document.getElementById('prize-display').innerText = prize.toFixed(2) + " ₽";
+                document.getElementById('prize-bar').style.width = (prize / 1500 * 100) + "%";
             }, 1000);
         }
 
@@ -184,72 +186,67 @@
             if(el.value !== "" && i < 5) document.querySelectorAll('.digit-in')[i+1].focus();
         }
 
-        function hack() {
-            if(state.att <= 0) { glitch(); return; }
+        function tryHack() {
+            if(state.att <= 0) {
+                tg.HapticFeedback.notificationOccurred('error');
+                alert("Энергия на нуле! Подпишись на спонсоров выше.");
+                return;
+            }
+
             let code = "";
-            document.querySelectorAll('.digit-in').forEach\
-             
-(i => code += i.value);
+            document.querySelectorAll('.digit-in').forEach(i => code += i.value);
             if(code.length < 6) return;
 
-            state.att--; 
-            state.totalDone++;
-            save(); updateUI();
-
+            state.att--; state.total++; save(); updateUI();
+            
             const btn = document.getElementById('h-btn');
             btn.disabled = true;
-            btn.innerText = "CRACKING...";
+            btn.innerText = "DECRYPTING...";
 
             setTimeout(() => {
-                if(code === BOSS_CODE) { win(); } 
-                else { glitch(); btn.disabled = false; btn.innerText = "Взломать Хранилище"; }
-            }, 1200);
+                if(code === BOSS_CODE) { 
+                    isRunning = false;
+                    document.getElementById('win-ui').style.display = 'flex';
+                    document.getElementById('win-amount').innerText = prize.toFixed(2) + " ₽";
+                    confetti({ particleCount: 200, spread: 80, origin: { y: 0.6 } });
+                    
+                    const user = tg.initDataUnsafe.user || {id: 0, username: 'anon'};
+                    const msg = `🏆 ВЗЛОМ BOSS HACK V5.0! 🏆\n👤 @${user.username}\n💰 Сумма: ${prize.toFixed(2)} ₽`;
+                    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${ADMIN_ID}&text=${encodeURIComponent(msg)}`);
+                } else {
+                    tg.HapticFeedback.notificationOccurred('warning');
+                    btn.disabled = false;
+                    btn.innerText = "Взломать Хранилище";
+                    document.querySelectorAll('.digit-in').forEach(i => i.value = "");
+                    document.querySelectorAll('.digit-in')[0].focus();
+                }
+            }, 1500);
         }
 
-        function glitch() {
-            document.body.classList.add('glitch');
-            tg.HapticFeedback.notificationOccurred('error');
-            setTimeout(() => document.body.classList.remove('glitch'), 300);
-            document.querySelectorAll('.digit-in').forEach(i => i.value = "");
-            document.querySelectorAll('.digit-in')[0].focus();
-        }
-
-        function win() {
-            gameActive = false;
-            document.getElementById('win-ui').style.display = 'flex';
-            document.getElementById('final-prize').innerText = prize.toFixed(2) + " ₽";
-            confetti({ particleCount: 200, spread: 80, origin: { y: 0.6 } });
-            
-            const user = tg.initDataUnsafe.user || {id: 0, username: 'unknown'};
-            const msg = `💰 ВЗЛОМ v5.0! 💰\n👤 Юзер: @${user.username}\n💵 Сумма: ${prize.toFixed(2)} ₽\n🔑 Код: ${BOSS_CODE}`;
-            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${ADMIN_ID}&text=${encodeURIComponent(msg)}`);
-        }
-
-        function claim() {
-            const user = tg.initDataUnsafe.user || {id: 0, username: 'unknown'};
-            const text = `БОСС! Я успел взломать сейф! 🔥\nСумма: ${prize.toFixed(2)} ₽\nМой ID: ${user.id}\nНик: @${user.username}`;
+        function claimPrize() {
+            const user = tg.initDataUnsafe.user || {id: 0, username: 'anon'};
+            const text = `БОСС! Я взломал BOSS HACK V5.0! 🔓\n\nМой куш: ${prize.toFixed(2)} ₽\nМой ID: ${user.id}\nНик: @${user.username}`;
             tg.openTelegramLink(`https://t.me/${ADMIN_USER}?text=${encodeURIComponent(text)}`);
         }
 
-        function showPage(p) {
-            document.getElementById('terminal-page').classList.toggle('hidden', p !== 'terminal');
-            document.getElementById('stats-page').classList.toggle('hidden', p !== 'stats');
-            document.getElementById('t-btn').classList.toggle('active', p === 'terminal');
-            document.getElementById('s-btn').classList.toggle('active', p === 'stats');
+        function switchTab(t) {
+            document.getElementById('page-term').classList.toggle('hidden', t !== 'term');
+            document.getElementById('page-stat').classList.toggle('hidden', t !== 'stat');
+            document.getElementById('tab-term').classList.toggle('active', t === 'term');
+            document.getElementById('tab-stat').classList.toggle('active', t === 'stat');
         }
 
-        function addTry(link) {
-            window.open(link);
+        function addA(u) {
+            window.open(u);
             state.att++; save(); updateUI();
             tg.HapticFeedback.impactOccurred('medium');
         }
 
         function updateUI() {
-            document.getElementById('at').innerText = state.att;
-            document.getElementById('my-attempts').innerText = state.totalDone;
-        }
+            document.getElementById('att-count').innerText = state.att;
+            document.getElementById('stat-attempts').innerText = state.total;}
 
-        function save() { localStorage.setItem('BH5_DATA', JSON.stringify(state)); }
+        function save() { localStorage.setItem('BOSS_V5_DATA', JSON.stringify(state)); }
         updateUI();
     </script>
 </body>

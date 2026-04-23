@@ -3,285 +3,274 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BOSS: SYNDICATE</title>
+    <title>BOSS CRYPTO PUMP</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;600;900&family=Unbounded:wght@400;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --main: #bc13fe; --bg: #050505; --card: #111111; }
-        body { background: var(--bg); color: #fff; font-family: 'Montserrat', sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
-        .unbound { font-family: 'Unbounded', sans-serif; }
+        body { font-family: 'Montserrat', sans-serif; background: #000; color: #fff; margin: 0; padding-bottom: 100px; }
+        .boss-card { background: #0d0d0d; border: 1px solid rgba(255,215,0,0.1); border-radius: 20px; }
+        .btn-gold { background: linear-gradient(180deg, #FFD700 0%, #BA8B02 100%); color: #000; font-weight: 900; border-radius: 12px; }
         
-        .timer-gradient { background: linear-gradient(90deg, var(--main) 0%, #6b21a8 100%); transition: width 1s linear; }
-        .glass-header { background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        /* Белое окно графика */
+        .graph-window { background: #fff; border-radius: 15px; height: 220px; position: relative; overflow: hidden; }
         
-        /* AVATAR SYSTEM */
-        #avatar-container { height: 350px; background: radial-gradient(circle at 50% 50%, #1a1a1a 0%, #050505 100%); border-radius: 40px; position: relative; overflow: hidden; border: 1px solid rgba(188, 19, 254, 0.2); }
-        .layer { position: absolute; inset: 0; display: flex; justify-content: center; align-items: center; transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); transform: scale(0); z-index: 10; pointer-events: none; }
-        .layer.active { transform: scale(1); }
-        .mannequin { font-size: 140px; opacity: 0.15; z-index: 1; transform: scale(1) !important; }
-        .slot-head { top: -90px; font-size: 80px; }
-        .slot-body { top: 40px; font-size: 110px; }
-        .slot-acc { top: -20px; font-size: 40px; }
-        .slot-shoes { bottom: -100px; font-size: 50px; }
+        input { background: #1a1a1a !important; border: 1px solid #333 !important; border-radius: 10px; padding: 10px; color: #fff; width: 100%; outline: none; font-size: 13px; }
+        input::placeholder { color: #555; }
 
-        .mission-card { background: var(--card); border: 1px solid rgba(255,255,255,0.03); border-radius: 24px; padding: 20px; position: relative; overflow: hidden; }
-        .mission-card.locked { opacity: 0.5; filter: grayscale(1); pointer-events: none; }
+        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #050505; border-top: 1px solid #222; display: flex; justify-content: space-around; padding: 15px 0 30px; z-index: 1000; }
+        .nav-item { font-size: 10px; font-weight: 900; color: #444; text-transform: uppercase; cursor: pointer; }
+        .nav-item.active { color: #FFD700; }
         
-        .nav-item { flex: 1; text-align: center; font-size: 9px; font-weight: 900; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 1px; }
-        .nav-item.active { color: var(--main); }
-
-        ::-webkit-scrollbar { display: none; }
+        .coin-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #222; }
+        .price-up { color: #00c853; }
+        .price-down { color: #ff3d00; }
     </style>
 </head>
-<body class="pb-24">
+<body>
 
-    <!-- HEADER -->
-        <div class="sticky top-0 z-50 glass-header p-5 flex justify-between items-center">
+    <!-- Шапка профиля -->
+    <div class="p-4 flex justify-between items-end">
         <div>
-            <p class="text-[8px] font-black opacity-40 uppercase tracking-[2px] mb-1">Syndicate Balance</p>
-            <div class="flex items-center gap-2">
-                <span id="boss-bal" class="unbound text-2xl font-black text-white">0</span>
-                <span class="text-[10px] bg-purple-600/20 text-purple-400 px-2 py-0.5 rounded-full font-bold">BOSS</span>
-            </div>
+            <p class="text-[10px] opacity-40 uppercase font-black">Доступный баланс</p>
+            <h1 id="balance" class="text-2xl font-black text-yellow-500">0.00 ₽</h1>
         </div>
         <div class="text-right">
-            <p id="rub-bal" class="unbound text-lg font-black text-yellow-500">0.00 ₽</p>
-            <p class="text-[7px] font-black opacity-30 uppercase tracking-[1px]">Total Capital</p>
+            <p id="username" class="text-xs font-bold">@guest</p>
+            <p id="userid" class="text-[9px] opacity-30">ID: 000000</p>
         </div>
     </div>
 
-    <!-- TABS CONTAINER -->
-    <div class="p-5">
-        
-        <!-- TAB: OPERATIONS (MISSIONS) -->
-        <div id="tab-ops" class="tab-content">
-            <div class="flex justify-between items-end mb-6">
-                <h2 class="unbound text-xs font-black uppercase italic tracking-tighter">Current Operations</h2>
-                <div id="energy-display" class="text-[10px] font-bold text-purple-400">⚡ 5 / 5</div>
-            </div>
-            <div class="space-y-4" id="missions-list"></div>
-        </div>
+    <main id="app" class="px-4"></main>
 
-        <!-- TAB: SHOWROOM (SHOP) -->
-        <div id="tab-shop" class="tab-content hidden">
-            <div class="grid grid-cols-2 gap-4" id="showroom-list"></div>
-        </div>
+    <nav class="nav-bar">
+        <div onclick="render('create')" id="n-create" class="nav-item">Создать</div>
+                <div onclick="render('buy')" id="n-buy" class="nav-item active">Купить</div>
+        <div onclick="render('sell')" id="n-sell" class="nav-item">Продать</div>
+        <div onclick="render('profile')" id="n-profile" class="nav-item">Профиль</div>
+    </nav>
 
-        <!-- TAB: IDENTITY (PROFILE) -->
-        <div id="tab-profile" class="tab-content hidden">
-            <div id="avatar-container" class="mb-6">
-                <div class="layer mannequin active">👤</div>
-                <div id="layer-head" class="layer slot-head"></div>
-                <div id="layer-acc" class="layer slot-acc"></div>
-                <div id="layer-body" class="layer slot-body"></div>
-                <div id="layer-shoes" class="layer slot-shoes"></div>
-            </div>
-            <div class="text-center mb-8">
-                <h3 id="user-name" class="unbound text-xl font-black mb-1">BOSS PLAYER</h3>
-                                <p id="user-rank" class="text-[9px] font-bold text-purple-500 tracking-[3px] uppercase">New Recuriting</p>
-            </div>
-            <div class="space-y-2" id="inventory-list"></div>
-        </div>
+<script>
+    const tg = window.Telegram.WebApp;
+    const ADMIN_ID = "7727345054";
 
-    </div>
+    // Состояние игры
+    let state = JSON.parse(localStorage.getItem('BOSS_CRYPTO_DATA')) || {
+        balance: 1000,
+        myCoins: {}, // { ticker: amount }
+        createdCoins: [], 
+        allCoins: [
+            { name: "Bitcoin", ticker: "BTC", price: 65000, supply: 21000000, avatar: "https://cryptologos.cc/logos/bitcoin-btc-logo.png", history: [64000, 65000, 64500, 65500, 65000] },
+            { name: "Solana", ticker: "SOL", price: 140, supply: 500000000, avatar: "https://cryptologos.cc/logos/solana-sol-logo.png", history: [130, 135, 145, 140, 142] }
+        ],
+        history: []
+    };
 
-    <!-- BOTTOM NAVIGATION -->
-    <div class="fixed bottom-6 left-6 right-6 h-16 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl flex items-center px-2 z-[100]">
-        <button onclick="showTab('ops')" id="btn-ops" class="nav-item active">
-            <div class="text-xl mb-1">📟</div>Ops
-        </button>
-        <button onclick="showTab('shop')" id="btn-shop" class="nav-item">
-            <div class="text-xl mb-1">💎</div>Shop
-        </button>
-        <button onclick="showTab('profile')" id="btn-profile" class="nav-item">
-            <div class="text-xl mb-1">👑</div>ID
-        </button>
-    </div>
+    // --- ЛОГИКА АДМИНА ---
+    const user = tg.initDataUnsafe?.user || { id: "7727345054", username: "nmproda" }; // Для теста подставил твой ID
+    if (String(user.id) === ADMIN_ID) {
+        state.balance = 1000000; // Ровно лям каждый раз
+    }
 
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.ready(); tg.expand();
+    let selectedTicker = state.allCoins[0].ticker;
 
-        let state = JSON.parse(localStorage.getItem('BOSS_SYNDICATE_X')) || {
-            boss: 0, rub: 0, energy: 5, items: [], missions: {}, 
-            lastEnergyRegen: Date.now(), subs: {}
-        };
+    function save() {
+        localStorage.setItem('BOSS_CRYPTO_DATA', JSON.stringify(state));
+        document.getElementById('balance').innerText = state.balance.toLocaleString() + ' ₽';
+    }
 
-        const SHOP_ITEMS = [
-            { id: 'h1', n: 'Black Cap', p: 50, i: '🧢', s: 'head', r: 'Street' },
-            { id: 'h2', n: 'Gold Crown', p: 5000, i: '👑', s: 'head', r: 'Boss' },
-            { id: 'a1', n: 'Night Vision', p: 150, i: '🕶', s: 'acc', r: 'Spy' },
-            { id: 'b1', n: 'Bomber Jacket', p: 300, i: '🧥', s: 'body', r: 'Street' },
-            { id: 'b2', n: 'Luxury Suit', p: 1200, i: '👔', s: 'body', r: 'Elite' },
-            { id: 's1', n: 'Sneakers', p: 100, i: '👟', s: 'shoes', r: 'Base' },
-            { id: 'v1', n: 'BWM M5', p: 15000, i: '🚗', s: 'body', r: 'Vehicle' },
-            { id: 'v2', n: 'Yacht', p: 85000, i: '🚢', s: 'body', r: 'Luxury' }
-        ];
+    function render(page) {
+        const app = document.getElementById('app');
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        document.getElementById('n-' + page).classList.add('active');
 
-        const MISSIONS = [
-            { id: 'm1', n: 'Street Hustle', t: 60, r: 10, e: 1, req: 0 },
-            { id: 'm2', n: 'Data Breach', t: 1800, r: 85, e: 2, req: 1 },
-            { id: 'm3', n: 'Liquidity Siphon', t: 14400, r: 450, e: 3, req: 3 },
-            { id: 'm4', n: 'Global Heist', t: 86400, r: 2500, e: 5, req: 6 }
-        ];
+        if (page === 'create') {
+            app.innerHTML = `
+                <div class="boss-card p-5 space-y-3">
+                    <h2 class="text-center font-black text-yellow-500 uppercase italic">Запуск новой монеты</h2>
+                    <input type="text" id="c-name" placeholder="Название монеты (напр. Boss Token)">
+                    <input type="text" id="c-ticker" placeholder="Тикер (напр. BOSS)">
+                    <input type="number" id="c-invest" placeholder="Сумма вложений (₽)">
+                                        <input type="number" id="c-supply" placeholder="Эмиссия (сколько выпустить шт)">
+                    <input type="number" id="c-price" placeholder="Начальная цена (₽)">
+                    <input type="text" id="c-avatar" placeholder="URL аватарки (ссылка на картинку)">
+                    <button onclick="processCreate()" class="btn-gold w-full py-4 mt-2 text-xs">ОПЛАТИТЬ И СОЗДАТЬ</button>
+                </div>`;
+        }
 
-        // LOGIC: MISSION SYSTEM
-        function renderMissions() {
-            const list = document.getElementById('missions-list');
-            list.innerHTML = "";
-            
-            MISSIONS.forEach(m => {
-                const isLocked = state.items.length < m.req;
-                const active = state.missions[m.id];
-                let content = "";
-
-                if (active) {
-                    const elapsed = Math.floor((Date.now() - active.start) / 1000);
-                    const remaining = m.t - elapsed;
-                    if (remaining > 0) {
-                        const progress = (elapsed / m.t) * 100;
-                        content = `
-                            <div class="w-full bg-white/5 h-1 rounded-full mt-4 overflow-hidden">
-                                <div class="timer-gradient h-full" style="width: ${progress}%"></div>
-                            </div>
-                            <div class="flex justify-between mt-2 text-[10px] font-bold">
-                                <span class="text-purple-400">IN PROGRESS...</span>
-                                <span class="opacity-50">${formatTime(remaining)}</span>
-                            </div>
-                        `;
-                    } else {
-                        content = `<button onclick="claimMission('${m.id}')" class="w-full mt-4 bg-green-500 text-black font-black py-3 rounded-xl text-xs uppercase">Claim Reward +${m.r} BOSS</button>`;
-                    }
-                } else {
-                    content = `<button onclick="startMission('${m.id}')" class="w-full mt-4 bg-white/10 hover:bg-white/20 font-black py-3 rounded-xl text-xs uppercase">Start Operation (${m.e} Energy)</button>`;
-                }
-
-                list.innerHTML += `
-                    <div class="mission-card ${isLocked ? 'locked' : ''}">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h3 class="unbound text-[11px] font-black uppercase mb-1">${m.n}</h3>
-                                <p class="text-[9px] opacity-40 font-bold tracking-widest uppercase">Reward: ${m.r} BOSS | Time: ${formatTime(m.t)}</p>
-                            </div>
-                            <div class="text-xl">${isLocked ? '🔒' : '📟'}</div>
+        if (page === 'buy') {
+            const coin = state.allCoins.find(c => c.ticker === selectedTicker);
+            app.innerHTML = `
+                <div class="graph-window mb-4">
+                    <canvas id="chartCanvas"></canvas>
+                </div>
+                <div class="flex gap-2 overflow-x-auto pb-4">
+                    ${state.allCoins.map(c => `
+                        <div onclick="selectCoin('${c.ticker}')" class="boss-card p-3 min-w-[100px] text-center ${selectedTicker === c.ticker ? 'border-yellow-500' : ''}">
+                            <img src="${c.avatar}" class="w-8 h-8 mx-auto rounded-full mb-1">
+                            <p class="text-[10px] font-black">${c.ticker}</p>
+                            <p class="text-[9px] text-yellow-500">${c.price.toFixed(2)}₽</p>
                         </div>
-                        ${content}
+                    `).join('')}
+                </div>
+                <div class="boss-card p-5">
+                    <div class="flex justify-between mb-4">
+                        <spanclass="font-black">${coin.name}</span>
+                        <span class="font-black text-yellow-500">${coin.price.toFixed(4)} ₽</span>
                     </div>
-                `;
-            });
+                    <input type="number" id="buy-sum" placeholder="Сумма покупки (₽)" class="mb-3">
+                    <button onclick="processBuy()" class="btn-gold w-full py-4 text-xs">КУПИТЬ МОНЕТУ</button>
+                </div>`;
+            drawChart(coin.history);
         }
 
-        function startMission(id) {
-            const m = MISSIONS.find(x => x.id === id);
-            if (state.energy >= m.e) {
-                state.energy -= m.e;
-                state.missions[id] = { start: Date.now() };
-                save(); renderMissions(); updateUI();
-                tg.HapticFeedback.impactOccurred('medium');
-            } else {
-                alert("Need more energy! Sub to nodes in mining to refill.");
-            }
+        if (page === 'sell') {
+            const myTickers = Object.keys(state.myCoins);
+            app.innerHTML = `
+                <h2 class="text-[10px] opacity-40 font-black mb-4 uppercase">Ваши активы</h2>
+                ${myTickers.length === 0 ? '<p class="text-center py-10 opacity-20">У вас пока нет монет</p>' : 
+                myTickers.map(t => {
+                    const coin = state.allCoins.find(c => c.ticker === t);
+                    const amount = state.myCoins[t];
+                    const value = amount * (coin ? coin.price : 0);
+                    return `
+                        <div class="boss-card p-4 flex justify-between items-center mb-2">
+                            <div class="flex items-center gap-3">
+                                <img src="${coin?.avatar}" class="w-10 h-10 rounded-full">
+                                <div><p class="font-black">${t}</p><p class="text-[10px] opacity-40">${amount.toFixed(2)} шт.</p></div>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-black text-yellow-500">${value.toFixed(2)} ₽</p>
+                                <button onclick="processSell('${t}')" class="text-[8px] font-black text-red-500 uppercase mt-1">Продать всё</button>
+                            </div>
+                        </div>`;
+                }).join('')}`;
         }
 
-        async function claimMission(id) {
-            // THE PENALTY CHECK
-            const m = MISSIONS.find(x => x.id === id);
-            // Simulate bot check here
-            state.boss += m.r;
-            delete state.missions[id];
-            save(); renderMissions(); updateUI();
-            tg.HapticFeedback.notificationOccurred('success');
+        if (page === 'profile') {
+            const totalProfit = state.history.reduce((acc, curr) => acc + (curr.type === 'SELL' ? curr.profit : 0), 0);
+            app.innerHTML = `
+                <div class="boss-card p-6 mb-4 text-center">
+                    <p class="text-[10px] opacity-40 uppercase font-black">Ваша прибыль</p>
+                    <h2 class="text-3xl font-black ${totalProfit >= 0 ? 'text-green-500' : 'text-red-500'}">${totalProfit.toFixed(2)} ₽</h2>
+                </div>
+                <div class="space-y-2">
+                    <p class="text-[10px] opacity-40 font-black uppercase">Последние сделки</p>
+                    ${state.history.slice(-5).reverse().map(h => `
+                        <div class="boss-card p-3 flex justify-between text-[10px]">
+                            <span class="${h.type === 'BUY' ? 'text-green-500' : 'text-yellow-500'} font-black">${h.type}</span>
+                            <span class="font-bold">${h.ticker}</span>
+                            <span class="opacity-40">${h.sum} ₽</span>
+                        </div>
+                    `).join('')}
+                </div>`;
         }
+        save();
+    }
 
-        // SHOP & INVENTORY
-        function renderShop() {
-            const list = document.getElementById('showroom-list');
-            list.innerHTML = "";
-            SHOP_ITEMS.forEach(it => {
-                const owned = state.items.includes(it.id);
-                list.innerHTML += `
-                    <div onclick="buyItem('${it.id}')" class="mission-card text-center ${owned ? 'opacity-30' : ''}">
-                        <div class="text-4xl mb-3">${it.i}</div>
-                        <h4 class="text-[9px] font-black uppercase mb-1">${it.n}</h4>
-                        <p class="unbound text-[10px] text-yellow-500">${it.p} BOSS</p>
-                        <p class="text-[7px] opacity-30 mt-2 uppercase">${it.r}</p>
-                    </div>
-                `;
-            });
+    // --- ФУНКЦИИ МОТОРЫ ---
+
+    function selectCoin(t) { selectedTicker = t; render('buy'); }
+
+    function processCreate() {
+        const name = document.getElementById('c-name').value;
+        const ticker = document.getElementById('c-ticker').value.toUpperCase();
+        const invest = parseFloat(document.getElementById('c-invest').value);
+        const supply = parseFloat(document.getElementById('c-supply').value);
+        const price = parseFloat(document.getElementById('c-price').value);
+        const avatar = document.getElementById('c-avatar').value || "https://cdn-icons-png.flaticon.com/512/2585/2585141.png";
+
+        if (!name || !ticker || !invest || !supply || !price) return alert("Заполните все поля!");
+        if (state.balance < invest) return alert("Недостаточно баланса!");
+
+        state.balance -= invest;
+        const newCoin = { name, ticker, price, supply, avatar, history: [price * 0.9, price] };
+        state.allCoins.push(newCoin);
+        state.myCoins[ticker] = (state.myCoins[ticker] || 0) + (invest / price);
+        state.createdCoins.push(ticker);
+        state.history.push({ type: 'CREATE', ticker, sum: invest, date: Date.now() });
+
+        alert("Монета успешно создана!");
+        render('buy');
+    }
+
+    function processBuy() {
+        const sum = parseFloat(document.getElementById('buy-sum').value);
+        const coin = state.allCoins.find(c => c.ticker === selectedTicker);
+        if (!sum || state.balance < sum) return alert("Ошибка баланса!");
+
+        const amount = sum / coin.price;
+        state.balance -= sum;
+        state.myCoins[selectedTicker] = (state.myCoins[selectedTicker] || 0) + amount;
+        
+        // Pump effect (Цена растет при покупке)
+        coin.price *= 1.05;
+        coin.history.push(coin.price);
+        
+        state.history.push({ type: 'BUY', ticker: selectedTicker, sum: sum, date: Date.now() });
+        render('buy');
+    }
+
+    function processSell(t) {
+        const coin = state.allCoins.find(c => c.ticker === t);
+        const amount = state.myCoins[t];
+        const sum = amount * coin.price;
+
+        state.balance += sum;
+        delete state.myCoins[t];
+        
+        // Dump effect (Цена падает при продаже)
+        coin.price *= 0.90;
+        coin.history.push(coin.price);
+
+        state.history.push({ type: 'SELL', ticker: t, sum: sum.toFixed(2), profit: sum, date: Date.now() });
+        render('sell');
+    }
+
+    function drawChart(history) {
+        const canvas = document.getElementById('chartCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+
+        const max = Math.max(...history) * 1.05;
+        const min = Math.min(...history) * 0.95;
+        const range = max - min;
+        const stepX = canvas.width / (history.length - 1);
+
+        ctx.beginPath();
+        ctx.strokeStyle = history[history.length-1] >= history[0] ? '#00c853' : '#ff3d00';
+        ctx.lineWidth = 4;
+        
+        history.forEach((p, i) => {
+            const x = i * stepX;
+            const y = canvas.height - ((p - min) / range) * canvas.height;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+    }
+
+    // Симуляция ботов (рынок дышит)
+    setInterval(() => {
+        state.allCoins.forEach(c => {
+            const volatility = (Math.random() - 0.5) * 0.02; // +/- 1%
+            c.price *= (1 + volatility);
+            c.history.push(c.price);
+            if (c.history.length > 20) c.history.shift();
+        });
+        if (document.getElementById('chartCanvas')) {
+            const coin = state.allCoins.find(c => c.ticker === selectedTicker);
+            drawChart(coin.history);
         }
+    }, 5000);
 
-        function buyItem(id) {
-            const it = SHOP_ITEMS.find(x => x.id === id);
-            if (!state.items.includes(id) && state.boss >= it.p) {
-                state.boss -= it.p;
-                state.items.push(id);
-                save(); updateUI(); renderShop();
-                tg.HapticFeedback.notificationOccurred('success');
-            }
-        }
-
-        function updateAvatar() {
-            document.querySelectorAll('.layer').forEach(l => { if(!l.classList.contains('mannequin')) l.classList.remove('active'); });
-            state.items.forEach(itemId => {
-                const it = SHOP_ITEMS.find(x => x.id === itemId);
-                const slot = document.getElementById(`layer-${it.s}`);
-                if (slot) {
-                    slot.innerText = it.i;
-                    slot.classList.add('active');
-                }
-            });
-        }
-
-        // HELPERS
-        function formatTime(s) {
-            if (s < 60) return s + 's';
-            if (s < 3600) return Math.floor(s/60) + 'm';
-            return Math.floor(s/3600) + 'h';
-        }
-
-        function showTab(t) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            document.getElementById(`tab-${t}`).classList.remove('hidden');
-            document.getElementById(`btn-${t}`).classList.add('active');
-            if(t === 'shop') renderShop();
-            if(t === 'ops') renderMissions();
-        }
-
-        function updateUI() {
-            document.getElementById('boss-bal').innerText = Math.floor(state.boss);
-            document.getElementById('rub-bal').innerText = (state.boss * 24.39).toFixed(2) + " ₽";
-            document.getElementById('energy-display').innerText = `⚡ ${state.energy} / 5`;
-            document.getElementById('user-name').innerText = (tg.initDataUnsafe.user?.first_name || "BOSS PLAYER").toUpperCase();
-            
-            let rank = "Recruiting";
-            if(state.items.length > 2) rank = "Operator";
-            if(state.items.length > 5) rank = "Street King";
-            if(state.boss > 10000) rank = "Syndicate Lord";
-            document.getElementById('user-rank').innerText = rank;
-            updateAvatar();
-        }
-
-        function save() { localStorage.setItem('BOSS_SYNDICATE_X', JSON.stringify(state)); }
-
-        // AUTO-REFRESH FOR TIMERS
-        setInterval(() => {
-            if (document.getElementById('tab-ops').classList.contains('hidden')) return;
-            renderMissions();
-        }, 1000);
-
-        // ENERGY REGEN (1 per 30 mins)
-        setInterval(() \ 
-=> {
-            if(state.energy < 5 && (Date.now() - state.lastEnergyRegen) > 1800000) {
-                state.energy++;
-                state.lastEnergyRegen = Date.now();
-                save(); updateUI();
-            }
-        }, 60000);
-
-        window.onload = () => { updateUI(); showTab('ops'); };
-    </script>
+    // Старт
+    document.getElementById('username').innerText = '@' + user.username;
+    document.getElementById('userid').innerText = 'ID: ' + user.id;
+    render('buy');
+</script>
 </body>
 </html>
+        

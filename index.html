@@ -3,326 +3,285 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BOSS: NEURAL NETWORK</title>
+    <title>BOSS: SYNDICATE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Inter:wght@300;600;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;600;900&family=Unbounded:wght@400;900&display=swap" rel="stylesheet">
     <style>
-        :root { --neon: #00ff88; --accent: #bc13fe; --gold: #ffcc00; }
-        body { background: #000; color: #fff; font-family: 'Inter', sans-serif; overflow: hidden; margin: 0; }
-        .sync { font-family: 'Syncopate', sans-serif; }
+        :root { --main: #bc13fe; --bg: #050505; --card: #111111; }
+        body { background: var(--bg); color: #fff; font-family: 'Montserrat', sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
+        .unbound { font-family: 'Unbounded', sans-serif; }
         
-        /* ГЛАВНЫЙ КРИСТАЛЛ */
-        #core-container { position: relative; height: 320px; display: flex; align-items: center; justify-content: center; perspective: 1000px; }
-        #main-orb {
-            width: 180px; height: 180px; background: radial-gradient(circle, var(--neon) 0%, transparent 70%);
-            border-radius: 50%; filter: blur(15px); animation: pulse 3s infinite; position: absolute;
-        }
-        #main-crystal {
-            width: 100px; height: 100px; background: #fff; transform: rotateX(45deg) rotateY(45deg);
-            box-shadow: 0 0 50px var(--neon), inset 0 0 20px var(--neon); transition: 0.1s; z-index: 10;
-        }
-        @keyframes pulse { 0%, 100% { opacity: 0.4; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.2); } }
-
-        /* ИНТЕРФЕЙС */
-        .glass { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 24px; backdrop-filter: blur(10px); }
-        .btn-action { background: linear-gradient(90deg, var(--neon), var(--accent)); color: #000; font-weight: 900; border-radius: 16px; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; }
-        .btn-action:active { transform: scale(0.95); filter: brightness(1.2); }
-
-        /* КАНАЛЫ */
-        .node-card { background: #0a0a0a; border: 1px solid #1a1a1a; padding: 12px; border-radius: 18px; display: flex; align-items: center; gap: 12px; transition: 0.3s; }
-        .node-card.locked { opacity: 0.4; filter: grayscale(1); }
-        .node-card.active { border-color: var(--neon); box-shadow: 0 0 15px rgba(0, 255, 136, 0.1); }
-
-        /* АНИМАЦИЯ ВЫЛЕТАЮЩИХ ЦИФР */
-                .coin-pop { position: absolute; color: var(--neon); font-weight: 900; pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 100; }
-        @keyframes floatUp { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-100px); } }
-
-        .tab-content { display: none; height: calc(100vh - 180px); overflow-y: auto; padding-bottom: 80px; }
-        .tab-content.active { display: block; }
+        .timer-gradient { background: linear-gradient(90deg, var(--main) 0%, #6b21a8 100%); transition: width 1s linear; }
+        .glass-header { background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.05); }
         
-        .nav-bar { position: fixed; bottom: 20px; left: 20px; right: 20px; height: 65px; display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
+        /* AVATAR SYSTEM */
+        #avatar-container { height: 350px; background: radial-gradient(circle at 50% 50%, #1a1a1a 0%, #050505 100%); border-radius: 40px; position: relative; overflow: hidden; border: 1px solid rgba(188, 19, 254, 0.2); }
+        .layer { position: absolute; inset: 0; display: flex; justify-content: center; align-items: center; transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); transform: scale(0); z-index: 10; pointer-events: none; }
+        .layer.active { transform: scale(1); }
+        .mannequin { font-size: 140px; opacity: 0.15; z-index: 1; transform: scale(1) !important; }
+        .slot-head { top: -90px; font-size: 80px; }
+        .slot-body { top: 40px; font-size: 110px; }
+        .slot-acc { top: -20px; font-size: 40px; }
+        .slot-shoes { bottom: -100px; font-size: 50px; }
+
+        .mission-card { background: var(--card); border: 1px solid rgba(255,255,255,0.03); border-radius: 24px; padding: 20px; position: relative; overflow: hidden; }
+        .mission-card.locked { opacity: 0.5; filter: grayscale(1); pointer-events: none; }
+        
+        .nav-item { flex: 1; text-align: center; font-size: 9px; font-weight: 900; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 1px; }
+        .nav-item.active { color: var(--main); }
+
+        ::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="p-5">
+<body class="pb-24">
 
-    <!-- TOP HEADER -->
-    <div class="flex justify-between items-start mb-5">
+    <!-- HEADER -->
+        <div class="sticky top-0 z-50 glass-header p-5 flex justify-between items-center">
         <div>
-            <h1 class="sync text-[10px] text-zinc-500 tracking-[4px] uppercase mb-1">Neural Balance</h1>
-            <div class="flex items-baseline gap-2">
-                <span id="boss-bal" class="sync text-3xl font-bold tracking-tighter text-white">0</span>
-                <span class="text-xs text-[#00ff88] font-black uppercase">Coins</span>
+            <p class="text-[8px] font-black opacity-40 uppercase tracking-[2px] mb-1">Syndicate Balance</p>
+            <div class="flex items-center gap-2">
+                <span id="boss-bal" class="unbound text-2xl font-black text-white">0</span>
+                <span class="text-[10px] bg-purple-600/20 text-purple-400 px-2 py-0.5 rounded-full font-bold">BOSS</span>
             </div>
         </div>
         <div class="text-right">
-            <div id="rub-bal" class="sync text-xl font-bold text-white">0.00 ₽</div>
-            <div id="hashrate" class="text-[8px] text-zinc-500 uppercase tracking-widest mt-1">Speed: 0.00 H/s</div>
+            <p id="rub-bal" class="unbound text-lg font-black text-yellow-500">0.00 ₽</p>
+            <p class="text-[7px] font-black opacity-30 uppercase tracking-[1px]">Total Capital</p>
         </div>
     </div>
 
-    <!-- TAB 1: CORE -->
-    <div id="tab-core" class="tab-content active">
-        <div id="core-container" onclick="tap(event)">
-            <div id="main-orb"></div>
-            <div id="main-crystal"></div>
-        </div>
+    <!-- TABS CONTAINER -->
+    <div class="p-5">
         
-        <div class="glass p-6 text-center">
-            <p id="status-text" class="text-[10px] uppercase tracking-[3px] text-zinc-400 mb-4">Система стабильна. Жми на ядро.</p>
-            <div class="flex justify-around items-center">
-                <div>
-                    <p class="text-[9px] uppercase text-zinc-500 mb-1">Multiplier</p>
-                    <p class="sync text-sm" id="multi">x1.0</p>
-                </div>
-                <div class="h-10 w-[1px] bg-white/10"></div>
-                <div>
-                    <p class="text-[9px] uppercase text-zinc-500 mb-1">Upgrades</p>
-                                        <p class="sync text-sm" id="up-count">0/12</p>
-                </div>
+        <!-- TAB: OPERATIONS (MISSIONS) -->
+        <div id="tab-ops" class="tab-content">
+            <div class="flex justify-between items-end mb-6">
+                <h2 class="unbound text-xs font-black uppercase italic tracking-tighter">Current Operations</h2>
+                <div id="energy-display" class="text-[10px] font-bold text-purple-400">⚡ 5 / 5</div>
             </div>
+            <div class="space-y-4" id="missions-list"></div>
         </div>
-    </div>
 
-    <!-- TAB 2: NETWORK (NODES) -->
-    <div id="tab-network" class="tab-content">
-        <h2 class="sync text-xs mb-6 tracking-widest text-zinc-400 uppercase">External Proxy Nodes</h2>
-        <div class="grid gap-3" id="nodes-list"></div>
-    </div>
+        <!-- TAB: SHOWROOM (SHOP) -->
+        <div id="tab-shop" class="tab-content hidden">
+            <div class="grid grid-cols-2 gap-4" id="showroom-list"></div>
+        </div>
 
-    <!-- TAB 3: MARKET -->
-    <div id="tab-market" class="tab-content">
-        <h2 class="sync text-xs mb-6 tracking-widest text-zinc-400 uppercase">Hardware Market</h2>
-        <div class="grid gap-4" id="market-list"></div>
-    </div>
-
-    <!-- NAVIGATION -->
-    <div class="nav-bar glass p-2">
-        <button onclick="showTab('core')" class="flex-1 flex flex-col items-center opacity-40 active-nav" id="n-core">
-            <span class="text-xl">💎</span>
-            <span class="text-[7px] uppercase font-bold mt-1">Core</span>
-        </button>
-        <button onclick="showTab('network')" class="flex-1 flex flex-col items-center opacity-40" id="n-network">
-            <span class="text-xl">📡</span>
-            <span class="text-[7px] uppercase font-bold mt-1">Network</span>
-        </button>
-        <button onclick="showTab('market')" class="flex-1 flex flex-col items-center opacity-40" id="n-market">
-            <span class="text-xl">📦</span>
-            <span class="text-[7px] uppercase font
-                        .coin-pop { position: absolute; color: var(--neon); font-weight: 900; pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 100; }
-        @keyframes floatUp { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-100px); } }
-
-        .tab-content { display: none; height: calc(100vh - 180px); overflow-y: auto; padding-bottom: 80px; }
-        .tab-content.active { display: block; }
-        
-        .nav-bar { position: fixed; bottom: 20px; left: 20px; right: 20px; height: 65px; display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
-    </style>
-</head>
-<body class="p-5">
-
-    <!-- TOP HEADER -->
-    <div class="flex justify-between items-start mb-5">
-        <div>
-            <h1 class="sync text-[10px] text-zinc-500 tracking-[4px] uppercase mb-1">Neural Balance</h1>
-            <div class="flex items-baseline gap-2">
-                <span id="boss-bal" class="sync text-3xl font-bold tracking-tighter text-white">0</span>
-                <span class="text-xs text-[#00ff88] font-black uppercase">Coins</span>
+        <!-- TAB: IDENTITY (PROFILE) -->
+        <div id="tab-profile" class="tab-content hidden">
+            <div id="avatar-container" class="mb-6">
+                <div class="layer mannequin active">👤</div>
+                <div id="layer-head" class="layer slot-head"></div>
+                <div id="layer-acc" class="layer slot-acc"></div>
+                <div id="layer-body" class="layer slot-body"></div>
+                <div id="layer-shoes" class="layer slot-shoes"></div>
             </div>
-        </div>
-        <div class="text-right">
-            <div id="rub-bal" class="sync text-xl font-bold text-white">0.00 ₽</div>
-            <div id="hashrate" class="text-[8px] text-zinc-500 uppercase tracking-widest mt-1">Speed: 0.00 H/s</div>
-        </div>
-    </div>
-
-    <!-- TAB 1: CORE -->
-    <div id="tab-core" class="tab-content active">
-        <div id="core-container" onclick="tap(event)">
-            <div id="main-orb"></div>
-            <div id="main-crystal"></div>
-        </div>
-        
-        <div class="glass p-6 text-center">
-            <p id="status-text" class="text-[10px] uppercase tracking-[3px] text-zinc-400 mb-4">Система стабильна. Жми на ядро.</p>
-            <div class="flex justify-around items-center">
-                <div>
-                    <p class="text-[9px] uppercase text-zinc-500 mb-1">Multiplier</p>
-                    <p class="sync text-sm" id="multi">x1.0</p>
-                </div>
-                <div class="h-10 w-[1px] bg-white/10"></div>
-                <div>
-                    <p class="text-[9px] uppercase text-zinc-500 mb-1">Upgrades</p>
-                    <p class="sync text-sm" id="up-count">0/12</p>
-                </div>
+            <div class="text-center mb-8">
+                <h3 id="user-name" class="unbound text-xl font-black mb-1">BOSS PLAYER</h3>
+                                <p id="user-rank" class="text-[9px] font-bold text-purple-500 tracking-[3px] uppercase">New Recuriting</p>
             </div>
+            <div class="space-y-2" id="inventory-list"></div>
         </div>
+
     </div>
 
-    <!-- TAB 2: NETWORK (NODES) -->
-    <div id="tab-network" class="tab-content">
-        <h2 class="sync text-xs mb-6 tracking-widest text-zinc-400 uppercase">External Proxy Nodes</h2>
-        <div class="grid gap-3" id="nodes-list"></div>
-    </div>
-
-    <!-- TAB 3: MARKET -->
-    <div id="tab-market" class="tab-content">
-        <h2 class="sync text-xs mb-6 tracking-widest text-zinc-400 uppercase">Hardware Market</h2>
-        <div class="grid gap-4" id="market-list"></div>
-    </div>
-
-    <!-- NAVIGATION -->
-    <div class="nav-bar glass p-2">
-        <button onclick="showTab('core')" class="flex-1 flex flex-col items-center opacity-40 active-nav" id="n-core">
-            <span class="text-xl">💎</span>
-            <span class="text-[7px] uppercase font-bold mt-1">Core</span>
+    <!-- BOTTOM NAVIGATION -->
+    <div class="fixed bottom-6 left-6 right-6 h-16 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl flex items-center px-2 z-[100]">
+        <button onclick="showTab('ops')" id="btn-ops" class="nav-item active">
+            <div class="text-xl mb-1">📟</div>Ops
         </button>
-        <button onclick="showTab('network')" class="flex-1 flex flex-col items-center opacity-40" id="n-network">
-            <span class="text-xl">📡</span>
-            <span class="text-[7px] uppercase font-bold mt-1">Network</span>
+        <button onclick="showTab('shop')" id="btn-shop" class="nav-item">
+            <div class="text-xl mb-1">💎</div>Shop
         </button>
-        <button onclick="showTab('market')" class="flex-1 flex flex-col items-center opacity-40" id="n-market">
-            <span class="text-xl">📦</span>
-            <span class="text-[7px] uppercase font-bold mt-1">Market</span>
+        <button onclick="showTab('profile')" id="btn-profile" class="nav-item">
+            <div class="text-xl mb-1">👑</div>ID
         </button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready(); tg.expand();
-        tg.headerColor = '#000000';
 
-        let state = JSON.parse(localStorage.getItem('BOSS_NEURAL_V1')) || {
-            boss: 0, rub: 0, multi: 1, upgrades: 0, lastCheck: Date.now(), items: [], subs: {}
+        let state = JSON.parse(localStorage.getItem('BOSS_SYNDICATE_X')) || {
+            boss: 0, rub: 0, energy: 5, items: [], missions: {}, 
+            lastEnergyRegen: Date.now(), subs: {}
         };
 
-        const HARDWARE = [
-            { id: 1, n: 'S-Node v1', p: 100, i: '⚡', d: 'Авто-добыча: 0.1/сек' },
-            { id: 2, n: 'G-GPU 3090', p: 500, i: '🔥', d: 'Множитель клика: x2' },
-            { id: 3, n: 'Neural Link', p: 2500, i: '🧠', d: 'Пассивный доход: 5/сек' },
-            { id: 4, n: 'Quantum Cell', p: 10000, i: '🌀', d: 'Валюта RUB: +1/мин' }
+        const SHOP_ITEMS = [
+            { id: 'h1', n: 'Black Cap', p: 50, i: '🧢', s: 'head', r: 'Street' },
+            { id: 'h2', n: 'Gold Crown', p: 5000, i: '👑', s: 'head', r: 'Boss' },
+            { id: 'a1', n: 'Night Vision', p: 150, i: '🕶', s: 'acc', r: 'Spy' },
+            { id: 'b1', n: 'Bomber Jacket', p: 300, i: '🧥', s: 'body', r: 'Street' },
+            { id: 'b2', n: 'Luxury Suit', p: 1200, i: '👔', s: 'body', r: 'Elite' },
+            { id: 's1', n: 'Sneakers', p: 100, i: '👟', s: 'shoes', r: 'Base' },
+            { id: 'v1', n: 'BWM M5', p: 15000, i: '🚗', s: 'body', r: 'Vehicle' },
+            { id: 'v2', n: 'Yacht', p: 85000, i: '🚢', s: 'body', r: 'Luxury' }
         ];
 
-        // КЛИК
-        function tap(e) {
-            const val = 1 * state.multi;
-            state.boss += val;
-            
-            // FX
-            const crystal = document.getElementById('main-crystal');
-            crystal.style.transform = `rotateX(45deg) rotateY(45deg) scale(0.9)`;
-            setTimeout(() => crystal.style.transform = `rotateX(45deg) rotateY(45deg) scale(1)`, 50);
+        const MISSIONS = [
+            { id: 'm1', n: 'Street Hustle', t: 60, r: 10, e: 1, req: 0 },
+            { id: 'm2', n: 'Data Breach', t: 1800, r: 85, e: 2, req: 1 },
+            { id: 'm3', n: 'Liquidity Siphon', t: 14400, r: 450, e: 3, req: 3 },
+            { id: 'm4', n: 'Global Heist', t: 86400, r: 2500, e: 5, req: 6 }
+        ];
 
-            const pop = document.createElement('div');
-            pop.className = 'coin-pop sync';
-            pop.innerText = `+${val}`;
-            pop.style.left = e.pageX + 'px';
-            pop.style.top = e.pageY + 'px';
-            document.body.appendChild(pop);
-            setTimeout(() => pop.remove(), 800);
-            
-            tg.HapticFeedback.impactOccurred('medium');
-            save(); updateUI();
-        }
-
-        // ТАБЫ
-        function showTab(t) {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.nav-bar button').forEach(b => b.classList.add('opacity-40'));
-            document.getElementById(`tab-${t}`).classList.add('active');
-            document.getElementById(`n-${t}`).classList.remove('opacity-40');
-            if(t === 'network') renderNodes();
-            if(t === 'market') renderMarket();
-        }
-
-        // КАНАЛЫ (NODES)
-        function renderNodes() {
-            const list = document.getElementById('nodes-list');
+        // LOGIC: MISSION SYSTEM
+        function renderMissions() {
+            const list = document.getElementById('missions-list');
             list.innerHTML = "";
-            for(let i=1; i<=20; i++) {
-                const isSub = state.subs[i];
-                list.innerHTML += `
-                    <div onclick="openNode(${i})" class="node-card ${isSub ? 'active' : ''}">
-                        <div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center sync text-[10px]">#${i}</div>
-                        <div class="flex-1">
-                            <p class="text-[10px] font-bold uppercase">Proxy Node Access</p>
-                            <p class="text-[8px] text-zinc-500 uppercase">${isSub ? 'Connected ✓' : 'Click to Establish Connection'}</p>
-                        </div>
-                        <div class="text-[10px] font-bold text-[#00ff88]">+100 BOSS</div>
-                    </div>
-                `;
-            }
-        }
+            
+            MISSIONS.forEach(m => {
+                const isLocked = state.items.length < m.req;
+                const active = state.missions[m.id];
+                let content = "";
 
-        function openNode(id) {
-            window.open("https://t.me/osnovabossstore"); // Замени на свои
-            setTimeout(() => {
-                if(!state.subs[id]) {
-                    state.boss += 100;
-                    state.subs[id] = Date.now();
-                    save(); updateUI(); renderNodes();
-                    tg.HapticFeedback.notificationOccurred('success');
-                }
-            }, 5000);
-        }
-
-        // МАРКЕТ
-        function renderMarket() {
-            const list = document.getElementById('market-list');
-            list.innerHTML = "";
-            HARDWARE.forEach(h => {
-                list.innerHTML += `
-                <div onclick="buyHardware(${h.id})" class="glass p-4 flex justify-between items-center">
-                        <div class="flex items-center gap-3">
-                            <span class="text-2xl">${h.i}</span>
-                            <div>
-                                <p class="text-[10px] font-black uppercase">${h.n}</p>
-                                <p class="text-[8px] text-zinc-500">${h.d}</p>
+                if (active) {
+                    const elapsed = Math.floor((Date.now() - active.start) / 1000);
+                    const remaining = m.t - elapsed;
+                    if (remaining > 0) {
+                        const progress = (elapsed / m.t) * 100;
+                        content = `
+                            <div class="w-full bg-white/5 h-1 rounded-full mt-4 overflow-hidden">
+                                <div class="timer-gradient h-full" style="width: ${progress}%"></div>
                             </div>
+                            <div class="flex justify-between mt-2 text-[10px] font-bold">
+                                <span class="text-purple-400">IN PROGRESS...</span>
+                                <span class="opacity-50">${formatTime(remaining)}</span>
+                            </div>
+                        `;
+                    } else {
+                        content = `<button onclick="claimMission('${m.id}')" class="w-full mt-4 bg-green-500 text-black font-black py-3 rounded-xl text-xs uppercase">Claim Reward +${m.r} BOSS</button>`;
+                    }
+                } else {
+                    content = `<button onclick="startMission('${m.id}')" class="w-full mt-4 bg-white/10 hover:bg-white/20 font-black py-3 rounded-xl text-xs uppercase">Start Operation (${m.e} Energy)</button>`;
+                }
+
+                list.innerHTML += `
+                    <div class="mission-card ${isLocked ? 'locked' : ''}">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="unbound text-[11px] font-black uppercase mb-1">${m.n}</h3>
+                                <p class="text-[9px] opacity-40 font-bold tracking-widest uppercase">Reward: ${m.r} BOSS | Time: ${formatTime(m.t)}</p>
+                            </div>
+                            <div class="text-xl">${isLocked ? '🔒' : '📟'}</div>
                         </div>
-                        <div class="text-right">
-                            <p class="sync text-[10px] font-bold">${h.p}</p>
-                            <p class="text-[7px] text-zinc-500 uppercase">Coins</p>
-                        </div>
+                        ${content}
                     </div>
                 `;
             });
         }
 
-        function buyHardware(id) {
-            const h = HARDWARE.find(x => x.id === id);
-            if(state.boss >= h.p) {
-                state.boss -= h.p;
-                state.items.push(id);
-                if(id === 2) state.multi *= 2;
-                state.upgrades++;
-                save(); updateUI(); renderMarket();
-                tg.HapticFeedback.notificationOccurred('success');
+        function startMission(id) {
+            const m = MISSIONS.find(x => x.id === id);
+            if (state.energy >= m.e) {
+                state.energy -= m.e;
+                state.missions[id] = { start: Date.now() };
+                save(); renderMissions(); updateUI();
+                tg.HapticFeedback.impactOccurred('medium');
             } else {
-                tg.HapticFeedback.notificationOccurred('error');
+                alert("Need more energy! Sub to nodes in mining to refill.");
             }
         }
 
-        // ПАССИВНЫЙ ДОХОД
-        setInterval(() => {
-            let passive = 0;
-            if(state.items.includes(1)) passive += 0.1;
-            if(state.items.includes(3)) passive += 5;
-            if(state.items.includes(4)) state.rub += 0.01;
-            
-            state.boss += passive;
-            document.getElementById('hashrate').innerText = `Speed: ${passive.toFixed(2)} H/s`;
-            save(); updateUI();
-        }, 1000);
+        async function claimMission(id) {
+            // THE PENALTY CHECK
+            const m = MISSIONS.find(x => x.id === id);
+            // Simulate bot check here
+            state.boss += m.r;
+            delete state.missions[id];
+            save(); renderMissions(); updateUI();
+            tg.HapticFeedback.notificationOccurred('success');
+        }
+
+        // SHOP & INVENTORY
+        function renderShop() {
+            const list = document.getElementById('showroom-list');
+            list.innerHTML = "";
+            SHOP_ITEMS.forEach(it => {
+                const owned = state.items.includes(it.id);
+                list.innerHTML += `
+                    <div onclick="buyItem('${it.id}')" class="mission-card text-center ${owned ? 'opacity-30' : ''}">
+                        <div class="text-4xl mb-3">${it.i}</div>
+                        <h4 class="text-[9px] font-black uppercase mb-1">${it.n}</h4>
+                        <p class="unbound text-[10px] text-yellow-500">${it.p} BOSS</p>
+                        <p class="text-[7px] opacity-30 mt-2 uppercase">${it.r}</p>
+                    </div>
+                `;
+            });
+        }
+
+        function buyItem(id) {
+            const it = SHOP_ITEMS.find(x => x.id === id);
+            if (!state.items.includes(id) && state.boss >= it.p) {
+                state.boss -= it.p;
+                state.items.push(id);
+                save(); updateUI(); renderShop();
+                tg.HapticFeedback.notificationOccurred('success');
+            }
+        }
+
+        function updateAvatar() {
+            document.querySelectorAll('.layer').forEach(l => { if(!l.classList.contains('mannequin')) l.classList.remove('active'); });
+            state.items.forEach(itemId => {
+                const it = SHOP_ITEMS.find(x => x.id === itemId);
+                const slot = document.getElementById(`layer-${it.s}`);
+                if (slot) {
+                    slot.innerText = it.i;
+                    slot.classList.add('active');
+                }
+            });
+        }
+
+        // HELPERS
+        function formatTime(s) {
+            if (s < 60) return s + 's';
+            if (s < 3600) return Math.floor(s/60) + 'm';
+            return Math.floor(s/3600) + 'h';
+        }
+
+        function showTab(t) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-${t}`).classList.remove('hidden');
+            document.getElementById(`btn-${t}`).classList.add('active');
+            if(t === 'shop') renderShop();
+            if(t === 'ops') renderMissions();
+        }
 
         function updateUI() {
             document.getElementById('boss-bal').innerText = Math.floor(state.boss);
-            document.getElementById('rub-bal').innerText = state.rub.toFixed(2) + " ₽";
-            document.getElementById('multi').innerText = `x${state.multi.toFixed(1)}`;
-            document.getElementById('up-count').innerText = `${state.upgrades}/12`;
+            document.getElementById('rub-bal').innerText = (state.boss * 24.39).toFixed(2) + " ₽";
+            document.getElementById('energy-display').innerText = `⚡ ${state.energy} / 5`;
+            document.getElementById('user-name').innerText = (tg.initDataUnsafe.user?.first_name || "BOSS PLAYER").toUpperCase();
+            
+            let rank = "Recruiting";
+            if(state.items.length > 2) rank = "Operator";
+            if(state.items.length > 5) rank = "Street King";
+            if(state.boss > 10000) rank = "Syndicate Lord";
+            document.getElementById('user-rank').innerText = rank;
+            updateAvatar();
         }
 
-        function save() { localStorage.setItem('BOSS_NEURAL_V1', JSON.stringify(state)); }
-        window.onload = () => { updateUI(); showTab('core'); };
+        function save() { localStorage.setItem('BOSS_SYNDICATE_X', JSON.stringify(state)); }
+
+        // AUTO-REFRESH FOR TIMERS
+        setInterval(() => {
+            if (document.getElementById('tab-ops').classList.contains('hidden')) return;
+            renderMissions();
+        }, 1000);
+
+        // ENERGY REGEN (1 per 30 mins)
+        setInterval(() \ 
+=> {
+            if(state.energy < 5 && (Date.now() - state.lastEnergyRegen) > 1800000) {
+                state.energy++;
+                state.lastEnergyRegen = Date.now();
+                save(); updateUI();
+            }
+        }, 60000);
+
+        window.onload = () => { updateUI(); showTab('ops'); };
     </script>
 </body>
 </html>

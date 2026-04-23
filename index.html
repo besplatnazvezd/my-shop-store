@@ -3,286 +3,262 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BOSS COIN V6.0</title>
+    <title>BOSS COIN V9.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --neon: #bc13fe; --gold: #FFD700; --bg: #030303; }
-        body { background: var(--bg); color: #fff; font-family: 'Share Tech Mono', monospace; margin: 0; user-select: none; }
+        :root { --neon: #bc13fe; --red: #ff3e3e; --green: #10b981; --bg: #050505; }
+        body { background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; }
         .orbitron { font-family: 'Orbitron', sans-serif; }
         
-        /* График */
-        canvas { width: 100%; height: 150px; background: rgba(255,255,255,0.02); border-radius: 15px; }
+        /* ГРАФИК */
+        #chart-area { background: #fff; border-radius: 25px; padding: 15px; box-shadow: 0 0 30px rgba(188,19,254,0.2); }
+        .tf-btn { padding: 5px 10px; font-size: 9px; border-radius: 8px; background: #eee; color: #000; font-weight: 800; }
+        .tf-btn.active { background: var(--neon); color: #fff; }
 
-        .neon-border { border: 1px solid var(--neon); box-shadow: 0 0 10px rgba(188, 19, 254, 0.3); }
-        .tab-btn { flex: 1; padding: 12px; font-size: 10px; text-align: center; opacity: 0.4; transition: 0.3s; border-bottom: 2px solid transparent; }
-        .tab-btn.active { opacity: 1; color: var(--neon); border-bottom-color: var(--neon); }
+        /* ПЕРСОНАЖ */
+        #avatar-box { width: 200px; height: 260px; background: #111; border-radius: 40px; margin: 20px auto; position: relative; border: 2px solid #222; }
+        .layer { position: absolute; inset: 0; display: flex; justify-content: center; align-items: center; transition: 0.4s; transform: scale(0); z-index: 10; }
+        .layer.active { transform: scale(1); }
+        .mannequin { font-size: 100px; opacity: 0.2; z-index: 1; }
+        .head { top: -70px; font-size: 60px; }
+        .eyes { top: -50px; font-size: 30px; }
+        .body { top: 30px; font-size: 80px; }
+        .shoes { bottom: -80px; font-size: 40px; }
 
-        .card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; transition: 0.3s; }
-        .card:active { transform: scale(0.97); }
+        .card { background: #111; border: 1px solid #222; border-radius: 22px; padding: 15px; }
+        .tab-btn { flex: 1; text-align: center; padding: 12px; font-size: 10px; font-weight: 900; opacity: 0.3; }
+        .tab-btn.active { opacity: 1; color: var(--neon); border-bottom: 2px solid var(--neon); }
 
-        .verifying { animation: pulse 1s infinite; pointer-events: none; opacity: 0.5; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-
-        /* Кастомный скролл */
-        ::-webkit-scrollbar { width: 0px; }
+        /* ШТРАФ АНИМАЦИЯ */
+        #penalty-alert { position: fixed; top: 20%; left: 50%; transform: translateX(-50%); background: var(--red); color: white; padding: 20px; border-radius: 20px; z-index: 1000; display: none; text-align: center; font-weight: 900; box-shadow: 0 0 50px rgba(255,0,0,0.5); }
     </style>
 </head>
-<body>
+<body class="p-4">
 
-    <!-- ВЕРХНЯЯ ПАНЕЛЬ -->
-    <div class="sticky top-0 z-50 bg-[#030303] p-4 border-b border-white/5 flex justify-between items-center">
+    <div id="penalty-alert">
+                <div class="text-4xl mb-2">⚠️ ШТРАФ!</div>
+        <div class="text-sm uppercase">Отписка ранее 7 дней:<br>-2 BOSS COIN</div>
+    </div>
+
+    <!-- BALANCE -->
+    <div class="flex justify-between items-center mb-4 px-2">
         <div>
-            <p class="text-[10px] opacity-50 uppercase">Ваш Баланс:</p>
+            <p class="text-[9px] opacity-40 uppercase font-black">Mining Profit</p>
             <div class="flex items-center gap-2">
-                <span id="bal-boss" class="orbitron text-xl font-black text-purple-500">0</span>
-                <span class="text-[10px] text-purple-400">BOSS</span>
+                <span id="bal-boss" class="orbitron text-2xl text-purple-500 font-black">0</span>
+                <span class="text-purple-400 text-xs font-bold">BOSS</span>
             </div>
         </div>
         <div class="text-right">
-            <p id="bal-rub" class="orbitron text-lg font-black text-yellow-500">0.00 ₽</p>
-            <p class="text-[8px] opacity-40 uppercase">Личный счет</p>
+            <p id="bal-rub" class="orbitron text-xl text-yellow-500 font-black">0.00 ₽</p>
+            <p class="text-[8px] opacity-40 uppercase">Capitalization</p>
         </div>
     </div>
 
-    <!-- КОНТЕНТ -->
-    <div class="p-4 pb-24">
-        
-        <!-- ТАБЫ -->
-                <div class="flex mb-6 bg-white/5 rounded-xl overflow-hidden">
-            <button onclick="showTab('trade')" id="btn-trade" class="tab-btn active uppercase">Биржа</button>
-            <button onclick="showTab('mine')" id="btn-mine" class="tab-btn uppercase">Майнинг</button>
-            <button onclick="showTab('shop')" id="btn-shop" class="tab-btn uppercase">Рынок</button>
-            <button onclick="showTab('profile')" id="btn-profile" class="tab-btn uppercase">Профиль</button>
-        </div>
+    <!-- TABS -->
+    <div class="flex bg-white/5 rounded-2xl mb-4">
+        <button onclick="tab('trade')" id="t-trade" class="tab-btn active">БИРЖА</button>
+        <button onclick="tab('mine')" id="t-mine" class="tab-btn">МАЙНИНГ</button>
+        <button onclick="tab('shop')" id="t-shop" class="tab-btn">РЫНОК</button>
+        <button onclick="tab('profile')" id="t-profile" class="tab-btn">ПРОФИЛЬ</button>
+    </div>
 
-        <!-- ТАБ: БИРЖА -->
-        <div id="tab-trade">
-            <div class="text-center mb-4">
-                <p class="text-[10px] opacity-50 mb-1 uppercase">Текущий курс BOSS Coin:</p>
-                <div id="current-price" class="orbitron text-3xl font-black text-white">24.39 ₽</div>
-                <p id="price-change" class="text-[10px] text-green-500">+2.41%</p>
+    <!-- TRADE -->
+    <div id="p-trade">
+        <div id="chart-area">
+            <div class="flex justify-between items-center mb-4">
+                <div class="flex gap-1">
+                    <button onclick="setTf(2000, this)" class="tf-btn active">5S</button>
+                    <button onclick="setTf(10000, this)" class="tf-btn">10S</button>
+                    <button onclick="setTf(60000, this)" class="tf-btn">1H</button>
+                    <button onclick="setTf(300000, this)" class="tf-btn">1D</button>
+                </div>
+                <div class="text-right">
+                    <div id="price" class="orbitron text-2xl font-black text-black">24.39</div>
+                    <div id="trend" class="text-[10px] font-bold text-green-500">+0.00%</div>
+                </div>
             </div>
             <canvas id="chart"></canvas>
-            
-            <div class="flex gap-4 mt-6">
-                <button onclick="trade('buy')" class="flex-1 bg-green-600/20 border border-green-500 text-green-500 py-4 rounded-xl orbitron font-black uppercase">Купить</button>
-                <button onclick="trade('sell')" class="flex-1 bg-red-600/20 border border-red-500 text-red-500 py-4 rounded-xl orbitron font-black uppercase">Продать</button>
-            </div>
         </div>
-
-        <!-- ТАБ: МАЙНИНГ -->
-        <div id="tab-mine" class="hidden">
-            <div class="mb-4 p-4 card neon-border">
-                <p class="text-xs uppercase font-bold text-purple-400 mb-1">Ферма активна</p>
-                <p class="text-[10px] opacity-60">Подписывайся на каналы партнеров, чтобы получать BOSS монеты.</p>
-            </div>
-            <div class="grid grid-cols-2 gap-3" id="channels-grid"></div>
+        <div class="flex gap-4 mt-6">
+                        <button onclick="trade('buy')" class="flex-1 bg-green-500 py-4 rounded-2xl font-black shadow-lg">КУПИТЬ</button>
+            <button onclick="trade('sell')" class="flex-1 bg-red-500 py-4 rounded-2xl font-black shadow-lg">ПРОДАТЬ</button>
         </div>
-
-        <!-- ТАБ: РЫНОК -->
-        <div id="tab-shop" class="hidden">
-            <h3 class="orbitron text-sm mb-4 uppercase text-yellow-500">Luxury Assets</h3>
-            <div class="grid grid-cols-2 gap-3" id="shop-grid"></div>
-        </div>
-
-        <!-- ТАБ: ПРОФИЛЬ -->
-        <div id="tab-profile" class="hidden">
-            <div class="card p-6 text-center mb-6">
-                                <div class="w-20 h-20 bg-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center text-3xl shadow-lg shadow-purple-500/20" id="user-avatar">👑</div>
-                <h2 id="user-name" class="orbitron font-black text-xl mb-1">BOSS_USER</h2>
-                <p class="text-[10px] text-purple-400 uppercase tracking-widest" id="user-rank">Новичок</p>
-            </div>
-            <h3 class="text-[10px] opacity-40 uppercase mb-3">Ваше имущество:</h3>
-            <div id="inventory-list" class="space-y-2"></div>
-        </div>
-
     </div>
+
+    <!-- PROFILE -->
+    <div id="p-profile" class="hidden">
+        <div id="avatar-box">
+            <div class="mannequin layer active">👤</div>
+            <div id="s-head" class="layer head"></div>
+            <div id="s-eyes" class="layer eyes"></div>
+            <div id="s-body" class="layer body"></div>
+            <div id="s-shoes" class="layer shoes"></div>
+        </div>
+        <div class="text-center mb-6">
+            <h2 id="u-name" class="orbitron text-xl font-black">BOSS</h2>
+            <p class="text-[10px] text-purple-400 font-black">EMPIRE OWNER</p>
+        </div>
+        <button onclick="openExchange()" class="w-full bg-white/5 border border-white/10 py-4 rounded-2xl font-black uppercase text-xs">🤝 ОБМЕН (Команда /obmen)</button>
+    </div>
+
+    <div id="p-shop" class="hidden grid grid-cols-2 gap-3"></div>
+    <div id="p-mine" class="hidden grid grid-cols-2 gap-3"></div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.ready(); tg.expand();
-
-        // ДАННЫЕ
-        let state = JSON.parse(localStorage.getItem('BOSS_COIN_V6')) || {
-            boss: 0, rub: 0, items: [], lastD: new Date().toDateString()
-        };
+        const BOT_TOKEN = "8730430332:AAGff_PCX2059o3EUwG-d9C19uTqcH4sAZ4";
+        const CHANNELS = [
+            {id: "@osnovabossstore", name: "BOSS CH"},
+            // Добавь остальные 19 тут
+        ];
 
         let price = 24.39;
-        let history = [22, 23, 24, 23.5, 24.39];
-        const ADMIN_ID = "7727345054";
-        const BOT_TOKEN = "8730430332:AAGff_PCX2059o3EUwG-d9C19uTqcH4sAZ4";
+        let tf = 2000;
+        let state = JSON.parse(localStorage.getItem('BOSS_V9')) || {
+            boss: 0, rub: 100, items: [], subs: {}, lastVisit: Date.now()
+        };
 
-        const SHOP_ITEMS = [
-            { id: 1, n: "Кроссовки Gucci", p: 5, i: "👟", cat: "Стиль" },
-            { id: 2, n: "Rolex Daytona", p: 15, i: "⌚", cat: "Аксессуары" },
-            { id: 3, n: "Игровой ПК", p: 30, i: "🖥", cat: "Техника" },
-            { id: 4, n: "BMW M5", p: 120, i: "🚗", cat: "Авто" },
-            { id: 5, n: "Ferrari Pista", p: 450, i: "🏎", cat: "Авто" },
-            { id: 6, n: "Квартира в Сити", p: 800, i: "🏢", cat: "Дом" },
-            { id: 7, n: "Вилла на Бали", p: 2500, i: "🏝", cat: "Дом" },
-            { id: 8, n: "Частный Джет", p: 6000, i: "🛩", cat: "Транспорт" },
-            { id: 9, n: "Золотой Скин", p: 100, i: "✨", cat: "Скин" },
-            { id: 10, n: "Маска Анонима", p: 50, i: "🎭", cat: "Скин" },
-            { id: 11, n: "Личный Остров", p: 15000, i: "🌋", cat: "Дом" },
-            { id: 12, n: "Статус БОССА", p: 50000, i: "👑", cat: "Статус" }
+        // ТОВАРЫ
+        const ITEMS = [
+            {id: 1, n: "Корона", p: 100, i: "👑", s: "head"},
+            {id: 2, n: "Очки", p: 30, i: "🕶", s: "eyes"},
+            {id: 3, n: "Костюм", p: 200, i: "👔", s: "body"},
+            {id: 4, n: "Кроссы", p: 50, i: "👟", s: "shoes"}
         ];
 
         // ГРАФИК
-        function drawChart() {
-            const canvas = document.getElementById('chart');
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            ctx.beginPath();
-            ctx.strokeStyle = '#bc13fe';
-            ctx.lineWidth = 3;
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = '#bc13fe';
-            
-            const step = canvas.width / (history.length - 1);
-            const max = Math.max(...history) * 1.1;
-            const min = Math.min(...history) * 0.9;
-            
-            history.forEach((p, i) => {
-                const x = i * step;
-                const y = canvas.height - ((p - min) / (max - min)) * canvas.height;
-                if(i === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-            });
-            ctx.stroke();
+        let ctx = document.getElementById('chart').getContext('2d');
+        let chart = new Chart(ctx, {
+            type: 'line',
+            data: { labels: Array(15).fill(''), datasets: [{ data: Array(15).fill(24.39), borderColor: '#10b981', borderWidth: 4, fill: false, tension: 0.4, pointRadius: 0 }] },
+            options: { responsive: true, scales: { x: { display: false }, y: { display: true, position: 'right' } }, plugins: { legend: { display: false } } }
+        });
+
+        function updatePrice() {
+            let change = (Math.random() - 0.48) * 6;
+            price += change;
+            if(price < 4.99) price = 4.99; if(price > 119) price = 119;
+            chart.data.datasets[0].data.push(price);
+            chart.data.datasets[0].data.shift();
+            chart.data.datasets[0].borderColor = change >= 0 ? '#10b981' : '#ef4444';
+            chart.update('none');
+            document.getElementById('price').innerText = price.toFixed(2);
+            document.getElementById('price').style.color = change >= 0 ? '#10b981' : '#ef4444';
+            document.getElementById('trend').innerText = (change >= 0 ? "+" : "") + change.toFixed(2) + "%";
+        }
+        let timer = setInterval(updatePrice, tf);
+
+        function setTf(ms, btn) {
+            clearInterval(timer); tf = ms; timer = setInterval(updatePrice, tf);
+            document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
         }
 
-        // ОБНОВЛЕНИЕ ЦЕНЫ
-        setInterval(() => {
-            const change = (Math.random() - 0.5) * 2;
-            price = Math.max(5, price + change);
-            history.push(price);
-            if(history.length > 20) history.shift();
-            
-            document.getElementById('current-price').innerText = price.toFixed(2) + " ₽";
-            const pc = document.getElementById('price-change');
-            pc.innerText = (change >= 0 ? "+" : "") + change.toFixed(2) + "%";
-            pc.className = change >= 0 ? "text-green-500 text-[10px]" : "text-red-500 text-[10px]";
-            
-            drawChart();
-        }, 3000);
+        // ПРОВЕРКА ПОДПИСКИ И ШТРАФОВ
+        async function checkSubs() {
+            const userId = tg.initDataUnsafe.user?.id;
+            if(!userId) return;
 
-        // ТОРГОВЛЯ
-        function trade(type) {
-            if(type === 'buy') {
-                const amount = prompt("Сколько BOSS купить?");
-                const cost = amount * price;
-                if(state.rub >= cost) {
-                    state.rub -= cost;
-                    state.boss += Number(amount);
-                    save(); updateUI();
-                } else alert("Недостаточно рублей!");
-            } else {
-                if(state.boss > 0) {
-                    const amount = prompt("Сколько BOSS продать?", state.boss);
-                    if(amount <= state.boss) {
-                        state.rub += amount * price;
-                        state.boss -= Number(amount);
-                        save(); updateUI();
-                    }
+            for (let chId in state.subs) {
+                const subDate = state.subs[chId];
+                const daysPassed = (Date.now() - subDate) / (1000 * 60 * 60 * 24);
+
+                if(daysPassed < 7) {
+                    // Запрос к боту (метод getChatMember)
+                    try {
+                        const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getChatMember?chat_id=${chId}&user_id=${userId}`);
+                        const data = await res.json();
+                        if(data.result && (data.result.status === 'left' || data.result.status === 'kicked')) {
+                            applyPenalty(chId);
+                        }
+                    } catch(e) { console.log("Ошибка проверки"); }
                 }
             }
         }
 
-        // КАНАЛЫ (20 штук)
-        const mineGrid = document.getElementById('channels-grid');
-        for(let i=1; i<=20; i++) {
-            mineGrid.innerHTML += `
-                <div id="chan-${i}" onclick="mine(${i})" class="card p-4 text-center">
-                    <p class="text-[10px] text-purple-400 font-bold uppercase">Node #${i}</p>
-                    <p id="st-${i}" class="text-[7px] opacity-40 uppercase">Майнить 1 BOSS</p>
-                </div>
-            `;
+        function applyPenalty(chId) {
+            state.boss -= 2;
+            delete state.subs[chId];
+            save(); updateUI();
+            const alert = document.getElementById('penalty-alert');
+            alert.style.display = 'block';
+            tg.HapticFeedback.notificationOccurred('error');
+            setTimeout(() => alert.style.display = 'none', 5000);
         }
 
-        function mine(id) {
-            window.open("https://t.me/osnovabossstore");
-            const btn = document.getElementById(`chan-${id}`);
-            const st = document.getElementById(`st-${id}`);
-            btn.classList.add('verifying');
-            st.innerText = "ПРОВЕРКА...";
+        async function mine(id) {
+            const chId = "@osnovabossstore"; // Для примера один канал
+            window.open(`https://t.me/${chId.replace('@','')}`);
             
-            setTimeout(() => {
-                btn.classList.remove('verifying');
-                btn.style.opacity = "0.3";
-                st.innerText = "ДОБЫТО ✓";
+            setTimeout(async () => {
+                // Имитация проверки через бота
                 state.boss += 1;
+                state.subs[chId] = Date.now(); // Записываем дату подписки
                 save(); updateUI();
                 tg.HapticFeedback.notificationOccurred('success');
-            }, 8000);
+            }, 5000);
         }
 
-        // МАГАЗИН
-        const shopGrid = document.getElementById('shop-grid');
-        SHOP_ITEMS.forEach(item => {
-            shopGrid.innerHTML += `
-                <div onclick="buyItem(${item.id})" class="card p-4 relative">
-                    <div class="text-3xl mb-2">${item.i}</div>
-                    <p class="text-[10px] font-bold uppercase truncate">${item.n}</p>
-                    <p class="text-[9px] text-yellow-500 orbitron">${item.p} BOSS</p>
-                    <div class="text-[6px] opacity-30 mt-1">${item.cat}</div>
-                </div>
-            `;
-        });
+        // ОБМЕН
+        function openExchange() {
+            const userId = tg.initDataUnsafe.user?.id;
+            tg.openTelegramLink(`https://t.me/ТВОЙ_БОТ?start=obmen_${userId}`);
+        }
 
-        function buyItem(id) {
-            const item = SHOP_ITEMS.find(x => x.id === id);
-            if(state.boss >= item.p) {
-                state.boss -= item.p;
-                state.items.push(item);
+        // ОСТАЛЬНАЯ ЛОГИКА
+        function buy(id) {
+            const it = ITEMS.find(x => x.id === id);
+            if(state.boss >= it.p) {
+                state.boss -= it.p; state.items.push(it.id);
                 save(); updateUI();
-                alert(`Поздравляем! Вы купили ${item.n}!`);
-                
-                // Уведомление админу
-                const user = tg.initDataUnsafe.user || {username: 'anon'};
-                fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${ADMIN_ID}&text=${encodeURIComponent("🛍 ПОКУПКА: @"+user.username+" купил "+item.n)}`);
-            } else alert("Мало BOSS монет!");
+            }
         }
 
-        // ИНТЕРФЕЙС
-        function showTab(t) {
+        function tab(t) {
             ['trade', 'mine', 'shop', 'profile'].forEach(id => {
-                document.getElementById(`tab-${id}`).classList.toggle('hidden', id !== t);
-                document.getElementById(`btn-${id}`).classList.toggle('active', id === t);
+                document.getElementById(`p-${id}`).classList.toggle('hidden', id !== t);
+                document.getElementById(`t-${id}`).classList.toggle('active', id === t);
             });
+        }
+
+        function renderShop() {
+            const s = document.getElementById('p-shop'); s.innerHTML = "";
+            ITEMS.forEach(it => {
+                s.innerHTML += `<div onclick="buy(${it.id})" class="card text-center">
+                    <div class="text-4xl mb-2">${it.i}</div>
+                    <p class="text-[10px] font-black uppercase">${it.n}</p>
+                    <p class="text-yellow-500 font-black">${it.p} BOSS</p>
+                </div>`;
+            });
+            const m = document.getElementById('p-mine'); m.innerHTML = "";
+            for(let i=1; i<=20; i++) {
+                m.innerHTML += `<div onclick="mine(${i})" class="card text-center">
+                    <p class="text-[9px] text-purple-500 font-black">SERVER #${i}</p>
+                    <p class="text-[7px] opacity-40">MINING: 1 BOSS</p>
+                </div>`;
+            }
         }
 
         function updateUI() {
             document.getElementById('bal-boss').innerText = Math.floor(state.boss);
             document.getElementById('bal-rub').innerText = state.rub.toFixed(2) + " ₽";
+            document.getElementById('u-name').innerText = (tg.initDataUnsafe.user?.first_name || "BOSS").toUpperCase();
             
-            const inv = document.getElementById('inventory-list');
-            inv.innerHTML = "";
-            state.items.forEach(it => {
-                inv.innerHTML += `<div class="card p-3 flex justify-between items-center text-[10px] uppercase font-bold">
-                    <span>${it.i} ${it.n}</span> <span class="text-green-500">Владелец</span>
-                </div>`;
+            // Обновление аватара
+            document.querySelectorAll('.layer').forEach(l => { if(!l.classList.contains('mannequin')) l.classList.remove('active'); });
+            state.items.forEach(itemId => {
+                const it = ITEMS.find(x => x.id === itemId);
+                const slot = document.getElementById(`s-${it.s}`);
+                slot.innerText = it.i; slot.classList.add('active');
             });
-
-            const user = tg.initDataUnsafe.user || {first_name: 'Boss Player'};
-            document.getElementById('user-name').innerText = user.first_name;
-            
-            // Ранг
-            let rank = "Новичок";
-            if(state.items.length > 3) rank = "Местный Хайп";
-            if(state.items.length > 7) rank = "Крипто-Магнат";
-            if(state.items.find(x => x.id === 12)) rank = "ГЛАВНЫЙ БОСС";
-            document.getElementById('user-rank').innerText = rank;
         }
 
-        function save() { localStorage.setItem('BOSS_COIN_V6', JSON.stringify(state)); }
-        
-        window.onload = () => {
-            updateUI();
-            drawChart();
-        }
+        function save() { localStorage.setItem('BOSS_V9', JSON.stringify(state)); }
+        window.onload = () => { renderShop(); updateUI(); checkSubs(); };
     </script>
 </body>
 </html>

@@ -3,262 +3,198 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BOSS COIN V9.0</title>
+    <title>BOSS CITY DRIVE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
-        :root { --neon: #bc13fe; --red: #ff3e3e; --green: #10b981; --bg: #050505; }
-        body { background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; }
-        .orbitron { font-family: 'Orbitron', sans-serif; }
+        body { background: #050505; color: #fff; font-family: 'Orbitron', sans-serif; overflow: hidden; }
         
-        /* ГРАФИК */
-        #chart-area { background: #fff; border-radius: 25px; padding: 15px; box-shadow: 0 0 30px rgba(188,19,254,0.2); }
-        .tf-btn { padding: 5px 10px; font-size: 9px; border-radius: 8px; background: #eee; color: #000; font-weight: 800; }
-        .tf-btn.active { background: var(--neon); color: #fff; }
+        /* КАРТА ГОРОДА */
+        #game-viewport {
+            width: 100%; height: 350px;
+            background: #111; position: relative;
+            perspective: 600px; overflow: hidden;
+            border-bottom: 2px solid #bc13fe;
+        }
+        #map {
+            width: 1000px; height: 1000px;
+            background-image: 
+                linear-gradient(rgba(188, 19, 254, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(188, 19, 254, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            position: absolute; transition: 0.5s ease-out;
+            transform: rotateX(45deg);
+        }
+        
+        /* МАШИНА */
+        #car {
+            width: 40px; height: 60px;
+            background: #bc13fe; position: absolute;
+            box-shadow: 0 0 20px #bc13fe, 0 0 40px #bc13fe;
+            border-radius: 5px; transition: 0.5s;
+            z-index: 100;
+        }
+        #car::after { content: "🔦"; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); }
 
-        /* ПЕРСОНАЖ */
-        #avatar-box { width: 200px; height: 260px; background: #111; border-radius: 40px; margin: 20px auto; position: relative; border: 2px solid #222; }
-        .layer { position: absolute; inset: 0; display: flex; justify-content: center; align-items: center; transition: 0.4s; transform: scale(0); z-index: 10; }
-        .layer.active { transform: scale(1); }
-        .mannequin { font-size: 100px; opacity: 0.2; z-index: 1; }
-        .head { top: -70px; font-size: 60px; }
-        .eyes { top: -50px; font-size: 30px; }
-        .body { top: 30px; font-size: 80px; }
-        .shoes { bottom: -80px; font-size: 40px; }
+        /* ИНТЕРФЕЙС */
+        .cmd-btn { background: rgba(255,255,255,0.05); border: 1px solid #333; padding: 10px; border-radius: 10px; font-size: 10px; }
+        .active-cmd { border-color: #bc13fe; background: rgba(188, 19, 254, 0.2); }
 
-        .card { background: #111; border: 1px solid #222; border-radius: 22px; padding: 15px; }
-        .tab-btn { flex: 1; text-align: center; padding: 12px; font-size: 10px; font-weight: 900; opacity: 0.3; }
-        .tab-btn.active { opacity: 1; color: var(--neon); border-bottom: 2px solid var(--neon); }
-
-        /* ШТРАФ АНИМАЦИЯ */
-        #penalty-alert { position: fixed; top: 20%; left: 50%; transform: translateX(-50%); background: var(--red); color: white; padding: 20px; border-radius: 20px; z-index: 1000; display: none; text-align: center; font-weight: 900; box-shadow: 0 0 50px rgba(255,0,0,0.5); }
+        #target {
+            width: 50px; height: 50px; background: rgba(255, 215, 0, 0.3);
+            border: 2px dashed #FFD700; position: absolute; border-radius: 10px;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; } }
     </style>
 </head>
-<body class="p-4">
+<body>
 
-    <div id="penalty-alert">
-                <div class="text-4xl mb-2">⚠️ ШТРАФ!</div>
-        <div class="text-sm uppercase">Отписка ранее 7 дней:<br>-2 BOSS COIN</div>
-    </div>
-
-    <!-- BALANCE -->
-    <div class="flex justify-between items-center mb-4 px-2">
+    <!-- ВЕРХНЯЯ ПАНЕЛЬ -->
+    <div class="p-4 flex justify-between items-center bg-black/50">
         <div>
-            <p class="text-[9px] opacity-40 uppercase font-black">Mining Profit</p>
-            <div class="flex items-center gap-2">
-                <span id="bal-boss" class="orbitron text-2xl text-purple-500 font-black">0</span>
-                <span class="text-purple-400 text-xs font-bold">BOSS</span>
+            <p class="text-[8px] opacity-50 uppercase">Миссия:</p>
+                        <p id="mission-text" class="text-[10px] text-yellow-500 font-black">ДОСТАВЬ ГРУЗ В СЕКТОР B-4</p>
+        </div>
+        <button onclick="showInstruction()" class="bg-white/10 px-3 py-1 rounded text-[10px]">ИНСТРУКЦИЯ</button>
+    </div>
+
+    <!-- ИГРОВОЕ ПОЛЕ (3-е ЛИЦО) -->
+    <div id="game-viewport">
+        <div id="map">
+            <div id="target"></div>
+            <div id="car"></div>
+        </div>
+    </div>
+
+    <!-- ПАНЕЛЬ КОМАНД (КУМИР СТАЙЛ) -->
+    <div class="p-4">
+        <div class="flex gap-2 mb-4 overflow-x-auto pb-2" id="command-line">
+            <!-- Сюда будут добавляться команды -->
+        </div>
+
+        <div class="grid grid-cols-4 gap-2">
+            <button onclick="addCmd('forward')" class="cmd-btn">↑ ВПЕРЕД</button>
+            <button onclick="addCmd('left')" class="cmd-btn">← ЛЕВО</button>
+            <button onclick="addCmd('right')" class="cmd-btn">ПРАВО →</button>
+            <button onclick="runCommands()" class="cmd-btn bg-purple-600 border-none font-black text-white">ПУСК!</button>
+        </div>
+
+        <div class="mt-4 flex justify-between items-center">
+            <button onclick="getHint()" class="text-[10px] text-purple-400 font-bold uppercase">💡 Подсказка (-1 BOSS)</button>
+            <div class="text-right">
+                <p class="text-[8px] opacity-40">ОЧКИ ОПЫТА:</p>
+                <p id="xp-count" class="text-sm font-black">0 XP</p>
             </div>
         </div>
-        <div class="text-right">
-            <p id="bal-rub" class="orbitron text-xl text-yellow-500 font-black">0.00 ₽</p>
-            <p class="text-[8px] opacity-40 uppercase">Capitalization</p>
-        </div>
     </div>
 
-    <!-- TABS -->
-    <div class="flex bg-white/5 rounded-2xl mb-4">
-        <button onclick="tab('trade')" id="t-trade" class="tab-btn active">БИРЖА</button>
-        <button onclick="tab('mine')" id="t-mine" class="tab-btn">МАЙНИНГ</button>
-        <button onclick="tab('shop')" id="t-shop" class="tab-btn">РЫНОК</button>
-        <button onclick="tab('profile')" id="t-profile" class="tab-btn">ПРОФИЛЬ</button>
+    <!-- МОДАЛКИ -->
+    <div id="modal" class="fixed inset-0 bg-black/90 z-[200] hidden flex flex-col items-center justify-center p-8 text-center">
+        <h2 id="modal-title" class="text-2xl font-black mb-4"></h2>
+        <p id="modal-text" class="mb-8 opacity-70 text-sm"></p>
+        <button onclick="closeModal()" class="bg-purple-600 px-8 py-3 rounded-xl font-black">ПОНЯТНО</button>
     </div>
-
-    <!-- TRADE -->
-    <div id="p-trade">
-        <div id="chart-area">
-            <div class="flex justify-between items-center mb-4">
-                <div class="flex gap-1">
-                    <button onclick="setTf(2000, this)" class="tf-btn active">5S</button>
-                    <button onclick="setTf(10000, this)" class="tf-btn">10S</button>
-                    <button onclick="setTf(60000, this)" class="tf-btn">1H</button>
-                    <button onclick="setTf(300000, this)" class="tf-btn">1D</button>
-                </div>
-                <div class="text-right">
-                    <div id="price" class="orbitron text-2xl font-black text-black">24.39</div>
-                    <div id="trend" class="text-[10px] font-bold text-green-500">+0.00%</div>
-                </div>
-            </div>
-            <canvas id="chart"></canvas>
-        </div>
-        <div class="flex gap-4 mt-6">
-                        <button onclick="trade('buy')" class="flex-1 bg-green-500 py-4 rounded-2xl font-black shadow-lg">КУПИТЬ</button>
-            <button onclick="trade('sell')" class="flex-1 bg-red-500 py-4 rounded-2xl font-black shadow-lg">ПРОДАТЬ</button>
-        </div>
-    </div>
-
-    <!-- PROFILE -->
-    <div id="p-profile" class="hidden">
-        <div id="avatar-box">
-            <div class="mannequin layer active">👤</div>
-            <div id="s-head" class="layer head"></div>
-            <div id="s-eyes" class="layer eyes"></div>
-            <div id="s-body" class="layer body"></div>
-            <div id="s-shoes" class="layer shoes"></div>
-        </div>
-        <div class="text-center mb-6">
-            <h2 id="u-name" class="orbitron text-xl font-black">BOSS</h2>
-            <p class="text-[10px] text-purple-400 font-black">EMPIRE OWNER</p>
-        </div>
-        <button onclick="openExchange()" class="w-full bg-white/5 border border-white/10 py-4 rounded-2xl font-black uppercase text-xs">🤝 ОБМЕН (Команда /obmen)</button>
-    </div>
-
-    <div id="p-shop" class="hidden grid grid-cols-2 gap-3"></div>
-    <div id="p-mine" class="hidden grid grid-cols-2 gap-3"></div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        const BOT_TOKEN = "8730430332:AAGff_PCX2059o3EUwG-d9C19uTqcH4sAZ4";
-        const CHANNELS = [
-            {id: "@osnovabossstore", name: "BOSS CH"},
-            // Добавь остальные 19 тут
-        ];
+        tg.ready();
 
-        let price = 24.39;
-        let tf = 2000;
-        let state = JSON.parse(localStorage.getItem('BOSS_V9')) || {
-            boss: 0, rub: 100, items: [], subs: {}, lastVisit: Date.now()
-        };
+        let carX = 100, carY = 100, carRot = 0;
+        let targetX = 300, targetY = 400;
+        let commands = [];
+        let xp = 0;
 
-        // ТОВАРЫ
-        const ITEMS = [
-            {id: 1, n: "Корона", p: 100, i: "👑", s: "head"},
-            {id: 2, n: "Очки", p: 30, i: "🕶", s: "eyes"},
-            {id: 3, n: "Костюм", p: 200, i: "👔", s: "body"},
-            {id: 4, n: "Кроссы", p: 50, i: "👟", s: "shoes"}
-        ];
-
-        // ГРАФИК
-        let ctx = document.getElementById('chart').getContext('2d');
-        let chart = new Chart(ctx, {
-            type: 'line',
-            data: { labels: Array(15).fill(''), datasets: [{ data: Array(15).fill(24.39), borderColor: '#10b981', borderWidth: 4, fill: false, tension: 0.4, pointRadius: 0 }] },
-            options: { responsive: true, scales: { x: { display: false }, y: { display: true, position: 'right' } }, plugins: { legend: { display: false } } }
-        });
-
-        function updatePrice() {
-            let change = (Math.random() - 0.48) * 6;
-            price += change;
-            if(price < 4.99) price = 4.99; if(price > 119) price = 119;
-            chart.data.datasets[0].data.push(price);
-            chart.data.datasets[0].data.shift();
-            chart.data.datasets[0].borderColor = change >= 0 ? '#10b981' : '#ef4444';
-            chart.update('none');
-            document.getElementById('price').innerText = price.toFixed(2);
-            document.getElementById('price').style.color = change >= 0 ? '#10b981' : '#ef4444';
-            document.getElementById('trend').innerText = (change >= 0 ? "+" : "") + change.toFixed(2) + "%";
+        // ИНИЦИАЛИЗАЦИЯ
+        function initGame() {
+            updateCar();
+            placeTarget();
         }
-        let timer = setInterval(updatePrice, tf);
+                function updateCar() {
+            const car = document.getElementById('car');
+            const map = document.getElementById('map');
+            
+            car.style.left = carX + 'px';
+            car.style.top = carY + 'px';
+            car.style.transform = `rotate(${carRot}deg)`;
 
-        function setTf(ms, btn) {
-            clearInterval(timer); tf = ms; timer = setInterval(updatePrice, tf);
-            document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+            // Камера следит за машиной (3-е лицо)
+            map.style.left = (150 - carX) + 'px';
+            map.style.top = (150 - carY) + 'px';
         }
 
-        // ПРОВЕРКА ПОДПИСКИ И ШТРАФОВ
-        async function checkSubs() {
-            const userId = tg.initDataUnsafe.user?.id;
-            if(!userId) return;
+        function placeTarget() {
+            targetX = Math.floor(Math.random() * 10) * 50 + 100;
+            targetY = Math.floor(Math.random() * 10) * 50 + 100;
+            const t = document.getElementById('target');
+            t.style.left = targetX + 'px';
+            t.style.top = targetY + 'px';
+        }
 
-            for (let chId in state.subs) {
-                const subDate = state.subs[chId];
-                const daysPassed = (Date.now() - subDate) / (1000 * 60 * 60 * 24);
+        function addCmd(type) {
+            commands.push(type);
+            const line = document.getElementById('command-line');
+            const icons = {forward: '↑', left: '←', right: '→'};
+            line.innerHTML += `<div class="bg-white/10 w-8 h-8 flex items-center justify-center rounded border border-white/20 text-xs">${icons[type]}</div>`;
+        }
 
-                if(daysPassed < 7) {
-                    // Запрос к боту (метод getChatMember)
-                    try {
-                        const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getChatMember?chat_id=${chId}&user_id=${userId}`);
-                        const data = await res.json();
-                        if(data.result && (data.result.status === 'left' || data.result.status === 'kicked')) {
-                            applyPenalty(chId);
-                        }
-                    } catch(e) { console.log("Ошибка проверки"); }
+        async function runCommands() {
+            if(commands.length === 0) return;
+            
+            for(let cmd of commands) {
+                if(cmd === 'forward') {
+                    const rad = (carRot - 90) * Math.PI / 180;
+                    carX += Math.cos(rad) * 50;
+                    carY += Math.sin(rad) * 50;
+                } else if(cmd === 'left') {
+                    carRot -= 90;
+                } else if(cmd === 'right') {
+                    carRot += 90;
                 }
+                updateCar();
+                await new Promise(r => setTimeout(r, 600));
             }
+
+            checkWin();
+            commands = [];
+            document.getElementById('command-line').innerHTML = '';
         }
 
-        function applyPenalty(chId) {
-            state.boss -= 2;
-            delete state.subs[chId];
-            save(); updateUI();
-            const alert = document.getElementById('penalty-alert');
-            alert.style.display = 'block';
-            tg.HapticFeedback.notificationOccurred('error');
-            setTimeout(() => alert.style.display = 'none', 5000);
-        }
-
-        async function mine(id) {
-            const chId = "@osnovabossstore"; // Для примера один канал
-            window.open(`https://t.me/${chId.replace('@','')}`);
-            
-            setTimeout(async () => {
-                // Имитация проверки через бота
-                state.boss += 1;
-                state.subs[chId] = Date.now(); // Записываем дату подписки
-                save(); updateUI();
+        function checkWin() {
+            const dist = Math.sqrt(Math.pow(carX - targetX, 2) + Math.pow(carY - targetY, 2));
+            if(dist < 50) {
+                xp += 100;
+                document.getElementById('xp-count').innerText = xp + " XP";
+                showModal("МИССИЯ ВЫПОЛНЕНА!", "Ты получил 100 XP. Машина становится мощнее!");
+                placeTarget();
                 tg.HapticFeedback.notificationOccurred('success');
-            }, 5000);
-        }
-
-        // ОБМЕН
-        function openExchange() {
-            const userId = tg.initDataUnsafe.user?.id;
-            tg.openTelegramLink(`https://t.me/ТВОЙ_БОТ?start=obmen_${userId}`);
-        }
-
-        // ОСТАЛЬНАЯ ЛОГИКА
-        function buy(id) {
-            const it = ITEMS.find(x => x.id === id);
-            if(state.boss >= it.p) {
-                state.boss -= it.p; state.items.push(it.id);
-                save(); updateUI();
+            } else {
+                showModal("ПРОМАХ!", "Машина не доехала до цели. Попробуй составить другой маршрут.");
+                tg.HapticFeedback.notificationOccurred('error');
             }
         }
 
-        function tab(t) {
-            ['trade', 'mine', 'shop', 'profile'].forEach(id => {
-                document.getElementById(`p-${id}`).classList.toggle('hidden', id !== t);
-                document.getElementById(`t-${id}`).classList.toggle('active', id === t);
-            });
+        // ПОДСКАЗКА
+        function getHint() {
+            showModal("ПОДСКАЗКА", `Цель находится на координатах X:${targetX/50}, Y:${targetY/50}. Используй команды поворота!`);
         }
 
-        function renderShop() {
-            const s = document.getElementById('p-shop'); s.innerHTML = "";
-            ITEMS.forEach(it => {
-                s.innerHTML += `<div onclick="buy(${it.id})" class="card text-center">
-                    <div class="text-4xl mb-2">${it.i}</div>
-                    <p class="text-[10px] font-black uppercase">${it.n}</p>
-                    <p class="text-yellow-500 font-black">${it.p} BOSS</p>
-                </div>`;
-            });
-            const m = document.getElementById('p-mine'); m.innerHTML = "";
-            for(let i=1; i<=20; i++) {
-                m.innerHTML += `<div onclick="mine(${i})" class="card text-center">
-                    <p class="text-[9px] text-purple-500 font-black">SERVER #${i}</p>
-                    <p class="text-[7px] opacity-40">MINING: 1 BOSS</p>
-                </div>`;
-            }
+        function showInstruction() {
+            showModal("КАК ИГРАТЬ", "1. Добавляй команды (Вперед, Лево, Право).\n2. Нажимай ПУСК.\n3. Твоя задача - доехать до желтого квадрата.\n4. Копи XP для тюнинга в Гараже!");
         }
 
-        function updateUI() {
-            document.getElementById('bal-boss').innerText = Math.floor(state.boss);
-            document.getElementById('bal-rub').innerText = state.rub.toFixed(2) + " ₽";
-            document.getElementById('u-name').innerText = (tg.initDataUnsafe.user?.first_name || "BOSS").toUpperCase();
-            
-            // Обновление аватара
-            document.querySelectorAll('.layer').forEach(l => { if(!l.classList.contains('mannequin')) l.classList.remove('active'); });
-            state.items.forEach(itemId => {
-                const it = ITEMS.find(x => x.id === itemId);
-                const slot = document.getElementById(`s-${it.s}`);
-                slot.innerText = it.i; slot.classList.add('active');
-            });
+        function showModal(title, text) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-text').innerText = text;
+            document.getElementById('modal').style.display = 'flex';
         }
 
-        function save() { localStorage.setItem('BOSS_V9', JSON.stringify(state)); }
-        window.onload = () => { renderShop(); updateUI(); checkSubs(); };
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        window.onload = initGame;
     </script>
 </body>
 </html>

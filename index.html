@@ -3,198 +3,257 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BOSS CITY DRIVE</title>
+    <title>BOSS: EVOLUTION X</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@300;700&display=swap" rel="stylesheet">
     <style>
-        body { background: #050505; color: #fff; font-family: 'Orbitron', sans-serif; overflow: hidden; }
+        :root { --p: #bc13fe; --g: #FFD700; --r: #ff2e2e; }
+        body { background: #020202; color: #fff; font-family: 'JetBrains Mono', monospace; overflow: hidden; }
+        .orbitron { font-family: 'Orbitron', sans-serif; }
         
-        /* КАРТА ГОРОДА */
-        #game-viewport {
-            width: 100%; height: 350px;
-            background: #111; position: relative;
-            perspective: 600px; overflow: hidden;
-            border-bottom: 2px solid #bc13fe;
+        /* ГАРАЖ */
+        #garage {
+            height: 40vh; background: radial-gradient(circle at 50% 100%, #1a0521 0%, #020202 100%);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            position: relative; overflow: hidden;
         }
-        #map {
-            width: 1000px; height: 1000px;
-            background-image: 
-                linear-gradient(rgba(188, 19, 254, 0.1) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(188, 19, 254, 0.1) 1px, transparent 1px);
-            background-size: 50px 50px;
-            position: absolute; transition: 0.5s ease-out;
-            transform: rotateX(45deg);
+        #car-display {
+            width: 220px; height: 100px; position: relative;
+            filter: drop-shadow(0 0 20px var(--p)); transition: 0.5s;
         }
-        
-        /* МАШИНА */
-        #car {
-            width: 40px; height: 60px;
-            background: #bc13fe; position: absolute;
-            box-shadow: 0 0 20px #bc13fe, 0 0 40px #bc13fe;
-            border-radius: 5px; transition: 0.5s;
-            z-index: 100;
+        .neon-floor {
+            width: 300px; height: 2px; background: var(--p);
+            box-shadow: 0 0 30px var(--p); margin-top: 20px; animation: breathe 2s infinite;
         }
-        #car::after { content: "🔦"; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); }
+        @keyframes breathe { 0%, 100% { opacity: 0.3; transform: scaleX(0.8); } 50% { opacity: 1; transform: scaleX(1.1); } }
+
+        /* ТАКТИЧЕСКАЯ КАРТА */
+        #map-grid {
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px;
+            padding: 15px; background: #080808; border-radius: 20px;
+            border: 1px solid #1a1a1a;
+        }
+        .cell {
+            aspect-ratio: 1; background: #111; border-radius: 8px;
+            display: flex; items-center; justify-center; font-size: 14px;
+            border: 1px solid #1a1a1a; position: relative; overflow: hidden;
+        }
+        .cell.fog { background: #0c0c0c; color: transparent; }
+        .cell.active { border-color: var(--p); box-shadow: inset 0 0 10px #bc13fe33; color: white; }
+        .cell.target { background: #ffd70022; border-color: var(--g); }
 
         /* ИНТЕРФЕЙС */
-        .cmd-btn { background: rgba(255,255,255,0.05); border: 1px solid #333; padding: 10px; border-radius: 10px; font-size: 10px; }
-        .active-cmd { border-color: #bc13fe; background: rgba(188, 19, 254, 0.2); }
-
-        #target {
-            width: 50px; height: 50px; background: rgba(255, 215, 0, 0.3);
-            border: 2px dashed #FFD700; position: absolute; border-radius: 10px;
-            animation: pulse 1s infinite;
+        .glass-btn { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 10px; border-radius: 12px; font-size: 10px; text-transform: uppercase; }
+                .glass-btn:active { background: var(--p); color: white; border-color: var(--p); }
+        
+        #penalty-overlay {
+            position: fixed; inset: 0; background: rgba(255,0,0,0.9);
+            z-index: 1000; display: none; flex-direction: column;
+            align-items: center; justify-content: center; text-align: center;
         }
-        @keyframes pulse { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; } }
     </style>
 </head>
 <body>
 
-    <!-- ВЕРХНЯЯ ПАНЕЛЬ -->
-    <div class="p-4 flex justify-between items-center bg-black/50">
+    <div id="penalty-overlay">
+        <h1 class="orbitron text-5xl font-black mb-4">CRITICAL ERROR</h1>
+        <p class="text-xl font-bold italic">ОБНАРУЖЕНА ОТПИСКА!<br>ШТРАФ: -5 BOSS COINS</p>
+        <p class="mt-8 opacity-50 uppercase text-xs">Машина заблокирована на 24 часа</p>
+    </div>
+
+    <!-- HEADER -->
+    <div class="p-4 flex justify-between items-end border-b border-white/5">
         <div>
-            <p class="text-[8px] opacity-50 uppercase">Миссия:</p>
-                        <p id="mission-text" class="text-[10px] text-yellow-500 font-black">ДОСТАВЬ ГРУЗ В СЕКТОР B-4</p>
+            <div class="text-[8px] opacity-40 uppercase tracking-widest">User Level</div>
+            <div id="rank" class="orbitron text-sm text-purple-400 font-black">STREET RACER</div>
         </div>
-        <button onclick="showInstruction()" class="bg-white/10 px-3 py-1 rounded text-[10px]">ИНСТРУКЦИЯ</button>
-    </div>
-
-    <!-- ИГРОВОЕ ПОЛЕ (3-е ЛИЦО) -->
-    <div id="game-viewport">
-        <div id="map">
-            <div id="target"></div>
-            <div id="car"></div>
+        <div class="text-right">
+            <div class="orbitron text-xl font-black text-yellow-500" id="bal-rub">0.00 ₽</div>
+            <div class="text-[8px] opacity-40 uppercase">Global Wallet</div>
         </div>
     </div>
 
-    <!-- ПАНЕЛЬ КОМАНД (КУМИР СТАЙЛ) -->
-    <div class="p-4">
-        <div class="flex gap-2 mb-4 overflow-x-auto pb-2" id="command-line">
-            <!-- Сюда будут добавляться команды -->
+    <!-- GARAGE -->
+    <div id="garage">
+        <div id="car-display">
+            <!-- SVG Car that changes appearance based on Level -->
+            <svg viewBox="0 0 100 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path id="car-body" d="M10 35 L15 15 L80 15 L95 35 Z" stroke="white" stroke-width="2" />
+                <circle id="w1" cx="25" cy="40" r="6" stroke="white" stroke-width="2" />
+                <circle id="w2" cx="75" cy="40" r="6" stroke="white" stroke-width="2" />
+                <path id="neon-lights" d="M15 25 L85 25" stroke="#bc13fe" stroke-width="1" stroke-dasharray="2 2" />
+            </svg>
         </div>
-
-        <div class="grid grid-cols-4 gap-2">
-            <button onclick="addCmd('forward')" class="cmd-btn">↑ ВПЕРЕД</button>
-            <button onclick="addCmd('left')" class="cmd-btn">← ЛЕВО</button>
-            <button onclick="addCmd('right')" class="cmd-btn">ПРАВО →</button>
-            <button onclick="runCommands()" class="cmd-btn bg-purple-600 border-none font-black text-white">ПУСК!</button>
-        </div>
-
-        <div class="mt-4 flex justify-between items-center">
-            <button onclick="getHint()" class="text-[10px] text-purple-400 font-bold uppercase">💡 Подсказка (-1 BOSS)</button>
+        <div class="neon-floor"></div>
+        <div class="absolute bottom-4 left-4 right-4 flex justify-between items-center">
+            <div>
+                <p class="text-[8px] opacity-50">ENERGY (FUEL)</p>
+                <div class="flex gap-1 mt-1" id="energy-bar"></div>
+            </div>
             <div class="text-right">
-                <p class="text-[8px] opacity-40">ОЧКИ ОПЫТА:</p>
-                <p id="xp-count" class="text-sm font-black">0 XP</p>
+                                <p class="text-[8px] opacity-50">COIN VALUE</p>
+                <p id="coin-price" class="orbitron text-xs text-green-500">24.50 ₽</p>
             </div>
         </div>
     </div>
 
-    <!-- МОДАЛКИ -->
-    <div id="modal" class="fixed inset-0 bg-black/90 z-[200] hidden flex flex-col items-center justify-center p-8 text-center">
-        <h2 id="modal-title" class="text-2xl font-black mb-4"></h2>
-        <p id="modal-text" class="mb-8 opacity-70 text-sm"></p>
-        <button onclick="closeModal()" class="bg-purple-600 px-8 py-3 rounded-xl font-black">ПОНЯТНО</button>
+    <!-- MAIN GAME -->
+    <div class="p-4">
+        <div class="flex bg-white/5 rounded-xl p-1 mb-4 overflow-hidden">
+            <button onclick="tab('map')" id="t-map" class="flex-1 py-2 text-[10px] font-black uppercase bg-white/10 rounded-lg">Tactical Map</button>
+            <button onclick="tab('shop')" id="t-shop" class="flex-1 py-2 text-[10px] font-black uppercase opacity-40">Upgrade Shop</button>
+            <button onclick="tab('trade')" id="t-trade" class="flex-1 py-2 text-[10px] font-black uppercase opacity-40">P2P Trade</button>
+        </div>
+
+        <div id="view-map">
+            <div id="map-grid"></div>
+            <div class="grid grid-cols-4 gap-2 mt-4">
+                <button onclick="addCmd('U')" class="glass-btn">↑ UP</button>
+                <button onclick="addCmd('L')" class="glass-btn">← L</button>
+                <button onclick="addCmd('R')" class="glass-btn">R →</button>
+                <button onclick="execute()" class="glass-btn bg-purple-600 border-none font-black text-white">RUN</button>
+            </div>
+            <div id="cmd-stack" class="mt-2 flex gap-1 h-4 overflow-hidden italic text-[8px] opacity-30 uppercase"></div>
+        </div>
+
+        <div id="view-shop" class="hidden">
+            <div class="space-y-2 h-[300px] overflow-y-auto" id="shop-list"></div>
+        </div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.ready();
+        tg.ready(); tg.expand();
 
-        let carX = 100, carY = 100, carRot = 0;
-        let targetX = 300, targetY = 400;
-        let commands = [];
-        let xp = 0;
+        let state = JSON.parse(localStorage.getItem('BOSS_EVO_X')) || {
+            boss: 0, rub: 100, xp: 0, energy: 5, pos: 12, items: [], subs: {}
+        };
 
-        // ИНИЦИАЛИЗАЦИЯ
-        function initGame() {
-            updateCar();
-            placeTarget();
+        const SHOP = [
+            { id: 'neon', n: 'Неоновая подсветка', p: 10, d: 'Меняет цвет машины и дает +5% к XP' },
+            { id: 'engine', n: 'Турбо-движок', p: 50, d: 'Миссии проходят в 2 раза быстрее' },
+            { id: 'armor', n: 'Броня титана', p: 100, d: 'Защита от штрафов при отписке (одноразовая)' },
+            { id: 'spoiler', n: 'Спойлер GT', p: 25, d: 'Открывает новые сектора на карте' }
+        ];
+
+        // ИНИЦИАЛИЗАЦИЯ КАРТЫ
+        function initMap() {
+            const grid = document.getElementById('map-grid');
+            grid.innerHTML = "";
+            for(let i=0; i<25; i++) {
+                let cellClass = i === state.pos ? 'cell active' : 'cell fog';
+                if(i === 4) cellClass += ' target';
+                grid.innerHTML += `<div id="c-${i}" class="${cellClass}">${i === 4 ? '💎' : '?'}</div>`;
+            }
         }
-                function updateCar() {
-            const car = document.getElementById('car');
-            const map = document.getElementById('map');
+
+        let cmdQueue = [];
+        function addCmd(c) {
+            if(cmdQueue.length < 5) {
+                cmdQueue.push(c);
+                document.getElementById('cmd-stack').innerText = cmdQueue.join(' > ');
+            }
+        }
+
+        async function execute() {
+            if(state.energy <= 0) { 
+                alert("Нет топлива! Подпишись на каналы в разделе Майнинг."); 
+                return; 
+            }
             
-            car.style.left = carX + 'px';
-            car.style.top = carY + 'px';
-            car.style.transform = `rotate(${carRot}deg)`;
+            for(let cmd of cmdQueue) {
+                let newPos = state.pos;
+                if(cmd === 'U') newPos -= 5;
+                if(cmd === 'L') newPos -= 1;
+                if(cmd === 'R') newPos += 1;
 
-            // Камера следит за машиной (3-е лицо)
-            map.style.left = (150 - carX) + 'px';
-            map.style.top = (150 - carY) + 'px';
-        }
-
-        function placeTarget() {
-            targetX = Math.floor(Math.random() * 10) * 50 + 100;
-            targetY = Math.floor(Math.random() * 10) * 50 + 100;
-            const t = document.getElementById('target');
-            t.style.left = targetX + 'px';
-            t.style.top = targetY + 'px';
-        }
-
-        function addCmd(type) {
-            commands.push(type);
-            const line = document.getElementById('command-line');
-            const icons = {forward: '↑', left: '←', right: '→'};
-            line.innerHTML += `<div class="bg-white/10 w-8 h-8 flex items-center justify-center rounded border border-white/20 text-xs">${icons[type]}</div>`;
-        }
-
-        async function runCommands() {
-            if(commands.length === 0) return;
-            
-            for(let cmd of commands) {
-                if(cmd === 'forward') {
-                    const rad = (carRot - 90) * Math.PI / 180;
-                    carX += Math.cos(rad) * 50;
-                    carY += Math.sin(rad) * 50;
-                } else if(cmd === 'left') {
-                    carRot -= 90;
-                } else if(cmd === 'right') {
-                    carRot += 90;
+                if(newPos >= 0 && newPos < 25) {
+                    document.getElementById(`c-${state.pos}`).classList.remove('active');
+                    state.pos = newPos;
+                    const cell = document.getElementById(`c-${state.pos}`);
+                    cell.classList.remove('fog');
+                    cell.classList.add('active');
+                    cell.innerText = '🚗';
+                    tg.HapticFeedback.impactOccurred('light');
                 }
-                updateCar();
-                await new Promise(r => setTimeout(r, 600));
+                await new Promise(r => setTimeout(r, 400));
+            }
+            
+            if(state.pos === 4) {
+                state.rub += 50;
+                alert("ДЖЕКПОТ! Найдено 50 рублей.");
+                state.pos = 12;
+                initMap();
             }
 
-            checkWin();
-            commands = [];
-            document.getElementById('command-line').innerHTML = '';
+            state.energy--;
+            cmdQueue = [];
+            document.getElementById('cmd-stack').innerText = "";
+            save(); updateUI();
         }
 
-        function checkWin() {
-            const dist = Math.sqrt(Math.pow(carX - targetX, 2) + Math.pow(carY - targetY, 2));
-            if(dist < 50) {
-                xp += 100;
-                document.getElementById('xp-count').innerText = xp + " XP";
-                showModal("МИССИЯ ВЫПОЛНЕНА!", "Ты получил 100 XP. Машина становится мощнее!");
-                placeTarget();
+        function updateUI() {
+            document.getElementById('bal-rub').innerText = state.rub.toFixed(2) + " ₽";
+            document.getElementById('energy-bar').innerHTML = '⚡'.repeat(state.energy);
+            
+            // Визуальная эволюция машины
+            const body = document.getElementById('car-body');
+            const lights = document.getElementById('neon-lights');
+            if(state.items.includes('neon')) lights.style.stroke = "#00f3ff";
+            if(state.xp > 500) body.style.stroke = "#FFD700";
+            
+            document.getElementById('rank').innerText = state.xp > 1000 ? "BOSS OF THE CITY" : "STREET RACER";
+        }
+
+        function tab(t) {
+            ['map', 'shop', 'trade'].forEach(v => {
+                document.getElementById(`view-${v}`).classList.toggle('hidden', v !== t);
+                document.getElementById(`t-${v}`).classList.toggle('opacity-40', v !== t);
+                document.getElementById(`t-${v}`).classList.toggle('bg-white/10', v === t);
+            });
+            if(t === 'shop') renderShop();
+        }
+
+        function renderShop() {
+            const list = document.getElementById('shop-list');
+            list.innerHTML = "";
+            SHOP.forEach(it => {
+                list.innerHTML += `
+                    <div onclick="buy('${it.id}')" class="bg-white/5 p-4 rounded-xl border border-white/5">
+                        <div class="flex justify-between mb-1">
+                            <span class="text-[10px] font-black uppercase text-purple-400">${it.n}</span>
+                            <span class="text-yellow-500 orbitron text-[10px]">${it.p} BOSS</span>
+                        </div>
+                        <p class="text-[8px] opacity-40 italic">${it.d}</p>
+                    </div>
+                `;
+            });
+        }
+
+        function buy(id) {
+            const it = SHOP.find(x => x.id === id);
+            if(state.boss >= it.p) {
+                state.boss -= it.p;
+                state.items.push(id);
+                state.xp += 100;
+                save(); updateUI();
                 tg.HapticFeedback.notificationOccurred('success');
             } else {
-                showModal("ПРОМАХ!", "Машина не доехала до цели. Попробуй составить другой маршрут.");
-                tg.HapticFeedback.notificationOccurred('error');
+                alert("Мало BOSS COINS! Иди в Майнинг.");
             }
         }
 
-        // ПОДСКАЗКА
-        function getHint() {
-            showModal("ПОДСКАЗКА", `Цель находится на координатах X:${targetX/50}, Y:${targetY/50}. Используй команды поворота!`);
+        function save() { localStorage.setItem('BOSS_EVO_X', JSON.stringify(state)); }
+
+        // ЭТОТ КОД ПРОВЕРЯЕТ ШТРАФ ПРИ ВХОДЕ
+        function checkIntegrity() {
+            // Здесь должна быть проверка через Google Apps Script, которую мы обсуждали
+            // Если скрипт вернул "Unsubscribed", включаем оверлей:
+            // document.getElementById('penalty-overlay').style.display = 'flex';
         }
 
-        function showInstruction() {
-            showModal("КАК ИГРАТЬ", "1. Добавляй команды (Вперед, Лево, Право).\n2. Нажимай ПУСК.\n3. Твоя задача - доехать до желтого квадрата.\n4. Копи XP для тюнинга в Гараже!");
-        }
-
-        function showModal(title, text) {
-            document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-text').innerText = text;
-            document.getElementById('modal').style.display = 'flex';
-        }
-
-        function closeModal() {
-            document.getElementById('modal').style.display = 'none';
-        }
-
-        window.onload = initGame;
+        window.onload = () => { initMap(); updateUI(); checkIntegrity(); };
     </script>
 </body>
 </html>

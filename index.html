@@ -3,202 +3,209 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BOSS: OS DEV GRID</title>
+    <title>BOSS: LOGIC TERMINAL</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Unbounded:wght@400;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=Unbounded:wght@900&display=swap" rel="stylesheet">
     <style>
-        :root { --gh-green: #39d353; --gh-bg: #0d1117; --gh-border: #30363d; --p: #bc13fe; }
-        body { background: var(--gh-bg); color: #c9d1d9; font-family: 'JetBrains Mono', monospace; overflow: hidden; }
+        :root { --neon: #00ff88; --p: #bc13fe; --bg: #050505; }
+        body { background: var(--bg); color: #fff; font-family: 'Fira Code', monospace; overflow: hidden; touch-action: manipulation; }
         .unbound { font-family: 'Unbounded', sans-serif; }
         
-        /* ГИТХАБ СЕТКА */
-        .contribution-grid { display: grid; grid-template-columns: repeat(15, 1fr); gap: 3px; width: fit-content; }
-        .cell { width: 10px; height: 10px; background: #161b22; border-radius: 2px; }
-        .cell.active { background: var(--gh-green); box-shadow: 0 0 5px var(--gh-green); }
-
-        /* ИНТЕРФЕЙС */
-        .panel { background: #161b22; border: 1px solid var(--gh-border); border-radius: 12px; overflow: hidden; }
-        .tab { padding: 8px 16px; font-size: 10px; border-right: 1px solid var(--gh-border); opacity: 0.5; cursor: pointer; }
-        .tab.active { opacity: 1; background: #0d1117; border-bottom: 2px solid var(--p); }
-
-        /* ТЕРМИНАЛ / ПРЕВЬЮ */
-        #display-area { height: 35vh; border-radius: 12px; background: #000; position: relative; border: 1px solid var(--gh-border); }
-        .bot-msg { background: #21262d; padding: 8px 12px; border-radius: 12px 12px 12px 0; font-size: 11px; margin-bottom: 8px; width: fit-content; max-width: 80%; }
+        /* ТЕРМИНАЛ */
+        .terminal-box { background: #0c0c0c; border: 2px solid #1a1a1a; border-radius: 20px; box-shadow: inset 0 0 20px rgba(0,255,136,0.05); }
+        .line-num { color: #333; text-align: right; padding-right: 15px; user-select: none; }
         
-        /* КНОПКА COMMIT */
-        .btn-commit { background: #238636; color: #fff; font-weight: bold; border-radius: 6px; padding: 10px 20px; transition: 0.3s; }
-        .btn-commit:active { transform: scale(0.95); background: #2ea043; }
+        /* ПОДСКАЗКА (GHOST TEXT) */
+        .input-wrapper { position: relative; width: 100%; }
+        #ghost-text { position: absolute; left: 0; top: 0; color: #222; z-index: 1; pointer-events: none; white-space: pre; }
+        #main-input { position: relative; z-index: 2; background: transparent; color: var(--neon); width: 100%; outline: none; border: none; caret-color: #fff; white-space: pre; }
 
-        textarea { background: transparent; color: #e6edf3; outline: none; resize: none; width: 100%; height: 100%; font-size: 13px; line-height: 1.6; }
-        
-        /* МОДАЛКА */
-        #gh-modal {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 90%; background: #161b22; border: 1px solid var(--gh-border);
-            border-radius: 12px; padding: 25px; display: none; z-index: 1000;
-                        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-        }
+        /* МОЗГОВОЙ МОДУЛЬ (ПАМЯТЬ) */
+        .memory-slot { width: 45%; background: #111; border: 1px solid #222; border-radius: 10px; padding: 10px; font-size: 10px; }
+        .memory-slot.active { border-color: var(--p); background: rgba(188, 19, 254, 0.1); }
+
+        /* КНОПКИ */
+        .btn-action { background: linear-gradient(135deg, var(--p), #6b21a8); border-radius: 16px; padding: 18px; font-weight: 900; transition: 0.2s; border: none; width: 100%; display: block; }
+        .btn-action:active { transform: scale(0.96); filter: brightness(1.2); }
+
+        /* АНИМАЦИЯ ПЕЧАТИ */
+        .scanline { width: 100%; height: 2px; background: rgba(0, 255, 136, 0.1); position: absolute; top: 0; animation: scan 4s linear infinite; pointer-events: none; }
+        @keyframes scan { from { top: 0; } to { top: 100%; } }
     </style>
 </head>
-<body class="p-4">
+<body class="p-4 flex flex-col h-screen">
 
-    <!-- HEADER: STATS & GRID -->
-    <div class="flex justify-between items-start mb-6">
+    <div class="scanline"></div>
+
+    <!-- TOP: STATUS -->
+    <div class="flex justify-between items-center mb-4">
         <div>
-            <div class="flex items-center gap-2 mb-2">
-                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500"></div>
-                <div>
-                    <p class="text-[10px] font-bold text-white uppercase">Boss_Developer</p>
-                    <p id="rank" class="text-[8px] text-zinc-500">RANK: JUNIOR ARCHITECT</p>
-                </div>
-            </div>
-            <div class="contribution-grid" id="cont-grid">
-                <!-- Квадраты генерируются через JS -->
-            </div>
+                        <p class="text-[8px] text-zinc-500 uppercase tracking-[4px]">System Logic</p>
+            <h1 class="unbound text-sm text-white">CORE_LEARNING</h1>
         </div>
         <div class="text-right">
-            <p id="balance" class="unbound text-xl text-white">0 <span class="text-[10px] text-green-400">BC</span></p>
-            <p class="text-[8px] opacity-40 uppercase">Total Commits: <span id="commit-count">0</span></p>
+            <span id="balance" class="unbound text-lg text-[#00ff88]">0 <span class="text-[10px]">BC</span></span>
         </div>
     </div>
 
-    <!-- MAIN REPOSITORY (EDITOR) -->
-    <div class="panel flex flex-col h-[35vh] mb-4">
-        <div class="flex bg-[#0d1117] border-b border-[#30363d]">
-            <div class="tab active">main.py</div>
-            <div class="tab">index.html</div>
-            <div class="tab">config.json</div>
+    <!-- MEMORY MODULE (ВИЗУАЛИЗАЦИЯ ЛОГИКИ) -->
+    <div class="flex flex-wrap gap-2 mb-4 justify-between" id="memory-board">
+        <div class="memory-slot" id="slot-1">
+            <p class="opacity-30">VAR_X:</p>
+            <span class="val text-purple-400">NULL</span>
         </div>
-        <div class="p-4 flex-1">
-            <textarea id="editor" spellcheck="false" placeholder="# Начни писать код здесь..."></textarea>
+        <div class="memory-slot" id="slot-2">
+            <p class="opacity-30">VAR_Y:</p>
+            <span class="val text-purple-400">NULL</span>
         </div>
     </div>
 
-    <!-- PREVIEW AREA (SIMULATOR) -->
-    <div id="display-area" class="p-4 overflow-y-auto">
-        <div id="bot-ui" class="hidden h-full">
-            <div class="text-[9px] text-center opacity-30 uppercase mb-4">Telegram Bot Simulator</div>
-            <div id="chat-flow"></div>
+    <!-- TERMINAL AREA -->
+    <div class="terminal-box flex-1 flex flex-col p-4 overflow-hidden mb-4">
+        <div class="flex mb-2 border-b border-white/5 pb-2">
+            <div class="dot w-2 h-2 rounded-full bg-red-500 mr-1"></div>
+            <div class="dot w-2 h-2 rounded-full bg-yellow-500 mr-1"></div>
+            <div class="dot w-2 h-2 rounded-full bg-green-500"></div>
         </div>
-        <div id="web-ui" class="h-full">
-            <div class="text-[9px] text-center opacity-30 uppercase mb-4">Web Browser Simulator</div>
-            <div id="web-frame" class="p-4 rounded-lg bg-zinc-900/50 min-h-[100px]">
-                <p class="text-zinc-600 text-[11px]">Жду деплоя кода...</p>
+        
+        <div class="flex flex-1 text-sm overflow-y-auto">
+            <div class="line-num text-[10px]">1<br>2<br>3<br>4<br>5<br>6<br>7<br>8</div>
+            <div class="input-wrapper">
+                <div id="ghost-text"></div>
+                <textarea id="main-input" autofocus spellcheck="false" oninput="syncGhost()"></textarea>
             </div>
         </div>
-    </div>
-        <!-- ACTION BAR -->
-    <div class="fixed bottom-0 left-0 right-0 p-4 bg-[#0d1117] border-t border-[#30363d] flex items-center gap-4">
-        <div class="flex-1">
-            <p id="task-info" class="text-[10px] text-green-500 font-bold mb-1">TASK: Инициализация бота</p>
-            <p id="task-desc" class="text-[11px] opacity-60">Напиши: bot.start()</p>
+        
+        <div id="console-output" class="text-[10px] text-zinc-500 mt-4 border-t border-white/5 pt-2 min-h-[40px]">
+            > Waiting for code input...
         </div>
-        <button onclick="commitAndDeploy()" class="btn-commit text-xs px-6 py-3 uppercase">Commit & Deploy</button>
     </div>
 
-    <!-- SUCCESS MODAL -->
-    <div id="gh-modal">
-        <div class="text-center">
-            <div class="w-12 h-12 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">✓</div>
-            <h2 class="unbound text-lg mb-2">MERGE SUCCESSFUL!</h2>
-            <p id="modal-msg" class="text-[11px] text-zinc-400 mb-6">Ваш код успешно развернут в основной ветке. Получено +100 BOSS Coins.</p>
-            <button onclick="nextStep()" class="w-full bg-[#21262d] py-3 rounded-lg text-xs font-bold border border-[#30363d]">СЛЕДУЮЩИЙ КОММИТ</button>
+    <!-- INSTRUCTION & BUTTON -->
+    <div class="mb-4">
+        <div class="bg-white/5 p-4 rounded-2xl mb-4">
+            <p id="task-title" class="text-[10px] font-bold text-[#00ff88] uppercase mb-1">Урок 1: Переменные</p>
+            <p id="task-desc" class="text-[11px] leading-snug text-zinc-300">Создай переменную BOSS и присвой ей значение 100.</p>
         </div>
+                <button onclick="executeCode()" class="btn-action unbound text-xs text-white uppercase tracking-widest">
+            ВЫПОЛНИТЬ КОД (RUN)
+        </button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready(); tg.expand();
 
-        let state = {
-            boss: 0,
-            commits: 0,
-            step: 0,
-            history: []
-        };
+        let state = { boss: 0, step: 0 };
 
-        const QUESTS = [
-            { type: 'web', title: "Header Deploy", desc: "Создай заголовок: <h1>BOSS STORE</h1>", target: "<h1>BOSS STORE</h1>", r: 50 },
-            { type: 'web', title: "Style Inject", desc: "Добавь красный цвет: <h1 style='color:red'>", target: "color:red", r: 50 },
-            { type: 'bot', title: "Bot Init", desc: "Запусти бота: bot.start()", target: "bot.start()", r: 100 },
-            { type: 'bot', title: "Auto Answer", desc: "Отправь привет: bot.send('Hello')", target: "bot.send('Hello')", r: 150 },
-            { type: 'web', title: "UX Button", desc: "Кнопка покупки: <button>BUY</button>", target: "<button>", r: 100 }
+        const LESSONS = [
+            { 
+                title: "Урок 1: Переменные", 
+                desc: "Запиши в память число 100. Напиши: boss = 100", 
+                hint: "boss = 100", 
+                target: "boss=100",
+                reward: 100,
+                memory: { slot: 1, label: "BOSS:", val: "100" }
+            },
+            { 
+                title: "Урок 2: Математика", 
+                desc: "Удвой значение. Напиши: boss = boss * 2", 
+                hint: "boss = boss * 2", 
+                target: "boss=boss*2",
+                reward: 200,
+                memory: { slot: 1, label: "BOSS:", val: "200" }
+            },
+            { 
+                title: "Урок 3: Условия (IF)", 
+                desc: "Проверь, если boss больше 100, выведи 'WIN'. Напиши: if boss > 100: print('WIN')", 
+                hint: "if boss > 100: print('WIN')", 
+                target: "ifboss>100:print('win')",
+                reward: 300,
+                output: "WIN"
+            },
+            { 
+                title: "Урок 4: Циклы (FOR)", 
+                desc: "Повтори вывод 3 раза. Напиши: for i in range(3): print('OK')", 
+                hint: "for i in range(3): print('OK')", 
+                target: "foriinrange(3):print('ok')",
+                reward: 500,
+                output: "OK\nOK\nOK"
+            }
         ];
 
-        // ГЕНЕРАЦИЯ ГРАФИКА
-        function initGrid() {
-            const grid = document.getElementById('cont-grid');
-            grid.innerHTML = "";
-            for(let i=0; i<45; i++) {
-                grid.innerHTML += `<div class="cell" id="cell-${i}"></div>`;
-            }
-        }
-
-        function commitAndDeploy() {
-            const code = document.getElementById('editor').value;
-            const quest = QUESTS[state.step];
+        function syncGhost() {
+            const input = document.getElementById('main-input');
+            const ghost = document.getElementById('ghost-text');
+            const currentHint = LESSONS[state.step].hint;
             
-            tg.HapticFeedback.impactOccurred('medium');
-
-            // Симуляция деплоя
-            if (quest.type === 'web') {
-                document.getElementById('web-ui').classList.remove('hidden');
-                document.getElementById('bot-ui').classList.add('hidden');
-                document.getElementById('web-frame').innerHTML = code;
+            // Если юзер ничего не ввел, показываем подсказку
+            if (input.value === "") {
+                ghost.innerText = currentHint;
             } else {
-                document.getElementById('web-ui').classList.add('hidden');
-                document.getElementById('bot-ui').classList.remove('hidden');
-                if(code.includes(quest.target)) {
-                    addBotMsg("Бот запущен. Система активна ✅");
-                    addBotMsg("Ответ от сервера: 200 OK");
-                }
+                ghost.innerText = "";
             }
+        }
 
-            // Проверка задания
-            if(code.toLowerCase().includes(quest.target.toLowerCase())) {
-                state.boss += quest.r;
-                state.commits++;
-                document.getElementById(`cell-${state.commits-1}`).classList.add('active');
+        function executeCode() {
+            const code = document.getElementById('main-input').value.replace(/\s+/g, '').toLowerCase();
+            const quest = LESSONS[state.step];
+            const output = document.getElementById('console-output');
+
+            tg.HapticFeedback.impactOccurred('heavy');
+
+            if (code.includes(quest.target)) {
+                // УСПЕХ
+                output.innerText = `> Running...\n> ${quest.output || 'Success: Variable updated.'}`;
+                output.classList.add('text-green-500');
                 
+                // Обновляем "память"
+                if (quest.memory) {
+                    const slot = document.getElementById(`slot-${quest.memory.slot}`);
+                    slot.classList.add('active');
+                    slot.querySelector('.val').innerText = quest.memory.val;
+                    slot.querySelector('p').innerText = quest.memory.label;
+                }
+
+                state.boss += quest.reward;
+                state.step++;
+
                 setTimeout(() => {
-                    showModal(`Коммит #${state.commits} принят!`, `Вы успешно обновили репозиторий. Награда: ${quest.r} BC.`);
-                }, 800);
+                    if (state.step < LESSONS.length) {
+                        nextLesson();
+                    } else {
+                        alert("ПОЗДРАВЛЯЮ! Ты освоил базу логики BOSS. Теперь ты Архитектор!");
+                    }
+                }, 1500);
+
+            } else {
+                // ОШИБКА
+                output.innerText = `> Error: Syntax mismatch.\n> Ожидалось: ${quest.hint}`;
+                output.classList.add('text-red-500');
+                tg.HapticFeedback.notificationOccurred('error');
             }
-        }
-
-        function addBotMsg(text) {
-            const flow = document.getElementById('chat-flow');
-            flow.innerHTML += `<div class="bot-msg">${text}</div>`;
-        }
-
-        function showModal(title, msg) {
-            document.getElementById('modal-msg').innerText = msg;
-            document.getElementById('gh-modal').style.display = 'block';
             updateUI();
         }
 
-        function nextStep() {
-            state.step++;
-            if(state.step >= QUESTS.length) state.step = 0; // Зациклил для теста
-            document.getElementById('gh-modal').style.display = 'none';
-            document.getElementById('editor').value = "";
-            document.getElementById('chat-flow').innerHTML = "";
+        function nextLesson() {
+            const quest = LESSONS[state.step];
+            document.getElementById('main-input').value = "";
+            document.getElementById('console-output').innerText = "> Waiting for code input...";
+            document.getElementById('console-output').classList.remove('text-green-500', 'text-red-500');
+            document.getElementById('task-title').innerText = quest.title;
+            document.getElementById('task-desc').innerText = quest.desc;
+            syncGhost();
             updateUI();
         }
 
         function updateUI() {
-            document.getElementById('balance').innerHTML = `${state.boss} <span class="text-[10px] text-green-400">BC</span>`;
-            document.getElementById('commit-count').innerText = state.commits;
-            
-            const q = QUESTS[state.step];
-            document.getElementById('task-info').innerText = `TASK: ${q.title}`;
-            document.getElementById('task-desc').innerText = q.desc;
-            
-            if(state.commits > 5) document.getElementById('rank').innerText = "RANK: MIDDLE DEVELOPER";
+            document.getElementById('balance').innerHTML = `${state.boss} <span class="text-[10px]">BC</span>`;
         }
 
-        window.onload = () => { initGrid(); updateUI(); };
+        window.onload = () => {
+            syncGhost();
+            updateUI();
+        };
     </script>
 </body>
 </html>

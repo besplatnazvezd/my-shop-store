@@ -3,124 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BOSS: DEV EMPIRE</title>
+    <title>BOSS: OS DEV GRID</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Unbounded:wght@400;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Unbounded:wght@400;900&display=swap" rel="stylesheet">
     <style>
-        :root { --p: #bc13fe; --g: #00ff88; --bg: #0a0a0b; }
-        body { background: var(--bg); color: #fff; font-family: 'Fira Code', monospace; overflow: hidden; }
+        :root { --gh-green: #39d353; --gh-bg: #0d1117; --gh-border: #30363d; --p: #bc13fe; }
+        body { background: var(--gh-bg); color: #c9d1d9; font-family: 'JetBrains Mono', monospace; overflow: hidden; }
         .unbound { font-family: 'Unbounded', sans-serif; }
         
-        /* IDE ИНТЕРФЕЙС */
-        .editor-bg { background: #111114; border: 1px solid #222; border-radius: 15px; }
-        .terminal-header { background: #1a1a1f; padding: 8px 15px; border-radius: 15px 15px 0 0; display: flex; gap: 6px; }
-        .dot { width: 8px; height: 8px; border-radius: 50%; }
-        
-        /* ПРЕВЬЮ - ЭКРАН ТЕЛЕФОНА */
-        #phone-mockup {
-            width: 100%; height: 100%; background: #1a1a1f; border-radius: 20px;
-            border: 6px solid #222; position: relative; overflow: hidden;
-        }
-        #preview-frame { width: 100%; height: 100%; background: #fff; color: #000; overflow-y: auto; }
-        
-        /* КАСТОМНОЕ ОКНО (MODAL) */
-        #boss-modal {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
-            width: 85%; background: #16161a; border: 2px solid var(--p); border-radius: 25px;
-            z-index: 1000; padding: 25px; display: none; opacity: 0; transition: 0.3s;
-            box-shadow: 0 0 50px rgba(188, 19, 254, 0.3);
-        }
-        #boss-modal.active { transform: translate(-50%, -50%) scale(1); opacity: 1; display: block; }
-        
-        /* КНОПКИ */
-        .btn-p { background: var(--p); color: #fff; padding: 12px 20px; border-radius: 12px; font-weight: 900; transition: 0.2s; }
-        .btn-p:active { transform: scale(0.95); box-shadow: 0 0 20px var(--p); }
-        .btn-locked { background: #222; color: #555; cursor: not-allowed; }
+        /* ГИТХАБ СЕТКА */
+        .contribution-grid { display: grid; grid-template-columns: repeat(15, 1fr); gap: 3px; width: fit-content; }
+        .cell { width: 10px; height: 10px; background: #161b22; border-radius: 2px; }
+        .cell.active { background: var(--gh-green); box-shadow: 0 0 5px var(--gh-green); }
 
-        textarea { background: transparent; color: #00ff88; outline: none; resize: none; width: 100%; line-height: 1.5; }
+        /* ИНТЕРФЕЙС */
+        .panel { background: #161b22; border: 1px solid var(--gh-border); border-radius: 12px; overflow: hidden; }
+        .tab { padding: 8px 16px; font-size: 10px; border-right: 1px solid var(--gh-border); opacity: 0.5; cursor: pointer; }
+        .tab.active { opacity: 1; background: #0d1117; border-bottom: 2px solid var(--p); }
+
+        /* ТЕРМИНАЛ / ПРЕВЬЮ */
+        #display-area { height: 35vh; border-radius: 12px; background: #000; position: relative; border: 1px solid var(--gh-border); }
+        .bot-msg { background: #21262d; padding: 8px 12px; border-radius: 12px 12px 12px 0; font-size: 11px; margin-bottom: 8px; width: fit-content; max-width: 80%; }
+        
+        /* КНОПКА COMMIT */
+        .btn-commit { background: #238636; color: #fff; font-weight: bold; border-radius: 6px; padding: 10px 20px; transition: 0.3s; }
+        .btn-commit:active { transform: scale(0.95); background: #2ea043; }
+
+        textarea { background: transparent; color: #e6edf3; outline: none; resize: none; width: 100%; height: 100%; font-size: 13px; line-height: 1.6; }
+        
+        /* МОДАЛКА */
+        #gh-modal {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 90%; background: #161b22; border: 1px solid var(--gh-border);
+            border-radius: 12px; padding: 25px; display: none; z-index: 1000;
+                        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
     </style>
 </head>
 <body class="p-4">
 
-    <!-- HEADER -->
-        <div class="flex justify-between items-center mb-4 bg-[#111114] p-3 rounded-2xl border border-white/5">
+    <!-- HEADER: STATS & GRID -->
+    <div class="flex justify-between items-start mb-6">
         <div>
-            <p class="text-[8px] text-zinc-500 uppercase tracking-widest">Architect Status</p>
-            <p id="rank-display" class="unbound text-[10px] text-purple-400">JUNIOR</p>
+            <div class="flex items-center gap-2 mb-2">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500"></div>
+                <div>
+                    <p class="text-[10px] font-bold text-white uppercase">Boss_Developer</p>
+                    <p id="rank" class="text-[8px] text-zinc-500">RANK: JUNIOR ARCHITECT</p>
+                </div>
+            </div>
+            <div class="contribution-grid" id="cont-grid">
+                <!-- Квадраты генерируются через JS -->
+            </div>
         </div>
         <div class="text-right">
-            <p id="balance" class="unbound text-lg text-white">0 <span class="text-[10px] text-purple-500">BC</span></p>
+            <p id="balance" class="unbound text-xl text-white">0 <span class="text-[10px] text-green-400">BC</span></p>
+            <p class="text-[8px] opacity-40 uppercase">Total Commits: <span id="commit-count">0</span></p>
         </div>
     </div>
 
-    <!-- MAIN IDE AREA -->
-    <div class="grid grid-cols-1 gap-4 h-[72vh]">
-        
-        <!-- EDITOR -->
-        <div class="editor-bg flex flex-col">
-            <div class="terminal-header">
-                <div class="dot bg-red-500"></div>
-                <div class="dot bg-yellow-500"></div>
-                <div class="dot bg-green-500"></div>
-                <span class="text-[8px] text-zinc-500 ml-2 uppercase">index.html / bot.py</span>
-            </div>
-            <div class="p-4 flex-1 relative">
-                <div class="absolute left-2 top-4 flex flex-col text-zinc-700 text-[10px] text-right w-6">
-                    <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span>
-                </div>
-                <textarea id="editor" class="ml-6 h-full text-xs" placeholder="// Пиши код здесь..."></textarea>
-            </div>
+    <!-- MAIN REPOSITORY (EDITOR) -->
+    <div class="panel flex flex-col h-[35vh] mb-4">
+        <div class="flex bg-[#0d1117] border-b border-[#30363d]">
+            <div class="tab active">main.py</div>
+            <div class="tab">index.html</div>
+            <div class="tab">config.json</div>
         </div>
-
-        <!-- PREVIEW -->
-        <div class="h-full">
-             <div class="terminal-header">
-                <span class="text-[8px] text-zinc-500 uppercase tracking-widest">Live Preview</span>
-            </div>
-            <div id="phone-mockup">
-                <div id="preview-frame">
-                    <div class="p-6 text-zinc-400 text-xs text-center mt-10">Результат кода появится здесь...</div>
-                </div>
-            </div>
+        <div class="p-4 flex-1">
+            <textarea id="editor" spellcheck="false" placeholder="# Начни писать код здесь..."></textarea>
         </div>
     </div>
 
-    <!-- TASK BOTTOM BAR -->
-    <div class="fixed bottom-0 left-0 right-0 p-4 bg-[#0a0a0b]/90 backdrop-blur-md border-t border-white/5">
-        <div class="flex items-center gap-4">
-            <div class="flex-1">
-                                <p id="task-title" class="text-[10px] font-bold text-zinc-400 uppercase mb-1">Задание #1: Интерфейс</p>
-                <p id="task-desc" class="text-[11px] leading-tight">Создай кнопку с текстом "BOSS". Используй: <button>BOSS</button></p>
-            </div>
-            <button onclick="checkCode()" class="btn-p text-[10px] uppercase">Выполнить</button>
+    <!-- PREVIEW AREA (SIMULATOR) -->
+    <div id="display-area" class="p-4 overflow-y-auto">
+        <div id="bot-ui" class="hidden h-full">
+            <div class="text-[9px] text-center opacity-30 uppercase mb-4">Telegram Bot Simulator</div>
+            <div id="chat-flow"></div>
         </div>
-    </div>
-
-    <!-- CUSTOM MODAL -->
-    <div id="boss-modal">
-        <h2 id="modal-title" class="unbound text-lg mb-2">ОТЛИЧНО!</h2>
-        <p id="modal-text" class="text-sm text-zinc-400 mb-6">Ты заработал 50 BC. Твой код работает безупречно.</p>
-        <div class="flex gap-2">
-            <button onclick="closeModal()" class="flex-1 btn-p text-xs uppercase">Продолжить</button>
-            <button id="shop-btn" onclick="openShop()" class="hidden flex-1 border border-purple-500 rounded-xl text-[10px] uppercase font-bold">Магазин Уровней</button>
-        </div>
-    </div>
-
-    <!-- SHOP MODAL -->
-    <div id="shop-modal" class="fixed inset-0 bg-black/95 z-[2000] hidden p-8">
-        <h2 class="unbound text-xl mb-8">МАГАЗИН НАВЫКОВ</h2>
-        <div class="space-y-4">
-            <div class="bg-[#111114] p-5 rounded-2xl border border-white/5">
-                <div class="flex justify-between items-center mb-2">
-                    <span class="unbound text-sm">MIDDLE LEVEL</span>
-                    <span class="text-purple-500 font-black">500 BC</span>
-                </div>
-                <p class="text-[10px] text-zinc-500 mb-4">Открывает доступ к разработке Telegram Ботов на Python.</p>
-                <button onclick="buyLevel('middle', 500)" class="w-full btn-p text-[10px]">КУПИТЬ ДОСТУП</button>
+        <div id="web-ui" class="h-full">
+            <div class="text-[9px] text-center opacity-30 uppercase mb-4">Web Browser Simulator</div>
+            <div id="web-frame" class="p-4 rounded-lg bg-zinc-900/50 min-h-[100px]">
+                <p class="text-zinc-600 text-[11px]">Жду деплоя кода...</p>
             </div>
         </div>
-        <button onclick="closeShop()" class="mt-8 text-zinc-500 text-xs uppercase underline">Назад к обучению</button>
+    </div>
+        <!-- ACTION BAR -->
+    <div class="fixed bottom-0 left-0 right-0 p-4 bg-[#0d1117] border-t border-[#30363d] flex items-center gap-4">
+        <div class="flex-1">
+            <p id="task-info" class="text-[10px] text-green-500 font-bold mb-1">TASK: Инициализация бота</p>
+            <p id="task-desc" class="text-[11px] opacity-60">Напиши: bot.start()</p>
+        </div>
+        <button onclick="commitAndDeploy()" class="btn-commit text-xs px-6 py-3 uppercase">Commit & Deploy</button>
+    </div>
+
+    <!-- SUCCESS MODAL -->
+    <div id="gh-modal">
+        <div class="text-center">
+            <div class="w-12 h-12 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">✓</div>
+            <h2 class="unbound text-lg mb-2">MERGE SUCCESSFUL!</h2>
+            <p id="modal-msg" class="text-[11px] text-zinc-400 mb-6">Ваш код успешно развернут в основной ветке. Получено +100 BOSS Coins.</p>
+            <button onclick="nextStep()" class="w-full bg-[#21262d] py-3 rounded-lg text-xs font-bold border border-[#30363d]">СЛЕДУЮЩИЙ КОММИТ</button>
+        </div>
     </div>
 
     <script>
@@ -129,104 +113,92 @@
 
         let state = {
             boss: 0,
-            currentLesson: 0,
-            rank: 'JUNIOR',
-            unlocked: ['junior']
+            commits: 0,
+            step: 0,
+            history: []
         };
 
-        const LESSONS = [
-            { t: "Интерфейс", d: "Напиши заголовок: <h1>BOSS STORE</h1>", target: "<h1>BOSS STORE</h1>", r: 50 },
-            { t: "Стили", d: "Сделай текст фиолетовым: <h1 style='color:purple'>BOSS</h1>", target: "color:purple", r: 50 },
-            { t: "Кнопки", d: "Создай кнопку покупки: <button>КУПИТЬ</button>", target: "<button>", r: 50 },
-            { t: "Боты (Логика)", d: "Напиши на Python ответ бота: bot.send_message('Привет')", target: "bot.send_message", r: 100 },
-            { t: "Боты (Кнопки)", d: "Создай меню: markup.add('Кнопка')", target: "markup.add", r: 100 },
-            { t: "Контрольная", d: "Создай любой интерфейс сам (не менее 20 символов кода)", exam: true, r: 300 }
+        const QUESTS = [
+            { type: 'web', title: "Header Deploy", desc: "Создай заголовок: <h1>BOSS STORE</h1>", target: "<h1>BOSS STORE</h1>", r: 50 },
+            { type: 'web', title: "Style Inject", desc: "Добавь красный цвет: <h1 style='color:red'>", target: "color:red", r: 50 },
+            { type: 'bot', title: "Bot Init", desc: "Запусти бота: bot.start()", target: "bot.start()", r: 100 },
+            { type: 'bot', title: "Auto Answer", desc: "Отправь привет: bot.send('Hello')", target: "bot.send('Hello')", r: 150 },
+            { type: 'web', title: "UX Button", desc: "Кнопка покупки: <button>BUY</button>", target: "<button>", r: 100 }
         ];
 
-        function checkCode() {
+        // ГЕНЕРАЦИЯ ГРАФИКА
+        function initGrid() {
+            const grid = document.getElementById('cont-grid');
+            grid.innerHTML = "";
+            for(let i=0; i<45; i++) {
+                grid.innerHTML += `<div class="cell" id="cell-${i}"></div>`;
+            }
+        }
+
+        function commitAndDeploy() {
             const code = document.getElementById('editor').value;
-            const preview = document.getElementById('preview-frame');
-            const lesson = LESSONS[state.currentLesson];
+            const quest = QUESTS[state.step];
+            
+            tg.HapticFeedback.impactOccurred('medium');
 
-            // Рендер (если это HTML)
-            if(!lesson.target.includes('bot')) {
-                preview.innerHTML = code;
-                preview.style.background = "#fff";
+            // Симуляция деплоя
+            if (quest.type === 'web') {
+                document.getElementById('web-ui').classList.remove('hidden');
+                document.getElementById('bot-ui').classList.add('hidden');
+                document.getElementById('web-frame').innerHTML = code;
             } else {
-                preview.innerHTML = `<div class='p-4 text-green-500 text-[10px]'>[BOT_LOG]: ${code ? 'Код скомпилирован...' : ''}</div>`;
-                preview.style.background = "#000";
-            }
-
-            // Проверка
-            let success = false;
-            if(lesson.exam) {
-                if(code.length > 20) success = true;
-            } else {
-                if(code.toLowerCase().includes(lesson.target.toLowerCase())) success = true;
-            }
-
-            if(success) {
-                state.boss += lesson.r;
-                showModal("УСПЕХ!", `Ты выполнил задание и получил ${lesson.r} BC. Твой прогресс растет!`);
-                state.currentLesson++;
-                if(state.currentLesson === 4 && !state.unlocked.includes('middle')) {
-                    showShopPrompt();
+                document.getElementById('web-ui').classList.add('hidden');
+                document.getElementById('bot-ui').classList.remove('hidden');
+                if(code.includes(quest.target)) {
+                    addBotMsg("Бот запущен. Система активна ✅");
+                    addBotMsg("Ответ от сервера: 200 OK");
                 }
-                updateUI();
-            } else {
-                tg.HapticFeedback.notificationOccurred('error');
             }
+
+            // Проверка задания
+            if(code.toLowerCase().includes(quest.target.toLowerCase())) {
+                state.boss += quest.r;
+                state.commits++;
+                document.getElementById(`cell-${state.commits-1}`).classList.add('active');
+                
+                setTimeout(() => {
+                    showModal(`Коммит #${state.commits} принят!`, `Вы успешно обновили репозиторий. Награда: ${quest.r} BC.`);
+                }, 800);
+            }
+        }
+
+        function addBotMsg(text) {
+            const flow = document.getElementById('chat-flow');
+            flow.innerHTML += `<div class="bot-msg">${text}</div>`;
+        }
+
+        function showModal(title, msg) {
+            document.getElementById('modal-msg').innerText = msg;
+            document.getElementById('gh-modal').style.display = 'block';
+            updateUI();
+        }
+
+        function nextStep() {
+            state.step++;
+            if(state.step >= QUESTS.length) state.step = 0; // Зациклил для теста
+            document.getElementById('gh-modal').style.display = 'none';
+            document.getElementById('editor').value = "";
+            document.getElementById('chat-flow').innerHTML = "";
+            updateUI();
         }
 
         function updateUI() {
-            document.getElementById('balance').innerHTML = `${state.boss} <span class="text-[10px] text-purple-500">BC</span>`;
-            document.getElementById('rank-display').innerText = state.rank;
+            document.getElementById('balance').innerHTML = `${state.boss} <span class="text-[10px] text-green-400">BC</span>`;
+            document.getElementById('commit-count').innerText = state.commits;
             
-            const lesson = LESSONS[state.currentLesson];
-            if(lesson) {
-                document.getElementById('task-title').innerText = `Задание #${state.currentLesson + 1}: ${lesson.t}`;
-                document.getElementById('task-desc').innerText = lesson.d;
-            }
+            const q = QUESTS[state.step];
+            document.getElementById('task-info').innerText = `TASK: ${q.title}`;
+            document.getElementById('task-desc').innerText = q.desc;
+            
+            if(state.commits > 5) document.getElementById('rank').innerText = "RANK: MIDDLE DEVELOPER";
         }
 
-        function showModal(title, text) {
-            document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-text').innerText = text;
-            document.getElementById('boss-modal').classList.add('active');
-            tg.HapticFeedback.notificationOccurred('success');
-        }
-
-        function closeModal() {
-            document.getElementById('boss-modal').classList.remove('active');
-            document.getElementById('editor').value = "";
-        }
-
-        function showShopPrompt() {
-            document.getElementById('shop-btn').classList.remove('hidden');
-        }
-
-        function openShop() {
-            document.getElementById('shop-modal').classList.remove('hidden');
-        }
-
-        function closeShop() {
-            document.getElementById('shop-modal').classList.add('hidden');
-        }
-
-        function buyLevel(lvl, price) {
-            if(state.boss >= price) {
-                state.boss -= price;
-                state.unlocked.push(lvl);
-                state.rank = "MIDDLE";
-                closeShop();
-                updateUI();
-                showModal("УРОВЕНЬ КУПЛЕН", "Теперь тебе доступны уроки по разработке ботов!");
-            } else {
-                alert("Мало монет! Пройди предыдущие уроки еще раз.");
-            }
-        }
-
-        window.onload = updateUI;
+        window.onload = () => { initGrid(); updateUI(); };
     </script>
 </body>
 </html>

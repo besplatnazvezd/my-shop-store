@@ -3,141 +3,230 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BOSS: CODE ARCHITECT</title>
+    <title>BOSS: DEV EMPIRE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=Montserrat:wght@900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Unbounded:wght@400;900&display=swap" rel="stylesheet">
     <style>
-        body { background: #0a0a0a; color: #fff; font-family: 'Fira Code', monospace; overflow: hidden; }
-        .unbound { font-family: 'Montserrat', sans-serif; }
+        :root { --p: #bc13fe; --g: #00ff88; --bg: #0a0a0b; }
+        body { background: var(--bg); color: #fff; font-family: 'Fira Code', monospace; overflow: hidden; }
+        .unbound { font-family: 'Unbounded', sans-serif; }
         
-        /* РЕДАКТОР */
-        #editor-container { height: 40vh; background: #151515; border-bottom: 2px solid #bc13fe; position: relative; }
-        textarea { 
-            width: 100%; height: 100%; background: transparent; color: #00ff88; 
-            padding: 20px; font-size: 14px; outline: none; resize: none;
-            border: none;
+        /* IDE ИНТЕРФЕЙС */
+        .editor-bg { background: #111114; border: 1px solid #222; border-radius: 15px; }
+        .terminal-header { background: #1a1a1f; padding: 8px 15px; border-radius: 15px 15px 0 0; display: flex; gap: 6px; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; }
+        
+        /* ПРЕВЬЮ - ЭКРАН ТЕЛЕФОНА */
+        #phone-mockup {
+            width: 100%; height: 100%; background: #1a1a1f; border-radius: 20px;
+            border: 6px solid #222; position: relative; overflow: hidden;
         }
+        #preview-frame { width: 100%; height: 100%; background: #fff; color: #000; overflow-y: auto; }
+        
+        /* КАСТОМНОЕ ОКНО (MODAL) */
+        #boss-modal {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
+            width: 85%; background: #16161a; border: 2px solid var(--p); border-radius: 25px;
+            z-index: 1000; padding: 25px; display: none; opacity: 0; transition: 0.3s;
+            box-shadow: 0 0 50px rgba(188, 19, 254, 0.3);
+        }
+        #boss-modal.active { transform: translate(-50%, -50%) scale(1); opacity: 1; display: block; }
+        
+        /* КНОПКИ */
+        .btn-p { background: var(--p); color: #fff; padding: 12px 20px; border-radius: 12px; font-weight: 900; transition: 0.2s; }
+        .btn-p:active { transform: scale(0.95); box-shadow: 0 0 20px var(--p); }
+        .btn-locked { background: #222; color: #555; cursor: not-allowed; }
 
-        /* ПРЕВЬЮ (РЕЗУЛЬТАТ КОДА) */
-        #preview-container { height: 35vh; background: #fff; position: relative; overflow: auto; }
-        #preview-frame { width: 100%; height: 100%; border: none; background: #fff; }
-
-        /* ИНТЕРФЕЙС */
-        .glass-panel { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); padding: 15px; }
-        .btn-run { background: #bc13fe; color: #fff; font-weight: 900; padding: 12px 25px; border-radius: 12px; transition: 0.3s; }
-        .btn-run:active { transform: scale(0.9); }
-
-        .task-box { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.8); padding: 15px; border-top: 1px solid #333; z-index: 100; }
+        textarea { background: transparent; color: #00ff88; outline: none; resize: none; width: 100%; line-height: 1.5; }
     </style>
 </head>
-<body>
+<body class="p-4">
 
-    <!-- ВЕРХНЯЯ ПАНЕЛЬ -->
-    <div class="p-4 flex justify-between items-center glass-panel">
+    <!-- HEADER -->
+        <div class="flex justify-between items-center mb-4 bg-[#111114] p-3 rounded-2xl border border-white/5">
         <div>
-            <p class="text-[8px] opacity-40 uppercase">Level: <span id="lvl-name">Junior</span></p>
-            <div class="flex items-center gap-2">
-                <span id="bal-boss" class="unbound text-xl text-purple-500">0</span>
-                <span class="text-[10px] font-bold">BC</span>
+            <p class="text-[8px] text-zinc-500 uppercase tracking-widest">Architect Status</p>
+            <p id="rank-display" class="unbound text-[10px] text-purple-400">JUNIOR</p>
+        </div>
+        <div class="text-right">
+            <p id="balance" class="unbound text-lg text-white">0 <span class="text-[10px] text-purple-500">BC</span></p>
+        </div>
+    </div>
+
+    <!-- MAIN IDE AREA -->
+    <div class="grid grid-cols-1 gap-4 h-[72vh]">
+        
+        <!-- EDITOR -->
+        <div class="editor-bg flex flex-col">
+            <div class="terminal-header">
+                <div class="dot bg-red-500"></div>
+                <div class="dot bg-yellow-500"></div>
+                <div class="dot bg-green-500"></div>
+                <span class="text-[8px] text-zinc-500 ml-2 uppercase">index.html / bot.py</span>
+            </div>
+            <div class="p-4 flex-1 relative">
+                <div class="absolute left-2 top-4 flex flex-col text-zinc-700 text-[10px] text-right w-6">
+                    <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span>
+                </div>
+                <textarea id="editor" class="ml-6 h-full text-xs" placeholder="// Пиши код здесь..."></textarea>
             </div>
         </div>
-        <button onclick="tg.close()" class="text-xs opacity-50">Выход</button>
-    </div>
 
-    <!-- РЕДАКТОР КОДА -->
-    <div id="editor-container">
-        <textarea id="code-editor" spellcheck="false" placeholder="Пиши код здесь..."></textarea>
-                <div class="absolute top-2 right-2 text-[10px] opacity-30 uppercase">HTML / CSS Editor</div>
-    </div>
-
-    <!-- ПРЕВЬЮ -->
-    <div id="preview-container">
-        <div id="preview-content" style="color: #000; padding: 20px;">
-            <!-- Сюда рендерится код юзера -->
-            <p style="color: #888; font-family: sans-serif;">Результат твоего кода будет здесь...</p>
+        <!-- PREVIEW -->
+        <div class="h-full">
+             <div class="terminal-header">
+                <span class="text-[8px] text-zinc-500 uppercase tracking-widest">Live Preview</span>
+            </div>
+            <div id="phone-mockup">
+                <div id="preview-frame">
+                    <div class="p-6 text-zinc-400 text-xs text-center mt-10">Результат кода появится здесь...</div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- ПАНЕЛЬ ЗАДАНИЯ -->
-    <div class="task-box">
-        <div class="flex justify-between items-start gap-4">
+    <!-- TASK BOTTOM BAR -->
+    <div class="fixed bottom-0 left-0 right-0 p-4 bg-[#0a0a0b]/90 backdrop-blur-md border-t border-white/5">
+        <div class="flex items-center gap-4">
             <div class="flex-1">
-                <p id="task-desc" class="text-xs text-purple-300 font-bold mb-1">Урок 1: Создай заголовок своего магазина. Напиши &lt;h1&gt;BOSS STORE&lt;/h1&gt;</p>
-                <p class="text-[8px] opacity-40 uppercase">Награда: 50 BOSS COINS</p>
+                                <p id="task-title" class="text-[10px] font-bold text-zinc-400 uppercase mb-1">Задание #1: Интерфейс</p>
+                <p id="task-desc" class="text-[11px] leading-tight">Создай кнопку с текстом "BOSS". Используй: <button>BOSS</button></p>
             </div>
-            <button onclick="runCode()" class="btn-run unbound text-xs uppercase">Запустить!</button>
+            <button onclick="checkCode()" class="btn-p text-[10px] uppercase">Выполнить</button>
         </div>
+    </div>
+
+    <!-- CUSTOM MODAL -->
+    <div id="boss-modal">
+        <h2 id="modal-title" class="unbound text-lg mb-2">ОТЛИЧНО!</h2>
+        <p id="modal-text" class="text-sm text-zinc-400 mb-6">Ты заработал 50 BC. Твой код работает безупречно.</p>
+        <div class="flex gap-2">
+            <button onclick="closeModal()" class="flex-1 btn-p text-xs uppercase">Продолжить</button>
+            <button id="shop-btn" onclick="openShop()" class="hidden flex-1 border border-purple-500 rounded-xl text-[10px] uppercase font-bold">Магазин Уровней</button>
+        </div>
+    </div>
+
+    <!-- SHOP MODAL -->
+    <div id="shop-modal" class="fixed inset-0 bg-black/95 z-[2000] hidden p-8">
+        <h2 class="unbound text-xl mb-8">МАГАЗИН НАВЫКОВ</h2>
+        <div class="space-y-4">
+            <div class="bg-[#111114] p-5 rounded-2xl border border-white/5">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="unbound text-sm">MIDDLE LEVEL</span>
+                    <span class="text-purple-500 font-black">500 BC</span>
+                </div>
+                <p class="text-[10px] text-zinc-500 mb-4">Открывает доступ к разработке Telegram Ботов на Python.</p>
+                <button onclick="buyLevel('middle', 500)" class="w-full btn-p text-[10px]">КУПИТЬ ДОСТУП</button>
+            </div>
+        </div>
+        <button onclick="closeShop()" class="mt-8 text-zinc-500 text-xs uppercase underline">Назад к обучению</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready(); tg.expand();
 
-        let currentLevel = 0;
-        let bossBalance = 0;
+        let state = {
+            boss: 0,
+            currentLesson: 0,
+            rank: 'JUNIOR',
+            unlocked: ['junior']
+        };
 
         const LESSONS = [
-            {
-                desc: "Урок 1: Создай заголовок. Напиши <h1>BOSS STORE</h1>",
-                target: "<h1>BOSS STORE</h1>",
-                reward: 50
-            },
-            {
-                desc: "Урок 2: Сделай текст красным. Добавь <h1 style='color:red'>BOSS</h1>",
-                target: "color:red",
-                reward: 100
-            },
-            {
-                desc: "Урок 3: Создай кнопку. Напиши <button>КУПИТЬ</button>",
-                target: "<button>",
-                reward: 150
-            },
-            {
-                desc: "Урок 4: Сделай кнопку фиолетовой. Используй style='background:purple; color:white'",
-                target: "background:purple",
-                reward: 200
-            }
+            { t: "Интерфейс", d: "Напиши заголовок: <h1>BOSS STORE</h1>", target: "<h1>BOSS STORE</h1>", r: 50 },
+            { t: "Стили", d: "Сделай текст фиолетовым: <h1 style='color:purple'>BOSS</h1>", target: "color:purple", r: 50 },
+            { t: "Кнопки", d: "Создай кнопку покупки: <button>КУПИТЬ</button>", target: "<button>", r: 50 },
+            { t: "Боты (Логика)", d: "Напиши на Python ответ бота: bot.send_message('Привет')", target: "bot.send_message", r: 100 },
+            { t: "Боты (Кнопки)", d: "Создай меню: markup.add('Кнопка')", target: "markup.add", r: 100 },
+            { t: "Контрольная", d: "Создай любой интерфейс сам (не менее 20 символов кода)", exam: true, r: 300 }
         ];
 
-        function runCode() {
-            const code = document.getElementById('code-editor').value;
-            const preview = document.getElementById('preview-content');
-            
-            // 1. Отрисовка в превью
-            preview.innerHTML = code;
-            
-            // Эффект нажатия
-            tg.HapticFeedback.impactOccurred('medium');
+        function checkCode() {
+            const code = document.getElementById('editor').value;
+            const preview = document.getElementById('preview-frame');
+            const lesson = LESSONS[state.currentLesson];
 
-            // 2. Проверка задания
-            const currentTask = LESSONS[currentLevel];
-            
-            // Простая проверка на наличие нужной строки в коде
-            if (code.toLowerCase().includes(currentTask.target.toLowerCase())) {
-                completeLevel(currentTask.reward);
+            // Рендер (если это HTML)
+            if(!lesson.target.includes('bot')) {
+                preview.innerHTML = code;
+                preview.style.background = "#fff";
+            } else {
+                preview.innerHTML = `<div class='p-4 text-green-500 text-[10px]'>[BOT_LOG]: ${code ? 'Код скомпилирован...' : ''}</div>`;
+                preview.style.background = "#000";
+            }
+
+            // Проверка
+            let success = false;
+            if(lesson.exam) {
+                if(code.length > 20) success = true;
+            } else {
+                if(code.toLowerCase().includes(lesson.target.toLowerCase())) success = true;
+            }
+
+            if(success) {
+                state.boss += lesson.r;
+                showModal("УСПЕХ!", `Ты выполнил задание и получил ${lesson.r} BC. Твой прогресс растет!`);
+                state.currentLesson++;
+                if(state.currentLesson === 4 && !state.unlocked.includes('middle')) {
+                    showShopPrompt();
+                }
+                updateUI();
+            } else {
+                tg.HapticFeedback.notificationOccurred('error');
             }
         }
 
-        function completeLevel(reward) {
-            bossBalance += reward;
-            document.getElementById('bal-boss').innerText = bossBalance;
+        function updateUI() {
+            document.getElementById('balance').innerHTML = `${state.boss} <span class="text-[10px] text-purple-500">BC</span>`;
+            document.getElementById('rank-display').innerText = state.rank;
             
-            currentLevel++;
-            if(currentLevel < LESSONS.length) {
-                alert(`ОТЛИЧНО! Ты заработал ${reward} BC. Переходим к следующему уроку.`);
-                document.getElementById('task-desc').innerText = LESSONS[currentLevel].desc;
-                document.getElementById('code-editor').value = ""; // Очистка для нового уровня
-            } else {
-                alert("ПОЗДРАВЛЯЮ! Ты прошел базовый курс Академии BOSS. Теперь ты Senior Разработчик!");
-                document.getElementById('lvl-name').innerText = "Senior Developer";
+            const lesson = LESSONS[state.currentLesson];
+            if(lesson) {
+                document.getElementById('task-title').innerText = `Задание #${state.currentLesson + 1}: ${lesson.t}`;
+                document.getElementById('task-desc').innerText = lesson.d;
             }
-            
+        }
+
+        function showModal(title, text) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-text').innerText = text;
+            document.getElementById('boss-modal').classList.add('active');
             tg.HapticFeedback.notificationOccurred('success');
         }
 
-        // Автофокус на редактор
-        document.getElementById('code-editor').focus();
+        function closeModal() {
+            document.getElementById('boss-modal').classList.remove('active');
+            document.getElementById('editor').value = "";
+        }
+
+        function showShopPrompt() {
+            document.getElementById('shop-btn').classList.remove('hidden');
+        }
+
+        function openShop() {
+            document.getElementById('shop-modal').classList.remove('hidden');
+        }
+
+        function closeShop() {
+            document.getElementById('shop-modal').classList.add('hidden');
+        }
+
+        function buyLevel(lvl, price) {
+            if(state.boss >= price) {
+                state.boss -= price;
+                state.unlocked.push(lvl);
+                state.rank = "MIDDLE";
+                closeShop();
+                updateUI();
+                showModal("УРОВЕНЬ КУПЛЕН", "Теперь тебе доступны уроки по разработке ботов!");
+            } else {
+                alert("Мало монет! Пройди предыдущие уроки еще раз.");
+            }
+        }
+
+        window.onload = updateUI;
     </script>
 </body>
 </html>

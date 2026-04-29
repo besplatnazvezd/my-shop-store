@@ -2,54 +2,35 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Твой Магазин Цифровых Услуг</title>
+    <title>Digital Shop - Автоматическое наличие</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f4; color: #333; margin: 20px; text-align: center; }
-        .container { max-width: 600px; margin: 50px auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        h1 { color: #0056b3; }
-        #product-info { font-size: 1.2em; margin-bottom: 20px; }
-        .buy-button { background-color: #28a745; color: white; padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer; font-size: 1.1em; text-decoration: none; display: inline-block; }
-        .buy-button:hover { background-color: #218838; }
-        .stock-unavailable { color: red; font-weight: bold; }
+        body { font-family: sans-serif; display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; background: #f0f2f5; }
+        .card { background: white; padding: 20px; border-radius: 12px; width: 200px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; }
+        .name { font-weight: bold; font-size: 1.2em; margin-bottom: 10px; }
+        .price { color: #28a745; font-size: 1.5em; margin: 10px 0; }
+        .stock { color: #666; font-size: 0.9em; }
+        .btn { display: block; background: #007bff; color: white; text-decoration: none; padding: 10px; border-radius: 5px; margin-top: 15px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Твой Магазин Цифровых Услуг</h1>
-        <p>Актуальные предложения:</p>
-        <div id="product-info">Загрузка информации...</div>
-        <a href="https://t.me/nmproda" class="buy-button" target="_blank">Купить / Задать вопрос в Telegram</a>
-        <p><small>Информация обновляется каждый час.</small></p>
-    </div>
+    <div id="shop" style="display:contents;"></div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            fetch('data.json?' + new Date().getTime()) // Добавляем кэш-бастер
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Failed to load data.json');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    const productInfoDiv = document.getElementById('product-info');
-                    if (data.stock === "0" || data.stock === "Error") {
-                        productInfoDiv.innerHTML = `<span class="stock-unavailable">Нет в наличии: ${data.product_name}</span>`;
-                        // Можно скрыть кнопку "Купить", если товара нет
-                        document.querySelector('.buy-button').style.display = 'none';
-                    } else {
-                        productInfoDiv.innerHTML = `<strong>${data.product_name}</strong><br>
-                                                    В наличии: <span style="color: green; font-weight: bold;">${data.stock}</span> шт.<br>
-                                                    Цена: ${data.price}`;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching product data:', error);
-                    document.getElementById('product-info').innerHTML = 
-                        '<span class="stock-unavailable">Ошибка загрузки информации. Попробуйте обновить страницу позже.</span>';
+        fetch('data.json')
+            .then(res => res.json())
+            .then(data => {
+                const container = document.getElementById('shop');
+                data.forEach(item => {
+                    container.innerHTML += `
+                        <div class="card">
+                            <div class="name">${item.name}</div>
+                            <div class="stock">В наличии: ${item.stock} шт.</div>
+                            <div class="price">${item.price}</div>
+                            <a href="https://t.me/ТВОЙ_НИК" class="btn">Купить</a>
+                        </div>
+                    `;
                 });
-        });
+            });
     </script>
 </body>
 </html>

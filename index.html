@@ -1,27 +1,31 @@
 <script>
     fetch('data.json?' + new Date().getTime())
-        .then(res => {
-            if (!res.ok) throw new Error("Файл данных не найден");
-            return res.json();
-        })
+        .then(res => res.json())
         .then(data => {
             const container = document.getElementById('shop');
-            if (data.length === 0) {
-                container.innerHTML = "<h1 style='color:black;'>Товары загружаются или их нет в наличии. Проверьте позже!</h1>";
-                return;
-            }
-            data.forEach(item => {
+            container.innerHTML = ""; // Очищаем загрузку
+
+            // Превращаем данные в список, если это один объект
+            const products = Array.isArray(data) ? data : [data];
+
+            products.forEach(item => {
+                // Проверяем, есть ли нужные поля в объекте
+                const name = item.name || item.product_name || "Без названия";
+                const stock = item.stock || "0";
+                const price = item.price || "Уточняйте";
+
                 container.innerHTML += `
                     <div class="card">
-                        <div class="name">${item.name}</div>
-                        <div class="stock">В наличии: ${item.stock} шт.</div>
-                        <div class="price">${item.price}</div>
+                        <div class="name">${name}</div>
+                        <div class="stock">В наличии: ${stock} шт.</div>
+                        <div class="price">${price}</div>
                         <a href="https://t.me/ТВОЙ_НИК" class="btn">Купить</a>
                     </div>
                 `;
             });
         })
         .catch(err => {
-            document.getElementById('shop').innerHTML = "<h1 style='color:red;'>Ошибка загрузки данных: " + err.message + "</h1>";
+            console.error(err);
+            document.getElementById('shop').innerHTML = "<h1>Ошибка загрузки данных. Робот еще не обновил цены.</h1>";
         });
 </script>

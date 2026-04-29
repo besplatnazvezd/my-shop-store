@@ -1,0 +1,45 @@
+name: Update Stock Hourly
+
+# Когда запускать этот workflow:
+on:
+  schedule:
+    # Запуск каждый час в начале часа (0 минут)
+    # cron: '0 * * * *'  - это стандартный вариант, но GitHub может иметь задержки до 15 минут.
+    # Если нужно быстрее, можно '*/30 * * * *' (каждые 30 минут)
+    - cron: '0 * * * *'
+  
+  # Возможность запустить workflow вручную из интерфейса GitHub
+  workflow_dispatch: 
+
+jobs:
+  build:
+    # Запуск на виртуальной машине Ubuntu
+    runs-on: ubuntu-latest
+    steps:
+      # Шаг 1: Клонируем репозиторий на виртуальную машину
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # Шаг 2: Устанавливаем Python 3.9
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      # Шаг 3: Устанавливаем необходимые Python-библиотеки
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4
+
+      # Шаг 4: Запускаем наш парсер-скрипт
+      - name: Run parser script
+        run: python parser.py
+
+      # Шаг 5: Коммитим и пушим изменения в data.json
+      # Эта часть обновляет data.json в твоем репозитории
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "DigitalStockBot"
+          git config --global user.email "bot@github.com"
+          git add data.json
+          git commit -m "Auto-update stock data" || echo "No changes to commit"
+          git push

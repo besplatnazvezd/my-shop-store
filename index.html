@@ -1,31 +1,58 @@
-<script>
-    fetch('data.json?' + new Date().getTime())
-        .then(res => res.json())
-        .then(data => {
-            const container = document.getElementById('shop');
-            container.innerHTML = ""; // Очищаем загрузку
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Digital Shop - Авто-наличие</title>
+    <style>
+        body { font-family: sans-serif; background: #f0f2f5; display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; padding: 20px; }
+        .card { background: white; padding: 20px; border-radius: 12px; width: 220px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; border: 1px solid #ddd; }
+        .name { font-weight: bold; font-size: 1.1em; margin-bottom: 10px; color: #333; }
+        .price { color: #28a745; font-size: 1.4em; margin: 10px 0; font-weight: bold; }
+        .stock { color: #666; font-size: 0.9em; background: #eee; padding: 5px; border-radius: 5px; }
+        .btn { display: block; background: #007bff; color: white; text-decoration: none; padding: 10px; border-radius: 5px; margin-top: 15px; font-weight: bold; }
+        .btn:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div id="shop" style="display:contents;">
+        <h2 style="color: #666;">Загрузка товаров...</h2>
+    </div>
 
-            // Превращаем данные в список, если это один объект
-            const products = Array.isArray(data) ? data : [data];
+    <script>
+        // Добавляем случайное число к ссылке, чтобы браузер не брал старые данные
+        fetch('data.json?nocache=' + Math.random())
+            .then(res => res.json())
+            .then(data => {
+                const container = document.getElementById('shop');
+                container.innerHTML = ""; // Убираем надпись загрузки
 
-            products.forEach(item => {
-                // Проверяем, есть ли нужные поля в объекте
-                const name = item.name || item.product_name || "Без названия";
-                const stock = item.stock || "0";
-                const price = item.price || "Уточняйте";
+                // Если данные пришли как один объект, превращаем в список
+                const products = Array.isArray(data) ? data : [data];
 
-                container.innerHTML += `
-                    <div class="card">
-                        <div class="name">${name}</div>
-                        <div class="stock">В наличии: ${stock} шт.</div>
-                        <div class="price">${price}</div>
-                        <a href="https://t.me/ТВОЙ_НИК" class="btn">Купить</a>
-                    </div>
-                `;
+                if (products.length === 0 || (products.length === 1 && !products[0].name && !products[0].product_name)) {
+                    container.innerHTML = "<h1>Товаров пока нет. Робот собирает данные...</h1>";
+                    return;
+                }
+
+                products.forEach(item => {
+                    const name = item.name || item.product_name || "Товар";
+                    const stock = item.stock || "0";
+                    const price = item.price || "Цена по запросу";
+                    
+                    container.innerHTML += `
+                        <div class="card">
+                            <div class="name">${name}</div>
+                            <div class="stock">В наличии: ${stock} шт.</div>
+                            <div class="price">${price}</div>
+                            <a href="https://t.me/ТВОЙ_НИК" class="btn">Купить</a>
+                        </div>
+                    `;
+                });
+            })
+            .catch(err => {
+                document.getElementById('shop').innerHTML = "<h1>Ошибка: Робот еще не обновил файл данных. Подождите 5 минут.</h1>";
+                console.error(err);
             });
-        })
-        .catch(err => {
-            console.error(err);
-            document.getElementById('shop').innerHTML = "<h1>Ошибка загрузки данных. Робот еще не обновил цены.</h1>";
-        });
-</script>
+    </script>
+</body>
+</html>

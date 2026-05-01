@@ -2,57 +2,458 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Digital Shop - Авто-наличие</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Shop - Store</title>
     <style>
-        body { font-family: sans-serif; background: #f0f2f5; display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; padding: 20px; }
-        .card { background: white; padding: 20px; border-radius: 12px; width: 220px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; border: 1px solid #ddd; }
-        .name { font-weight: bold; font-size: 1.1em; margin-bottom: 10px; color: #333; }
-        .price { color: #28a745; font-size: 1.4em; margin: 10px 0; font-weight: bold; }
-        .stock { color: #666; font-size: 0.9em; background: #eee; padding: 5px; border-radius: 5px; }
-        .btn { display: block; background: #007bff; color: white; text-decoration: none; padding: 10px; border-radius: 5px; margin-top: 15px; font-weight: bold; }
-        .btn:hover { background: #0056b3; }
+        /* ПЕРЕМЕННЫЕ ТЕМ */
+        :root {
+            --bg: #ffffff;
+            --text: #333333;
+            --accent: #007bff; /* Голубой для светлой */
+            --secondary: #f4f4f4;
+            --card-bg: #fff;
+            --border: #ddd;
+        }
+
+        [data-theme="dark"] {
+            --bg: #000000;
+            --text: #ffffff;
+            --accent: #d4af37; /* Золотой для темной */
+            --secondary: #1a1a1a;
+            --card-bg: #111;
+            --border: #333;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            transition: all 0.3s ease;
+        }
+
+        header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            background: var(--bg);
+            z-index: 100;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            padding: 10px;
+            justify-content: center;
+            background: var(--secondary);
+        }
+
+        .nav-btn {
+            padding: 8px 15px;
+            cursor: pointer;
+            border: 1px solid var(--accent);
+            background: transparent;
+            color: var(--text);
+            border-radius: 5px;
+        }
+
+        .nav-btn:hover { background: var(--accent); color: #000; }
+
+        .container { padding: 20px; max-width: 1200px; margin: auto; }
+
+        /* СЕТКА ТОВАРОВ */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .product-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .product-card:hover { transform: translateY(-5px); }
+
+        .product-img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+                        border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .flag { font-size: 24px; margin-bottom: 5px; }
+        .price { font-size: 20px; font-weight: bold; color: var(--accent); margin: 10px 0; }
+        .stock { font-size: 12px; opacity: 0.7; }
+
+        button.buy-btn {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+        }
+
+        /* ОКНА (СТРАНИЦЫ) */
+        .page { display: none; }
+        .page.active { display: block; }
+
+        /* МОДАЛЬНОЕ ОКНО */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center; align-items: center;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+        }
+
+        .close-modal { position: absolute; top: 10px; right: 15px; cursor: pointer; font-size: 24px; }
+
+        .copy-box {
+            background: var(--secondary);
+            padding: 10px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 5px;
+        }
+
+        .history-item {
+            border-bottom: 1px solid var(--border);
+            padding: 10px 0;
+        }
+
+        /* ТЕМА */
+        .theme-toggle {
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 50%;
+            background: var(--secondary);
+        }
+
+        input[type="number"] {
+            width: 50px;
+            padding: 5px;
+            margin-bottom: 10px;
+        }
+
     </style>
 </head>
-<body>
-    <div id="shop" style="display:contents;">
-        <h2 style="color: #666;">Загрузка товаров...</h2>
+<body data-theme="dark">
+
+<header>
+    <div id="logo"><strong>SHOP NAME</strong></div>
+    <div class="theme-toggle" onclick="toggleTheme()">🌓</div>
+</header>
+
+<nav class="nav-menu">
+    <div class="nav-btn" onclick="showPage('shop')">Магазин</div>
+    <div class="nav-btn" onclick="showPage('profile')">Профиль</div>
+        <div class="nav-btn" onclick="showPage('articles')">Статьи</div>
+    <div class="nav-btn" onclick="showPage('faq')">FAQ</div>
+    <div class="nav-btn" onclick="showPage('about')">О нас</div>
+    <div class="nav-btn" onclick="showPage('trust')">Почему доверять?</div>
+</nav>
+
+<div class="container">
+    
+    <!-- МАГАЗИН -->
+    <div id="shop" class="page active">
+        <h2 style="margin-bottom: 20px;">Наши аккаунты</h2>
+        <div id="products" class="products-grid">
+            <!-- Сюда подгрузятся данные из таблицы -->
+            Загрузка товаров...
+        </div>
     </div>
 
-    <script>
-        // Добавляем случайное число к ссылке, чтобы браузер не брал старые данные
-        fetch('data.json?nocache=' + Math.random())
-            .then(res => res.json())
-            .then(data => {
-                const container = document.getElementById('shop');
-                container.innerHTML = ""; // Убираем надпись загрузки
+    <!-- ПРОФИЛЬ -->
+    <div id="profile" class="page">
+        <h2>Мой профиль</h2>
+        <div style="margin: 20px 0; padding: 20px; background: var(--secondary); border-radius: 10px;">
+            <p><strong>Менеджер:</strong> <a href="https://t.me/nmproda" style="color: var(--accent);">@nmproda</a></p>
+            <p><strong>ID:</strong> 7727345054</p>
+            <p><strong>Тех. поддержка:</strong> (ВСТАВЬ ПОЧТУ ТУТ)</p>
+        </div>
 
-                // Если данные пришли как один объект, превращаем в список
-                const products = Array.isArray(data) ? data : [data];
+        <h3>Ваучер</h3>
+        <div style="margin-bottom: 20px;">
+            <input type="text" id="voucherInput" placeholder="Введите код ваучера" style="padding: 10px;">
+            <button class="nav-btn" onclick="applyVoucher()">Применить</button>
+            <p>Баланс ваучера: <span id="voucherBalance">0</span> руб.</p>
+        </div>
 
-                if (products.length === 0 || (products.length === 1 && !products[0].name && !products[0].product_name)) {
-                    container.innerHTML = "<h1>Товаров пока нет. Робот собирает данные...</h1>";
-                    return;
-                }
+        <h3>История покупок</h3>
+        <div id="purchaseHistory">Покупок пока нет.</div>
+    </div>
 
-                products.forEach(item => {
-                    const name = item.name || item.product_name || "Товар";
-                    const stock = item.stock || "0";
-                    const price = item.price || "Цена по запросу";
-                    
-                    container.innerHTML += `
-                        <div class="card">
-                            <div class="name">${name}</div>
-                            <div class="stock">В наличии: ${stock} шт.</div>
-                            <div class="price">${price}</div>
-                            <a href="https://t.me/ТВОЙ_НИК" class="btn">Купить</a>
-                        </div>
-                    `;
-                });
-            })
-            .catch(err => {
-                document.getElementById('shop').innerHTML = "<h1>Ошибка: Робот еще не обновил файл данных. Подождите 5 минут.</h1>";
-                console.error(err);
+    <!-- СТАТЬИ -->
+    <div id="articles" class="page">
+        <h2>Статьи и Новости</h2>
+        <div style="margin-top:20px;">
+            <img src="ВСТАВЬ ССЫЛКУ НА КАРТИНКУ" alt="news" class="product-img" style="height: auto; max-width: 400px;">
+            <p>Здесь вы сможете прочитать последние новости о Telegram и обновлении моих аккаунтов...</p>
+        </div>
+    </div>
+
+    <!-- FAQ -->
+    <div id="faq" class="page">
+        <h2>Частые вопросы (FAQ)</h2>
+        <div style="margin-top:20px;">
+            <p><strong>Как купить?</strong><br>Выберите товар, введите количество и оплатите по реквизитам.</p>
+            <p><strong>Какие гарантии?</strong><br>Мы работаем честно, все аккаунты проверяются...</p>
+        </div>
+    </div>
+
+    <!-- О НАС -->
+    <div id="about" class="page">
+        <h2>О нас</h2>
+        <div style="margin-top:20px;">
+            <img src="ВСТАВЬ ССЫЛКУ НА КАРТИНКУ" alt="about" class="product-img" style="height: auto; max-width: 400px;">
+            <p>Почему выбирают нас? У нас самые качественные аккаунты и быстрая поддержка...</p>
+        </div>
+    </div>
+
+    <!-- ДОВЕРИЕ -->
+    <div id="trust" class="page">
+        <h2>Почему мне надо доверять?</h2>
+        <p style="margin-top:20px;">(ВСТАВЬ СВОЙ ТЕКСТ О ДОВЕРИИ ТУТ)</p>
+    </div>
+
+    <!-- ОФЕРТА (Футер или отдельный блок) -->
+    <div style="margin-top: 50px; font-size: 10px; opacity: 0.5; border-top: 1px solid var(--border); padding: 20px;">
+        (ВСТАВЬ ТЕКСТ ОФЕРТЫ ТУТ)
+    </div>
+</div>
+
+<!-- МОДАЛЬНОЕ ОКНО ОПЛАТЫ -->
+<div id="paymentModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <h3>Оплата товара</h3>
+        <p id="paymentDetailsText">Вы заказываете: <span id="payItemName"></span></p>
+        <p>Количество: <span id="payQty"></span></p>
+        <p>Итого к оплате: <span id="payTotal"></span> руб.</p>
+        
+        <div class="copy-box">
+            <span id="requisites">Реквизиты: (ВСТАВЬ РЕКВИЗИТЫ ТУТ)</span>
+            <button onclick="copyText('requisites')">Копировать</button>
+        </div>
+
+        <p style="font-size: 12px; color: red;">После оплаты нажмите кнопку ниже:</p>
+        <button class="buy-btn" style="margin-top: 10px;" onclick="confirmPurchase()">О, я доволен, жми на меня</button>
+    </div>
+</div>
+
+<script>
+    // --- КОНФИГУРАЦИЯ ---
+    const CSV_URL = 'https://docs.google.com/spreadsheets/d/1bxpXTKxDHUwk5VX79PeXbjxrJxAkzaZag6opznV_Kq8/export?format=csv';
+    
+    // ВАУЧЕРЫ (Пример: код 'GIFT100' дает 100 руб)
+    const VOUCHERS_DB = {
+        "PROMO2024": 500,
+        "WELCOME": 100,
+        "TEST": 50
+    };
+
+    let productsData = [];
+    let currentVoucherValue = parseFloat(localStorage.getItem('userVoucherBalance')) || 0;
+
+    // --- ПЕРЕКЛЮЧЕНИЕ СТРАНИЦ ---
+    function showPage(pageId) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(pageId).classList.add('active');
+    }
+
+    // --- ТЕМЫ ---
+    function toggleTheme() {
+        const body = document.body;
+        const current = body.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        body.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+    }
+
+    // Восстановление темы
+    if(localStorage.getItem('theme')) {
+        document.body.setAttribute('data-theme', localStorage.getItem('theme'));
+    }
+
+    // --- ЗАГРУЗКА ДАННЫХ ИЗ GOOGLE SHEETS ---
+    async function loadProducts() {
+        try {
+            const response = await fetch(CSV_URL);
+            const data = await response.text();
+            const rows = data.split('\n').slice(1); // Пропускаем заголовок
+            
+            productsData = rows.map(row => {
+                const cols = row.split(','); // Разделитель запятая (или ';' в зависимости от настроек)
+                return {
+                    category: cols[0],
+                    name: cols[1],
+                    price: parseFloat(cols[2]),
+                    desc: cols[3],
+                    photo: cols[4] || 'ВСТАВЬ ССЫЛКУ НА КАРТИНКУ',
+                    stock: cols[5],
+                    flag: cols[6]
+                };
             });
-    </script>
+            renderProducts();
+        } catch (e) {
+            console.error("Ошибка загрузки CSV. Проверьте ссылку.");
+            document.getElementById('products').innerHTML = "Ошибка загрузки товаров. Проверьте CSV_URL.";
+        }
+    }
+
+    function renderProducts() {
+        const container = document.getElementById('products');
+        container.innerHTML = '';
+
+        productsData.forEach((p, index) => {
+            if(!p.name) return;
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            card.innerHTML = `
+                <div class="flag">${p.flag || '🌐'}</div>
+                <div style="font-size: 12px; color: var(--accent)">${p.category}</div>
+                <img src="${p.photo}" class="product-img" alt="photo">
+                <h3>${p.name}</h3>
+                <p style="font-size: 13px; margin: 10px 0;">${p.desc}</p>
+                <div class="price">${p.price} руб.</div>
+                <div class="stock">В наличии: ${p.stock} шт.</div>
+                <div style="margin: 10px 0;">
+                    Кол-во: <input type="number" id="qty-${index}" value="1" min="1" max="${p.stock}">
+                </div>
+                <button class="buy-btn" onclick="openPayment(${index})">Купить</button>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    // --- ЛОГИКА ОПЛАТЫ ---
+    let currentOrder = null;
+
+    function openPayment(index) {
+        const p = productsData[index];
+        const qty = document.getElementById(`qty-${index}`).value;
+        const total = (p.price * qty) - currentVoucherValue;
+        const finalTotal = total < 0 ? 0 : total;
+
+        currentOrder = { name: p.name, qty: qty, price: p.price, total: finalTotal };
+
+        document.getElementById('payItemName').innerText = p.name;
+        document.getElementById('payQty').innerText = qty;
+        document.getElementById('payTotal').innerText = finalTotal;
+        document.getElementById('paymentModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('paymentModal').style.display = 'none';
+    }
+
+    function confirmPurchase() {
+        // Имитация авто-ответа
+        alert("Авто-текст от бота: Спасибо за оплату! Ваш товар готовится.\nТокен бота: (ВСТАВЬ ТОКЕН)");
+        
+        // Сохраняем в историю
+        const history = JSON.parse(localStorage.getItem('purchaseHistory') || '[]');
+        history.push({
+            name: currentOrder.name,
+            qty: currentOrder.qty,
+            total: currentOrder.total,
+            date: new Date().toLocaleString()
+        });
+        localStorage.setItem('purchaseHistory', JSON.stringify(history));
+        
+        // Если использовался баланс ваучера, обнуляем его после покупки
+        if(currentVoucherValue > 0) {
+            currentVoucherValue = 0;
+            localStorage.setItem('userVoucherBalance', 0);
+            updateVoucherUI();
+        }
+
+        renderHistory();
+        closeModal();
+        showPage('profile');
+    }
+
+    // --- ВАУЧЕРЫ ---
+    function applyVoucher() {
+        const code = document.getElementById('voucherInput').value.trim();
+        const usedVouchers = JSON.parse(localStorage.getItem('usedVouchers') || '[]');
+
+        if (usedVouchers.includes(code)) {
+            alert("Этот ваучер уже использован!");
+            return;
+        }
+
+        if (VOUCHERS_DB[code]) {
+            currentVoucherValue += VOUCHERS_DB[code];
+            usedVouchers.push(code);
+            localStorage.setItem('usedVouchers', JSON.stringify(usedVouchers));
+            localStorage.setItem('userVoucherBalance', currentVoucherValue);
+            updateVoucherUI();
+            alert(`Ваучер активирован! Добавлено ${VOUCHERS_DB[code]} руб.`);
+        } else {
+            alert("Неверный код ваучера.");
+        }
+    }
+
+    function updateVoucherUI() {
+        document.getElementById('voucherBalance').innerText = currentVoucherValue;
+    }
+
+    // --- ИСТОРИЯ ПОКУПОК ---
+    function renderHistory() {
+        const history = JSON.parse(localStorage.getItem('purchaseHistory') || '[]');
+        const container = document.getElementById('purchaseHistory');
+        if (history.length === 0) return;
+
+        container.innerHTML = history.map(item => `
+            <div class="history-item">
+                <strong>${item.name}</strong> (x${item.qty}) - ${item.total} руб.<br>
+                <small>${item.date}</small>
+            </div>
+        `).join('');
+    }
+
+    // --- ВСПОМОГАТЕЛЬНЫЕ ---
+    function copyText(id) {
+        const text = document.getElementById(id).innerText;
+        navigator.clipboard.writeText(text);
+        alert("Скопировано!");
+    }
+
+    // Инициализация
+    window.onload = () => {
+        loadProducts(); // Если CSV ссылка пустая, будет ошибка в консоли - это нормально пока не вставишь ссылку
+        renderHistory();
+        updateVoucherUI();
+    };
+
+</script>
 </body>
 </html>

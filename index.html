@@ -3,457 +3,385 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account Shop - Store</title>
+    <title>SMS PRO - Магазин аккаунтов</title>
     <style>
-        /* ПЕРЕМЕННЫЕ ТЕМ */
         :root {
-            --bg: #ffffff;
-            --text: #333333;
-            --accent: #007bff; /* Голубой для светлой */
-            --secondary: #f4f4f4;
-            --card-bg: #fff;
-            --border: #ddd;
-        }
-
-        [data-theme="dark"] {
-            --bg: #000000;
+            --bg: #0f0f0f;
+            --card-bg: #1a1a1a;
             --text: #ffffff;
-            --accent: #d4af37; /* Золотой для темной */
-            --secondary: #1a1a1a;
-            --card-bg: #111;
+            --accent: #d4af37; /* Золотой */
+            --secondary: #252525;
             --border: #333;
+            --blue: #00aaff;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            transition: all 0.3s ease;
+        [data-theme="light"] {
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --text: #333333;
+            --accent: #007bff; /* Голубой */
+            --secondary: #e9ecef;
+            --border: #dee2e6;
         }
 
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+
+        body { background-color: var(--bg); color: var(--text); transition: 0.3s; padding-bottom: 50px; }
+
+        /* HEADER */
         header {
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            background: var(--bg);
-            z-index: 100;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 20px; background: var(--card-bg); border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 1000;
         }
 
-        .nav-menu {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            padding: 10px;
-            justify-content: center;
-            background: var(--secondary);
+        .user-info { display: flex; gap: 15px; align-items: center; }
+        .balance-badge {
+            background: var(--secondary); padding: 5px 12px; border-radius: 20px;
+            border: 1px solid var(--accent); font-weight: bold; font-size: 14px;
         }
 
-        .nav-btn {
-            padding: 8px 15px;
-            cursor: pointer;
-            border: 1px solid var(--accent);
-            background: transparent;
-            color: var(--text);
-            border-radius: 5px;
+        /* NAVIGATION */
+        .nav-container {
+            display: flex; overflow-x: auto; padding: 10px 20px; gap: 10px;
+            background: var(--card-bg); border-bottom: 1px solid var(--border);
+        }
+        .nav-item {
+            white-space: nowrap; padding: 8px 16px; border-radius: 8px;
+            background: var(--secondary); cursor: pointer; font-size: 14px; transition: 0.2s;
+        }
+        .nav-item.active { background: var(--accent); color: #000; font-weight: bold; }
+
+        .container { max-width: 1000px; margin: auto; padding: 20px; }
+
+        /* SEARCH */
+        .search-box {
+            background: var(--card-bg); border: 1px solid var(--border);
+            padding: 12px; border-radius: 10px; width: 100%; margin-bottom: 20px;
+            color: var(--text); outline: none;
         }
 
-        .nav-btn:hover { background: var(--accent); color: #000; }
-
-        .container { padding: 20px; max-width: 1200px; margin: auto; }
-
-        /* СЕТКА ТОВАРОВ */
+        /* PRODUCT CARDS (как на скрине) */
         .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px;
         }
-
         .product-card {
-            background: var(--card-bg);
+                        background: var(--card-bg); border-radius: 12px; padding: 15px;
+            border: 1px solid var(--border); position: relative;
+        }
+        .product-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .country-flag { font-size: 24px; }
+        .product-title { font-weight: bold; font-size: 16px; }
+        .product-sub { font-size: 12px; color: #888; display: flex; align-items: center; gap: 5px; }
+        
+        .product-footer {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 15px; padding-top: 10px; border-top: 1px solid var(--border);
+        }
+        .price { font-size: 18px; font-weight: bold; color: var(--accent); }
+        .buy-btn {
+            background: var(--accent); color: #000; border: none;
+            padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold;
+        }
+
+        /* PROFILE STATS */
+        .stats-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;
+        }
+        .stat-card {
+            background: var(--card-bg); padding: 15px; border-radius: 12px;
             border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 15px;
-            text-align: center;
-            transition: transform 0.2s;
         }
+        .stat-val { font-size: 20px; font-weight: bold; color: var(--accent); margin-top: 5px; }
+        .stat-label { font-size: 12px; opacity: 0.7; }
 
-        .product-card:hover { transform: translateY(-5px); }
-
-        .product-img {
-            width: 100%;
-            height: 150px;
-            object-fit: cover;
-                        border-radius: 8px;
-            margin-bottom: 10px;
-        }
-
-        .flag { font-size: 24px; margin-bottom: 5px; }
-        .price { font-size: 20px; font-weight: bold; color: var(--accent); margin: 10px 0; }
-        .stock { font-size: 12px; opacity: 0.7; }
-
-        button.buy-btn {
-            background: var(--accent);
-            color: #000;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            width: 100%;
-        }
-
-        /* ОКНА (СТРАНИЦЫ) */
+        /* PAGES */
         .page { display: none; }
         .page.active { display: block; }
 
-        /* МОДАЛЬНОЕ ОКНО */
+        /* MODAL */
         .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 1000;
-            justify-content: center; align-items: center;
+            display: none; position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center;
         }
-
         .modal-content {
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 10px;
-            max-width: 500px;
-            width: 90%;
-            position: relative;
+            background: var(--card-bg); padding: 25px; border-radius: 15px; width: 90%; max-width: 400px;
         }
-
-        .close-modal { position: absolute; top: 10px; right: 15px; cursor: pointer; font-size: 24px; }
-
         .copy-box {
-            background: var(--secondary);
-            padding: 10px;
-            margin: 10px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-radius: 5px;
+            background: var(--secondary); padding: 10px; border-radius: 8px;
+            margin: 10px 0; display: flex; justify-content: space-between; align-items: center; font-size: 13px;
         }
 
-        .history-item {
-            border-bottom: 1px solid var(--border);
-            padding: 10px 0;
-        }
-
-        /* ТЕМА */
-        .theme-toggle {
-            cursor: pointer;
-            padding: 10px;
-            border-radius: 50%;
-            background: var(--secondary);
-        }
-
-        input[type="number"] {
-            width: 50px;
-            padding: 5px;
-            margin-bottom: 10px;
-        }
-
+        input { background: var(--secondary); border: 1px solid var(--border); color: var(--text); padding: 10px; border-radius: 5px; }
     </style>
 </head>
 <body data-theme="dark">
 
 <header>
-    <div id="logo"><strong>SHOP NAME</strong></div>
-    <div class="theme-toggle" onclick="toggleTheme()">🌓</div>
+        <div style="font-weight: bold; color: var(--accent); font-size: 18px;">SMS PRO</div>
+    <div class="user-info">
+        <div class="balance-badge" id="headerBalance">0.00 ₽</div>
+        <div style="font-size: 14px;">nmproda</div>
+        <div onclick="toggleTheme()" style="cursor:pointer;">🌓</div>
+    </div>
 </header>
 
-<nav class="nav-menu">
-    <div class="nav-btn" onclick="showPage('shop')">Магазин</div>
-    <div class="nav-btn" onclick="showPage('profile')">Профиль</div>
-        <div class="nav-btn" onclick="showPage('articles')">Статьи</div>
-    <div class="nav-btn" onclick="showPage('faq')">FAQ</div>
-    <div class="nav-btn" onclick="showPage('about')">О нас</div>
-    <div class="nav-btn" onclick="showPage('trust')">Почему доверять?</div>
-</nav>
+<div class="nav-container">
+    <div class="nav-item active" onclick="showPage('shop', this)">Готовые аккаунты</div>
+    <div class="nav-item" onclick="showPage('profile', this)">Профиль</div>
+    <div class="nav-item" onclick="showPage('articles', this)">Статьи</div>
+    <div class="nav-item" onclick="showPage('faq', this)">FAQ</div>
+    <div class="nav-item" onclick="showPage('about', this)">О нас</div>
+</div>
 
 <div class="container">
     
     <!-- МАГАЗИН -->
     <div id="shop" class="page active">
-        <h2 style="margin-bottom: 20px;">Наши аккаунты</h2>
+        <input type="text" class="search-box" placeholder="Поиск по странам..." oninput="searchProducts(this.value)">
         <div id="products" class="products-grid">
-            <!-- Сюда подгрузятся данные из таблицы -->
+            <!-- Данные из Google Таблицы -->
             Загрузка товаров...
         </div>
     </div>
 
     <!-- ПРОФИЛЬ -->
     <div id="profile" class="page">
-        <h2>Мой профиль</h2>
-        <div style="margin: 20px 0; padding: 20px; background: var(--secondary); border-radius: 10px;">
-            <p><strong>Менеджер:</strong> <a href="https://t.me/nmproda" style="color: var(--accent);">@nmproda</a></p>
-            <p><strong>ID:</strong> 7727345054</p>
-            <p><strong>Тех. поддержка:</strong> (ВСТАВЬ ПОЧТУ ТУТ)</p>
+        <div class="stats-grid">
+            <div class="stat-card"><div class="stat-label">Потрачено</div><div class="stat-val" id="statsSpent">0.00 ₽</div></div>
+            <div class="stat-card"><div class="stat-label">Всего покупок</div><div class="stat-val" id="statsCount">0</div></div>
         </div>
 
-        <h3>Ваучер</h3>
-        <div style="margin-bottom: 20px;">
-            <input type="text" id="voucherInput" placeholder="Введите код ваучера" style="padding: 10px;">
-            <button class="nav-btn" onclick="applyVoucher()">Применить</button>
-            <p>Баланс ваучера: <span id="voucherBalance">0</span> руб.</p>
+        <div class="stat-card" style="margin-bottom: 20px;">
+            <h3>Ваучеры</h3>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <input type="text" id="vCode" placeholder="Код ваучера" style="flex:1">
+                <button class="buy-btn" onclick="applyVoucher()">Активировать</button>
+            </div>
         </div>
 
-        <h3>История покупок</h3>
-        <div id="purchaseHistory">Покупок пока нет.</div>
+        <div class="stat-card">
+            <h3>Информация</h3>
+            <p style="font-size: 14px; margin-top:10px;">Логин: nmproda</p>
+            <p style="font-size: 14px;">ID: 7727345054</p>
+            <p style="font-size: 14px;">Поддержка: (ВСТАВЬ ПОЧТУ)</p>
+            <p style="font-size: 14px;">Менеджер: <a href="https://t.me/nmproda" style="color: var(--accent)">@nmproda</a></p>
+        </div>
+
+        <h3 style="margin: 20px 0 10px;">Последние покупки</h3>
+        <div id="purchaseHistory"></div>
     </div>
 
     <!-- СТАТЬИ -->
     <div id="articles" class="page">
         <h2>Статьи и Новости</h2>
-        <div style="margin-top:20px;">
-            <img src="ВСТАВЬ ССЫЛКУ НА КАРТИНКУ" alt="news" class="product-img" style="height: auto; max-width: 400px;">
-            <p>Здесь вы сможете прочитать последние новости о Telegram и обновлении моих аккаунтов...</p>
+        <div class="stat-card" style="margin-top:15px;">
+            <img src="ВСТАВЬ ССЫЛКУ НА КАРТИНКУ" style="width:100%; border-radius:10px; margin-bottom:10px;">
+            <p>Новости Телеграм и обновления нашего магазина...</p>
         </div>
     </div>
 
     <!-- FAQ -->
     <div id="faq" class="page">
-        <h2>Частые вопросы (FAQ)</h2>
-        <div style="margin-top:20px;">
-            <p><strong>Как купить?</strong><br>Выберите товар, введите количество и оплатите по реквизитам.</p>
-            <p><strong>Какие гарантии?</strong><br>Мы работаем честно, все аккаунты проверяются...</p>
+        <h2>FAQ</h2>
+        <div class="stat-card" style="margin-top:15px;">
+            <p><strong>Как получить товар?</strong><br>После подтверждения оплаты товар появится в истории покупок.</p>
         </div>
     </div>
 
-    <!-- О НАС -->
+    <!-- О НАС / ДОВЕРИЕ -->
     <div id="about" class="page">
         <h2>О нас</h2>
-        <div style="margin-top:20px;">
-            <img src="ВСТАВЬ ССЫЛКУ НА КАРТИНКУ" alt="about" class="product-img" style="height: auto; max-width: 400px;">
-            <p>Почему выбирают нас? У нас самые качественные аккаунты и быстрая поддержка...</p>
-        </div>
+        <p>Почему выбирают нас? (Твой текст)</p>
+        <h2 style="margin-top:20px;">Почему нам доверяют?</h2>
+        <p>(Твой текст о доверии)</p>
     </div>
 
-    <!-- ДОВЕРИЕ -->
-    <div id="trust" class="page">
-        <h2>Почему мне надо доверять?</h2>
-        <p style="margin-top:20px;">(ВСТАВЬ СВОЙ ТЕКСТ О ДОВЕРИИ ТУТ)</p>
-    </div>
-
-    <!-- ОФЕРТА (Футер или отдельный блок) -->
-    <div style="margin-top: 50px; font-size: 10px; opacity: 0.5; border-top: 1px solid var(--border); padding: 20px;">
-        (ВСТАВЬ ТЕКСТ ОФЕРТЫ ТУТ)
-    </div>
 </div>
 
-<!-- МОДАЛЬНОЕ ОКНО ОПЛАТЫ -->
-<div id="paymentModal" class="modal">
+<!-- МОДАЛКА ОПЛАТЫ -->
+<div id="payModal" class="modal">
     <div class="modal-content">
-        <span class="close-modal" onclick="closeModal()">&times;</span>
-        <h3>Оплата товара</h3>
-        <p id="paymentDetailsText">Вы заказываете: <span id="payItemName"></span></p>
-        <p>Количество: <span id="payQty"></span></p>
-        <p>Итого к оплате: <span id="payTotal"></span> руб.</p>
+        <h3 id="mTitle">Оплата</h3>
+        <p id="mDetails" style="font-size: 14px; margin: 10px 0;"></p>
+        
+        <div style="margin-bottom:10px;">
+            Количество: <input type="number" id="mQty" value="1" min="1" style="width:60px" oninput="recalcTotal()">
+        </div>
         
         <div class="copy-box">
-            <span id="requisites">Реквизиты: (ВСТАВЬ РЕКВИЗИТЫ ТУТ)</span>
-            <button onclick="copyText('requisites')">Копировать</button>
+            <span id="reqNum">РЕКВИЗИТЫ: +79001234567</span>
+            <button class="buy-btn" style="padding:4px 8px; font-size:10px;" onclick="copyText('reqNum')">Копи</button>
         </div>
 
-        <p style="font-size: 12px; color: red;">После оплаты нажмите кнопку ниже:</p>
-        <button class="buy-btn" style="margin-top: 10px;" onclick="confirmPurchase()">О, я доволен, жми на меня</button>
+        <div style="font-weight:bold; margin: 15px 0;">Итого: <span id="mTotal">0</span> ₽</div>
+        
+        <button class="buy-btn" style="width:100%" onclick="confirmPay()">О, я доволен, жми на меня</button>
+        <button class="buy-btn" style="width:100%; margin-top:10px; background:#444; color:#fff" onclick="closeModal()">Отмена</button>
     </div>
 </div>
 
 <script>
-    // --- КОНФИГУРАЦИЯ ---
+    // --- НАСТРОЙКИ ---
     const CSV_URL = 'https://docs.google.com/spreadsheets/d/1bxpXTKxDHUwk5VX79PeXbjxrJxAkzaZag6opznV_Kq8/export?format=csv';
-    
-    // ВАУЧЕРЫ (Пример: код 'GIFT100' дает 100 руб)
-    const VOUCHERS_DB = {
-        "PROMO2024": 500,
-        "WELCOME": 100,
-        "TEST": 50
+    const VOUCHERS = {"GIFT100": 100, "START": 50, "NMPRODA": 1000};
+
+    let allProducts = [];
+    let currentBalance = parseFloat(localStorage.getItem('balance')) || 0;
+    let selectedProduct = null;
+
+    // --- ИНИЦИАЛИЗАЦИЯ ---
+    window.onload = () => {
+        updateUI();
+        loadProducts();
     };
 
-    let productsData = [];
-    let currentVoucherValue = parseFloat(localStorage.getItem('userVoucherBalance')) || 0;
-
-    // --- ПЕРЕКЛЮЧЕНИЕ СТРАНИЦ ---
-    function showPage(pageId) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById(pageId).classList.add('active');
+    function updateUI() {
+        document.getElementById('headerBalance').innerText = currentBalance.toFixed(2) + ' ₽';
+        document.getElementById('statsSpent').innerText = (localStorage.getItem('spent') || 0) + ' ₽';
+        document.getElementById('statsCount').innerText = JSON.parse(localStorage.getItem('history') || '[]').length;
+        renderHistory();
     }
 
-    // --- ТЕМЫ ---
-    function toggleTheme() {
-        const body = document.body;
-        const current = body.getAttribute('data-theme');
-        const next = current === 'dark' ? 'light' : 'dark';
-        body.setAttribute('data-theme', next);
-        localStorage.setItem('theme', next);
-    }
-
-    // Восстановление темы
-    if(localStorage.getItem('theme')) {
-        document.body.setAttribute('data-theme', localStorage.getItem('theme'));
-    }
-
-    // --- ЗАГРУЗКА ДАННЫХ ИЗ GOOGLE SHEETS ---
+    // --- ЗАГРУЗКА ТОВАРОВ ---
     async function loadProducts() {
         try {
-            const response = await fetch(CSV_URL);
-            const data = await response.text();
-            const rows = data.split('\n').slice(1); // Пропускаем заголовок
-            
-            productsData = rows.map(row => {
-                const cols = row.split(','); // Разделитель запятая (или ';' в зависимости от настроек)
-                return {
-                    category: cols[0],
-                    name: cols[1],
-                    price: parseFloat(cols[2]),
-                    desc: cols[3],
-                    photo: cols[4] || 'ВСТАВЬ ССЫЛКУ НА КАРТИНКУ',
-                    stock: cols[5],
-                    flag: cols[6]
-                };
-            });
-            renderProducts();
-        } catch (e) {
-            console.error("Ошибка загрузки CSV. Проверьте ссылку.");
-            document.getElementById('products').innerHTML = "Ошибка загрузки товаров. Проверьте CSV_URL.";
+            const res = await fetch(CSV_URL);
+            const data = await res.text();
+            const rows = data.split('\n').slice(1);
+            allProducts = rows.map(row => {
+                const c = row.split(',');
+                return { cat: c[0], name: c[1], price: parseFloat(c[2]), desc: c[3], img: c[4], stock: c[5], flag: c[6] };
+            }).filter(p => p.name);
+            renderProducts(allProducts);
+        } catch(e) {
+            document.getElementById('products').innerHTML = "Ошибка загрузки. Проверьте CSV ссылку.";
         }
     }
 
-    function renderProducts() {
+    function renderProducts(list) {
         const container = document.getElementById('products');
-        container.innerHTML = '';
-
-        productsData.forEach((p, index) => {
-            if(!p.name) return;
-            const card = document.createElement('div');
-            card.className = 'product-card';
-            card.innerHTML = `
-                <div class="flag">${p.flag || '🌐'}</div>
-                <div style="font-size: 12px; color: var(--accent)">${p.category}</div>
-                <img src="${p.photo}" class="product-img" alt="photo">
-                <h3>${p.name}</h3>
-                <p style="font-size: 13px; margin: 10px 0;">${p.desc}</p>
-                <div class="price">${p.price} руб.</div>
-                <div class="stock">В наличии: ${p.stock} шт.</div>
-                <div style="margin: 10px 0;">
-                    Кол-во: <input type="number" id="qty-${index}" value="1" min="1" max="${p.stock}">
+        container.innerHTML = list.map((p, i) => `
+            <div class="product-card">
+                <div class="product-header">
+                    <span class="country-flag">${p.flag || '🚩'}</span>
+                    <div>
+                        <div class="product-title">${p.name}</div>
+                        <div class="product-sub">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" width="12">
+                            Telegram
+                        </div>
+                    </div>
                 </div>
-                <button class="buy-btn" onclick="openPayment(${index})">Купить</button>
-            `;
-            container.appendChild(card);
-        });
-    }
-
-    // --- ЛОГИКА ОПЛАТЫ ---
-    let currentOrder = null;
-
-    function openPayment(index) {
-        const p = productsData[index];
-        const qty = document.getElementById(`qty-${index}`).value;
-        const total = (p.price * qty) - currentVoucherValue;
-        const finalTotal = total < 0 ? 0 : total;
-
-        currentOrder = { name: p.name, qty: qty, price: p.price, total: finalTotal };
-
-        document.getElementById('payItemName').innerText = p.name;
-        document.getElementById('payQty').innerText = qty;
-        document.getElementById('payTotal').innerText = finalTotal;
-        document.getElementById('paymentModal').style.display = 'flex';
-    }
-
-    function closeModal() {
-        document.getElementById('paymentModal').style.display = 'none';
-    }
-
-    function confirmPurchase() {
-        // Имитация авто-ответа
-        alert("Авто-текст от бота: Спасибо за оплату! Ваш товар готовится.\nТокен бота: (ВСТАВЬ ТОКЕН)");
-        
-        // Сохраняем в историю
-        const history = JSON.parse(localStorage.getItem('purchaseHistory') || '[]');
-        history.push({
-            name: currentOrder.name,
-            qty: currentOrder.qty,
-            total: currentOrder.total,
-            date: new Date().toLocaleString()
-        });
-        localStorage.setItem('purchaseHistory', JSON.stringify(history));
-        
-        // Если использовался баланс ваучера, обнуляем его после покупки
-        if(currentVoucherValue > 0) {
-            currentVoucherValue = 0;
-            localStorage.setItem('userVoucherBalance', 0);
-            updateVoucherUI();
-        }
-
-        renderHistory();
-        closeModal();
-        showPage('profile');
-    }
-
-    // --- ВАУЧЕРЫ ---
-    function applyVoucher() {
-        const code = document.getElementById('voucherInput').value.trim();
-        const usedVouchers = JSON.parse(localStorage.getItem('usedVouchers') || '[]');
-
-        if (usedVouchers.includes(code)) {
-            alert("Этот ваучер уже использован!");
-            return;
-        }
-
-        if (VOUCHERS_DB[code]) {
-            currentVoucherValue += VOUCHERS_DB[code];
-            usedVouchers.push(code);
-            localStorage.setItem('usedVouchers', JSON.stringify(usedVouchers));
-            localStorage.setItem('userVoucherBalance', currentVoucherValue);
-            updateVoucherUI();
-            alert(`Ваучер активирован! Добавлено ${VOUCHERS_DB[code]} руб.`);
-        } else {
-            alert("Неверный код ваучера.");
-        }
-    }
-
-    function updateVoucherUI() {
-        document.getElementById('voucherBalance').innerText = currentVoucherValue;
-    }
-
-    // --- ИСТОРИЯ ПОКУПОК ---
-    function renderHistory() {
-        const history = JSON.parse(localStorage.getItem('purchaseHistory') || '[]');
-        const container = document.getElementById('purchaseHistory');
-        if (history.length === 0) return;
-
-        container.innerHTML = history.map(item => `
-            <div class="history-item">
-                <strong>${item.name}</strong> (x${item.qty}) - ${item.total} руб.<br>
-                <small>${item.date}</small>
+                <div style="font-size:12px; opacity:0.7; height:32px; overflow:hidden;">${p.desc}</div>
+                <div class="product-footer">
+                    <div>
+                        <div style="font-size:10px; opacity:0.5;">${p.stock} шт.</div>
+                        <div class="price">${p.price} ₽</div>
+                    </div>
+                    <button class="buy-btn" onclick="openPay(${i})">Купить</button>
+                </div>
             </div>
         `).join('');
     }
 
-    // --- ВСПОМОГАТЕЛЬНЫЕ ---
+    function searchProducts(val) {
+        const filtered = allProducts.filter(p => p.name.toLowerCase().includes(val.toLowerCase()));
+        renderProducts(filtered);
+    }
+
+    // --- ПОКУПКА ---
+    function openPay(index) {
+        selectedProduct = allProducts[index];
+        document.getElementById('mTitle').innerText = selectedProduct.name;
+        document.getElementById('mDetails').innerText = selectedProduct.desc;
+        document.getElementById('mQty').value = 1;
+        recalcTotal();
+        document.getElementById('payModal').style.display = 'flex';
+    }
+
+    function recalcTotal() {
+        const qty = document.getElementById('mQty').value;
+        document.getElementById('mTotal').innerText = (selectedProduct.price * qty).toFixed(2);
+    }
+
+    function confirmPay() {
+        const qty = parseInt(document.getElementById('mQty').value);
+        const total = selectedProduct.price * qty;
+
+        if (currentBalance >= total) {
+            currentBalance -= total;
+            savePurchase(selectedProduct.name, qty, total);
+            alert("Оплата прошла успешно! Спасибо за покупку.\nТокен: (8730430332:AAGff_PCX2059o3EUwG-d9C19uTqcH4sAZ4)");
+        } else {
+            alert("Недостаточно баланса! Пополните его с помощью ваучера или по реквизитам.");
+        }
+        closeModal();
+    }
+
+    function savePurchase(name, qty, total) {
+        let history = JSON.parse(localStorage.getItem('history') || '[]');
+        history.push({ name, qty, total, date: new Date().toLocaleString() });
+        localStorage.setItem('history', JSON.stringify(history));
+        
+        let spent = parseFloat(localStorage.getItem('spent') || 0);
+        localStorage.setItem('spent', (spent + total).toFixed(2));
+        localStorage.setItem('balance', currentBalance);
+        
+        updateUI();
+    }
+
+    // --- ВАУЧЕРЫ ---
+    function applyVoucher() {
+        const code = document.getElementById('vCode').value.toUpperCase();
+        const used = JSON.parse(localStorage.getItem('usedVouchers') || '[]');
+
+        if (used.includes(code)) return alert("Уже использован!");
+        if (VOUCHERS[code]) {
+            currentBalance += VOUCHERS[code];
+            used.push(code);
+            localStorage.setItem('usedVouchers', JSON.stringify(used));
+            localStorage.setItem('balance', currentBalance);
+            updateUI();
+            alert("Баланс пополнен на " + VOUCHERS[code] + " ₽");
+        } else {
+            alert("Код не найден");
+        }
+    }
+
+    // --- ВСПОМОГАТЕЛЬНОЕ ---
+    function showPage(id, el) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        el.classList.add('active');
+    }
+
+    function toggleTheme() {
+        const theme = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        document.body.setAttribute('data-theme', theme);
+    }
+
+    function closeModal() { document.getElementById('payModal').style.display = 'none'; }
+    
     function copyText(id) {
-        const text = document.getElementById(id).innerText;
+        const text = document.getElementById(id).innerText.replace('РЕКВИЗИТЫ: ', '');
         navigator.clipboard.writeText(text);
         alert("Скопировано!");
     }
 
-    // Инициализация
-    window.onload = () => {
-        loadProducts(); // Если CSV ссылка пустая, будет ошибка в консоли - это нормально пока не вставишь ссылку
-        renderHistory();
-        updateVoucherUI();
-    };
-
+    function renderHistory() {
+        const history = JSON.parse(localStorage.getItem('history') || '[]');
+        document.getElementById('purchaseHistory').innerHTML = history.reverse().map(h => `
+            <div class="stat-card" style="margin-bottom:10px; font-size:13px;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" width="12"> 
+                <strong>${h.name}</strong> - ${h.qty} шт. (${h.total} ₽)<br>
+                <small style="opacity:0.5">${h.date}</small>
+            </div>
+        `).join('');
+    }
 </script>
+
 </body>
 </html>
+            

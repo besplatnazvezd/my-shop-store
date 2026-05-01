@@ -3,432 +3,494 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMS PRO - Купить аккаунты</title>
+    <title>SMS PRO - Аккаунты</title>
     <style>
         :root {
-            --bg-color: #1e1e2d;
-            --card-bg: #2b2b3d;
-            --text-color: #ffffff;
-            --text-muted: #a2a2b5;
-            --accent-blue: #0088ff;
-            --border-color: #3f3f5a;
-            --red: #ff4d4d;
+            --bg: #1e1e2d;
+            --card: #2b2b3d;
+            --text: #ffffff;
+            --text-m: #a2a2b5;
+            --accent: #d4af37; /* Золотой для темной */
+            --blue: #0088ff;
+            --brd: #3f3f5a;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        [data-theme="light"] {
+            --bg: #f5f5f9;
+            --card: #ffffff;
+            --text: #333333;
+            --text-m: #777777;
+            --accent: #007bff; /* Голубой для светлой */
+            --blue: #007bff;
+            --brd: #e0e0e0;
+        }
 
-        body { background-color: var(--bg-color); color: var(--text-color); overflow-x: hidden; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; transition: 0.2s; }
+        body { background-color: var(--bg); color: var(--text); overflow-x: hidden; }
 
-        /* --- AUTH --- */
-        #auth-page { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; padding: 20px; }
-        .auth-card { background: var(--card-bg); padding: 30px; border-radius: 15px; width: 100%; max-width: 400px; text-align: center; border: 1px solid var(--border-color); }
-        .auth-input { width: 100%; padding: 12px; margin: 10px 0; background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color); border-radius: 8px; outline: none; }
-        .auth-btn { width: 100%; padding: 12px; background: var(--accent-blue); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-
+        /* --- CUSTOM MODAL --- */
+        #custom-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); z-index: 10000; justify-content: center; align-items: center;
+        }
+        .modal-box { background: var(--card); padding: 25px; border-radius: 15px; width: 90%; max-width: 350px; text-align: center; border: 1px solid var(--brd); }
+        
         /* --- HEADER --- */
-        header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: var(--bg-color); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 100; }
-        .header-right { display: flex; align-items: center; gap: 12px; }
-        .balance-box { background: var(--card-bg); padding: 6px 14px; border-radius: 12px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 8px; font-size: 14px; }
-        .menu-icon { font-size: 24px; cursor: pointer; }
-
-        /* --- MENU OVERLAY --- */
+        header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: var(--bg); border-bottom: 1px solid var(--brd); position: sticky; top: 0; z-index: 100; }
+        .header-right { display: flex; align-items: center; gap: 10px; }
+        .bal-badge { background: var(--card); padding: 6px 12px; border-radius: 10px; border: 1px solid var(--brd); display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: bold; color: var(--accent); }
+        
+        /* --- MENU --- */
         #menu-overlay { display: none; position: fixed; top: 0; right: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; }
-        .menu-content { background: var(--card-bg); width: 85%; max-width: 320px; height: 100%; float: right; padding: 25px; position: relative; transition: 0.3s; }
-        .menu-header { font-size: 20px; font-weight: bold; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
-                .menu-item { padding: 14px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; font-size: 15px; color: var(--text-color); }
-        .menu-item:hover { color: var(--accent-blue); }
-        .menu-active { background: var(--accent-blue) !important; border-radius: 8px; font-weight: bold; }
+        .menu-side { background: var(--card); width: 280px; height: 100%; float: right; padding: 20px; }
+        .m-item { padding: 15px; border-bottom: 1px solid var(--brd); cursor: pointer; color: var(--text); }
+        .m-item:hover { color: var(--accent); }
+        .m-active { background: var(--blue); border-radius: 8px; font-weight: bold; color: white !important; }
+                .container { padding: 20px; max-width: 800px; margin: auto; }
+        .main-btn { background: var(--blue); width: 100%; padding: 16px; border-radius: 12px; text-align: center; font-weight: bold; margin-bottom: 25px; border: none; color: white; cursor: pointer; }
 
-        /* --- MAIN --- */
-        .container { padding: 20px; max-width: 1000px; margin: auto; }
-        .buy-number-btn { background: var(--accent-blue); width: 100%; padding: 16px; border-radius: 10px; text-align: center; font-weight: bold; margin-bottom: 25px; cursor: pointer; border: none; color: white; font-size: 16px; }
-
-        h2 { margin-bottom: 20px; font-size: 22px; }
-
-        /* --- CARDS (Strictly from screenshot) --- */
-        .account-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .acc-card { background: var(--card-bg); border-radius: 12px; padding: 15px; border: 1px solid var(--border-color); transition: 0.2s; }
-        .acc-top { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
-        .acc-country { font-weight: bold; font-size: 14px; }
-        .acc-service { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--accent-blue); margin-bottom: 15px; }
-        .acc-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid var(--border-color); }
-        .acc-stock { font-size: 12px; color: var(--text-muted); }
+        /* --- GRID (Ideal from screen) --- */
+        .acc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .acc-card { background: var(--card); border-radius: 12px; padding: 15px; border: 1px solid var(--brd); }
+        .acc-top { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+        .acc-serv { font-size: 11px; color: var(--blue); display: flex; align-items: center; gap: 4px; margin-bottom: 12px; }
+        .acc-foot { display: flex; justify-content: space-between; align-items: flex-end; padding-top: 8px; border-top: 1px solid var(--brd); }
+        .acc-stock { font-size: 11px; color: var(--text-m); }
         .acc-price { font-weight: bold; font-size: 15px; }
 
-        /* --- PROFILE DATA --- */
-        .profile-info-box { background: var(--card-bg); padding: 20px; border-radius: 15px; border: 1px solid var(--border-color); margin-bottom: 20px; }
-        .profile-info-box p { margin: 8px 0; font-size: 14px; color: var(--text-muted); }
-        .profile-info-box span { color: var(--text-color); font-weight: 500; }
+        /* --- PROFILE EDITS --- */
+        .edit-group { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+        .inp { width: 100%; padding: 12px; background: var(--bg); border: 1px solid var(--brd); color: var(--text); border-radius: 8px; outline: none; }
+        .profile-card { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid var(--brd); }
 
-        /* --- MINI GAME --- */
-        #game-area { text-align: center; background: var(--card-bg); padding: 20px; border-radius: 15px; border: 1px solid var(--accent-blue); }
-                .wheel { width: 150px; height: 150px; border: 5px solid var(--accent-blue); border-radius: 50%; margin: 20px auto; display: flex; align-items: center; justify-content: center; font-weight: bold; transition: 2s; }
+        /* --- VOUCHERS --- */
+        .v-card { background: var(--bg); padding: 10px; border-radius: 8px; border: 1px dashed var(--accent); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
 
-        /* --- PAGES --- */
-        .page { display: none; animation: fadeIn 0.3s; }
+        /* --- GAME --- */
+        #game-box { text-align: center; padding: 30px; }
+        .coin { width: 120px; height: 120px; background: var(--accent); border-radius: 50%; margin: 20px auto; border: 8px solid rgba(255,255,255,0.2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 40px; }
+        .coin:active { transform: scale(0.95); }
+
+        .page { display: none; }
         .active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        #main-app { display: none; }
     </style>
 </head>
-<body>
+<body data-theme="dark">
 
-<!-- AUTH PAGE -->
-<div id="auth-page">
-    <div class="auth-card" id="login-form">
-        <h2 style="color: var(--accent-blue);">SMS PRO</h2>
-        <input type="text" id="userLogin" class="auth-input" placeholder="Логин или Email">
-        <input type="password" id="userPass" class="auth-input" placeholder="Пароль">
-        <button class="auth-btn" onclick="handleLogin()">Войти</button>
-        <p style="margin-top: 15px; font-size: 13px;">
-            <a href="#" onclick="toggleAuth('reg')" style="color: var(--accent-blue); text-decoration: none;">Регистрация</a> | 
-            <a href="#" onclick="toggleAuth('reset')" style="color: var(--text-muted); text-decoration: none;">Забыли пароль?</a>
-        </p>
-    </div>
-
-    <div class="auth-card" id="reg-form" style="display:none;">
-        <h2>Регистрация</h2>
-        <input type="text" id="regLogin" class="auth-input" placeholder="Логин">
-        <input type="email" id="regEmail" class="auth-input" placeholder="Email">
-        <input type="password" id="regPass" class="auth-input" placeholder="Пароль">
-        <button class="auth-btn" onclick="handleRegister()">Создать аккаунт</button>
-        <p style="margin-top: 15px;"><a href="#" onclick="toggleAuth('login')" style="color: var(--accent-blue);">Назад</a></p>
-    </div>
-
-    <div class="auth-card" id="reset-form" style="display:none;">
-        <h2>Сброс пароля</h2>
-        <input type="email" id="resetEmail" class="auth-input" placeholder="Ваш Email">
-        <button class="auth-btn" onclick="alert('Ссылка отправлена на почту!')">Сбросить</button>
-        <p style="margin-top: 15px;"><a href="#" onclick="toggleAuth('login')" style="color: var(--accent-blue);">Назад</a></p>
+<div id="custom-modal" onclick="closeModal()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+                <h3 id="modal-title" style="margin-bottom: 10px; color: var(--accent);"></h3>
+        <p id="modal-text" style="font-size: 14px; margin-bottom: 20px;"></p>
+        <button class="main-btn" onclick="closeModal()" style="padding: 10px;">OK</button>
     </div>
 </div>
 
-<!-- MAIN APP -->
-<div id="main-app">
+<div id="auth-app">
+    <div class="container" style="margin-top: 100px; text-align: center;">
+        <h1 style="color: var(--blue); margin-bottom: 30px;">SMS PRO</h1>
+        <div class="profile-card">
+            <input type="text" id="loginInp" class="inp" placeholder="Логин" style="margin-bottom: 10px;">
+            <input type="password" id="passInp" class="inp" placeholder="Пароль" style="margin-bottom: 20px;">
+            <button class="main-btn" onclick="handleAuth()">Войти / Регистрация</button>
+        </div>
+    </div>
+</div>
+
+<div id="main-app" style="display:none;">
     <header>
-        <div style="font-weight: bold; color: var(--accent-blue); cursor:pointer;" onclick="showPage('shop-page')">SMS PRO</div>
+        <div style="font-weight: bold; color: var(--blue);" onclick="showPage('shop')">SMS PRO</div>
         <div class="header-right">
-            <div class="balance-box">
-                <span style="color: var(--accent-blue);">👛</span>
-                <span id="headerBalance">0.00 ₽</span>
-            </div>
-            <div id="topUsername" style="font-size: 14px; font-weight: 500;"></div>
-            <div class="menu-icon" onclick="toggleMenu(true)">☰</div>
+            <div class="bal-badge">👛 <span id="userBal">0.00</span>₽</div>
+            <div id="uName" style="font-size: 14px;"></div>
+            <div style="cursor:pointer; font-size: 20px;" onclick="toggleTheme()">🌓</div>
+            <div style="cursor:pointer; font-size: 20px;" onclick="toggleMenu(true)">☰</div>
         </div>
     </header>
 
     <div class="container">
-        <button class="buy-number-btn" onclick="showPage('shop-page')">Купить номер</button>
+        <button class="main-btn" onclick="showPage('shop')">Купить номер</button>
 
         <!-- МАГАЗИН -->
-        <div id="shop-page" class="page active">
-            <h2>Выберите страну</h2>
-            <input type="text" class="auth-input" style="margin-bottom:20px;" placeholder="🔍 Поиск по странам" oninput="searchCountries(this.value)">
-            <div class="account-grid" id="accountsList">Загрузка товаров...</div>
+        <div id="shop" class="page active">
+            <h2 style="margin-bottom: 15px;">Выберите страну</h2>
+            <input type="text" class="inp" placeholder="🔍 Поиск по странам" oninput="search(this.value)" style="margin-bottom: 20px;">
+            <div class="acc-grid" id="accList">Загрузка...</div>
         </div>
 
         <!-- ПРОФИЛЬ -->
-        <div id="profile-page" class="page">
+        <div id="profile" class="page">
             <h2>Мой профиль</h2>
-            <div class="profile-info-box">
-                <p>Логин: <span id="profLogin"></span></p>
-                <p>Email: <span id="profEmail"></span></p>
-                <p>ID: <span>7727345054</span></p>
-                <p>Дата регистрации: <span id="profDate"></span></p>
-                <p>Статус: <span style="color: var(--accent-blue);">Пользователь</span></p>
+            <div class="profile-card">
+                <p style="font-size: 14px; color: var(--text-m);">ID: <span id="pID" style="color: var(--text);">7727345054</span></p>
+                <p style="font-size: 14px; color: var(--text-m);">Дата регистрации: <span id="pDate" style="color: var(--text);">01.05.2026</span></p>
+                
+                <div class="edit-group">
+                    <input type="text" id="editLog" class="inp" placeholder="Новый логин">
+                    <input type="text" id="editMail" class="inp" placeholder="Новая почта">
+                    <input type="password" id="editPass" class="inp" placeholder="Новый пароль">
+                    <button class="main-btn" onclick="saveProfile()" style="background: var(--card); border: 1px solid var(--brd);">Сохранить изменения</button>
+                </div>
             </div>
-            <button class="auth-btn" style="background: #444;" onclick="location.reload()">Выйти из аккаунта</button>
-        </div>
-
-        <!-- ПОДДЕРЖКА -->
-        <div id="support-page" class="page">
-            <h2>Поддержка</h2>
-            <div class="profile-info-box">
-                <p>Менеджер: <span>@nmproda</span></p>
-                <p>Email: <span>support@smspro.guru</span></p>
-                <p>Время ответа: <span>10:00 - 22:00</span></p>
-                <button class="auth-btn" onclick="window.open('https://t.me/nmproda')">Написать в Telegram</button>
-            </div>
-        </div>
-
-        <!-- ПОКУПКИ -->
-        <div id="purchases-page" class="page">
-            <h2>Последние покупки</h2>
-            <div id="historyList">История пуста.</div>
+            <button class="main-btn" style="background: #444; margin-top: 20px;" onclick="location.reload()">Выйти</button>
         </div>
 
         <!-- ВАУЧЕРЫ -->
-        <div id="vouchers-page" class="page">
+        <div id="vouchers" class="page">
             <h2>Ваучеры</h2>
-            <div class="profile-info-box">
-                <input type="text" id="vouchCode" class="auth-input" placeholder="Введите код">
-                <button class="auth-btn" onclick="applyVoucher()">Активировать</button>
+            <p style="font-size: 12px; color: var(--text-m); margin-bottom: 15px;">Нажми на ваучер, чтобы скопировать код</p>
+            <div id="vouchList">
+                <!-- Коды -->
+                <div class="v-card" onclick="copyV('GIFT500')"><span>GIFT500 (500₽)</span> 📋</div>
+                <div class="v-card" onclick="copyV('NMPRODA')"><span>NMPRODA (1000₽)</span> 📋</div>
+            </div>
+            <div class="profile-card" style="margin-top: 20px;">
+                <input type="text" id="vInp" class="inp" placeholder="Вставьте код сюда">
+                <button class="main-btn" style="margin-top: 10px;" onclick="activateV()">Активировать</button>
             </div>
         </div>
 
-        <!-- ЛОЯЛЬНОСТЬ (МИНИ ИГРА) -->
-        <div id="loyalty-page" class="page">
-            <h2>Программа лояльности</h2>
-            <div id="game-area">
-                <p>Крути колесо и получай бонусы!</p>
-                <div class="wheel" id="wheel">?</div>
-                <button class="auth-btn" onclick\()">Создать аккаунт</button>
-        <p style="margin-top: 15px;"><a href="#" onclick="toggleAuth('login')" style="color: var(--accent-blue);">Назад</a></p>
-    </div>
-
-    <div class="auth-card" id="reset-form" style="display:none;">
-        <h2>Сброс пароля</h2>
-        <input type="email" id="resetEmail" class="auth-input" placeholder="Ваш Email">
-        <button class="auth-btn" onclick="alert('Ссылка отправлена на почту!')">Сбросить</button>
-        <p style="margin-top: 15px;"><a href="#" onclick="toggleAuth('login')" style="color: var(--accent-blue);">Назад</a></p>
-    </div>
-</div>
-
-<!-- MAIN APP -->
-<div id="main-app">
-    <header>
-        <div style="font-weight: bold; color: var(--accent-blue); cursor:pointer;" onclick="showPage('shop-page')">SMS PRO</div>
-        <div class="header-right">
-            <div class="balance-box">
-                <span style="color: var(--accent-blue);">👛</span>
-                <span id="headerBalance">0.00 ₽</span>
-            </div>
-            <div id="topUsername" style="font-size: 14px; font-weight: 500;"></div>
-            <div class="menu-icon" onclick="toggleMenu(true)">☰</div>
-        </div>
-    </header>
-
-    <div class="container">
-        <button class="buy-number-btn" onclick="showPage('shop-page')">Купить номер</button>
-
-        <!-- МАГАЗИН -->
-        <div id="shop-page" class="page active">
-            <h2>Выберите страну</h2>
-            <input type="text" class="auth-input" style="margin-bottom:20px;" placeholder="🔍 Поиск по странам" oninput="searchCountries(this.value)">
-            <div class="account-grid" id="accountsList">Загрузка товаров...</div>
-        </div>
-
-        <!-- ПРОФИЛЬ -->
-        <div id="profile-page" class="page">
-            <h2>Мой профиль</h2>
-            <div class="profile-info-box">
-                <p>Логин: <span id="profLogin"></span></p>
-                <p>Email: <span id="profEmail"></span></p>
-                <p>ID: <span>7727345054</span></p>
-                <p>Дата регистрации: <span id="profDate"></span></p>
-                <p>Статус: <span style="color: var(--accent-blue);">Пользователь</span></p>
-            </div>
-            <button class="auth-btn" style="background: #444;" onclick="location.reload()">Выйти из аккаунта</button>
-        </div>
-
-        <!-- ПОДДЕРЖКА -->
-        <div id="support-page" class="page">
-            <h2>Поддержка</h2>
-            <div class="profile-info-box">
-                <p>Менеджер: <span>@nmproda</span></p>
-                <p>Email: <span>support@smspro.guru</span></p>
-                <p>Время ответа: <span>14:00 - 23:00МСК</span></p>
-                <button class="auth-btn" onclick="window.open('https://t.me/nmproda')">Написать в Telegram</button>
+        <!-- ИГРА -->
+        <div id="game" class="page">
+            <h2>Мини-игра Кликер</h2>
+            <div id="game-box">
+                <p>Нажми на монету!</p>
+                <div class="coin" onclick="clickCoin()">💰</div>
+                <h3>Счет: <span id="score">0</span></h3>
             </div>
         </div>
 
-        <!-- ПОКУПКИ -->
-        <div id="purchases-page" class="page">
-            <h2>Последние покупки</h2>
-            <div id="historyList">История пуста.</div>
+        <!-- ИНФО СТРАНИЦЫ -->
+        <div id="faq" class="page">
+            <h2>FAQ / Ответы на вопросы</h2>
+            <div class="profile-card" id="faq-content"></div>
         </div>
-
-        <!-- ВАУЧЕРЫ -->
-        <div id="vouchers-page" class="page">
-            <h2>Ваучеры</h2>
-            <div class="profile-info-box">
-                <input type="text" id="vouchCode" class="auth-input" placeholder="Введите код">
-                <button class="auth-btn" onclick="applyVoucher()">Активировать</button>
-            </div>
+        <div id="trust" class="page">
+            <h2>Почему нам доверяют?</h2>
+            <div class="profile-card" id="trust-content"></div>
         </div>
-
-        <!-- ЛОЯЛЬНОСТЬ (МИНИ ИГРА) -->
-        <div id="loyalty-page" class="page">
-            <h2>Программа лояльности</h2>
-            <div id="game-area">
-                <p>Крути колесо и получай бонусы!</p>
-                <div class="wheel" id="wheel">?</div>
-                <button class="auth-btn" onclick="spinWheel()">Испытать удачу</button>
-            </div>
-        </div>
-
-        <!-- ПОПОЛНЕНИЕ -->
-        <div id="deposit-page" class="page">
-            <h2>Пополнение баланса</h2>
-            <div class="profile-info-box">
-                <p>Для пополнения свяжитесь с менеджером или введите ваучер.</p>
-                <p>Реквизиты: <span>+79998887766 (СБП)</span></p>
-                <button class="auth-btn" onclick="window.open('https://t.me/nmproda')">Подтвердить оплату</button>
-            </div>
+        <div id="rules" class="page">
+            <h2>Правила пользования</h2>
+            <div class="profile-card" id="rules-content"></div>
         </div>
     </div>
 </div>
 
-<!-- МЕНЮ (OVERLAY) -->
 <div id="menu-overlay" onclick="toggleMenu(false)">
-    <div class="menu-content" onclick="event.stopPropagation()">
-        <div class="menu-header">Меню</div>
-        <div class="menu-item menu-active" onclick="showPage('shop-page', this)">Готовые номера</div>
-        <div class="menu-item" onclick="showPage('profile-page', this)">Профиль</div>
-        <div class="menu-item" onclick="showPage('support-page', this)">Поддержка</div>
-        <div class="menu-item" onclick="showPage('deposit-page', this)">Пополнение баланса</div>
-        <div class="menu-item" onclick="showPage('purchases-page', this)">Последние покупки</div>
-        <div class="menu-item" onclick="showPage('vouchers-page', this)">Ваучеры</div>
-        <div class="menu-item" onclick="showPage('loyalty-page', this)">Программа лояльности</div>
-        <div class="menu-item" onclick="location.reload()" style="color: var(--red);">Выход</div>
+    <div class="menu-side" onclick="event.stopPropagation()">
+        <h3 style="margin-bottom: 20px;">Меню</h3>
+        <div class="m-item m-active" onclick="showPage('shop', this)">Готовые номера</div>
+        <div class="m-item" onclick="showPage('profile', this)">Профиль</div>
+        <div class="m-item" onclick="showPage('vouchers', this)">Ваучеры</div>
+        <div class="m-item" onclick="showPage('game', this)">Мини-игра</div>
+        <div class="m-item" onclick\номер</button>
+
+        <!-- МАГАЗИН -->
+        <div id="shop" class="page active">
+            <h2 style="margin-bottom: 15px;">Выберите страну</h2>
+            <input type="text" class="inp" placeholder="🔍 Поиск по странам" oninput="search(this.value)" style="margin-bottom: 20px;">
+            <div class="acc-grid" id="accList">Загрузка...</div>
+        </div>
+
+        <!-- ПРОФИЛЬ -->
+        <div id="profile" class="page">
+            <h2>Мой профиль</h2>
+            <div class="profile-card">
+                <p style="font-size: 14px; color: var(--text-m);">ID: <span id="pID" style="color: var(--text);">7727345054</span></p>
+                <p style="font-size: 14px; color: var(--text-m);">Дата регистрации: <span id="pDate" style="color: var(--text);">01.05.2026</span></p>
+                
+                <div class="edit-group">
+                    <input type="text" id="editLog" class="inp" placeholder="Новый логин">
+                    <input type="text" id="editMail" class="inp" placeholder="Новая почта">
+                    <input type="password" id="editPass" class="inp" placeholder="Новый пароль">
+                    <button class="main-btn" onclick="saveProfile()" style="background: var(--card); border: 1px solid var(--brd);">Сохранить изменения</button>
+                </div>
+            </div>
+            <button class="main-btn" style="background: #444; margin-top: 20px;" onclick="location.reload()">Выйти</button>
+        </div>
+
+        <!-- ВАУЧЕРЫ -->
+        <div id="vouchers" class="page">
+            <h2>Ваучеры</h2>
+            <p style="font-size: 12px; color: var(--text-m); margin-bottom: 15px;">Нажми на ваучер, чтобы скопировать код</p>
+            <div id="vouchList">
+                <!-- Коды -->
+                <div class="v-card" onclick="copyV('GIFT500')"><span>GIFT500 (500₽)</span> 📋</div>
+                <div class="v-card" onclick="copyV('NMPRODA')"><span>NMPRODA (1000₽)</span> 📋</div>
+            </div>
+            <div class="profile-card" style="margin-top: 20px;">
+                <input type="text" id="vInp" class="inp" placeholder="Вставьте код сюда">
+                <button class="main-btn" style="margin-top: 10px;" onclick="activateV()">Активировать</button>
+            </div>
+        </div>
+
+        <!-- ИГРА -->
+        <div id="game" class="page">
+            <h2>Мини-игра Кликер</h2>
+            <div id="game-box">
+                <p>Нажми на монету!</p>
+                <div class="coin" onclick="clickCoin()">💰</div>
+                <h3>Счет: <span id="score">0</span></h3>
+            </div>
+        </div>
+
+        <!-- ИНФО СТРАНИЦЫ -->
+        <div id="faq" class="page">
+            <h2>FAQ / Ответы на вопросы</h2>
+            <div class="profile-card" id="faq-content"></div>
+        </div>
+        <div id="trust" class="page">
+            <h2>Почему нам доверяют?</h2>
+            <div class="profile-card" id="trust-content"></div>
+        </div>
+        <div id="rules" class="page">
+            <h2>Правила пользования</h2>
+            <div class="profile-card" id="rules-content"></div>
+        </div>
     </div>
 </div>
 
-<script>
-    // --- КОНФИГУРАЦИЯ ---
-    const CSV_URL = 'https://docs.google.com/spreadsheets/d/1bxpXTKxDHUwk5VX79PeXbjxrJxAkzaZag6opznV_Kq8/export?format=csv';
-    let allProducts = [];
-    let userBalance = 0;
+<div id="menu-overlay" onclick="toggleMenu(false)">
+    <div class="menu-side" onclick="event.stopPropagation()">
+        <h3 style="margin-bottom: 20px;">Меню</h3>
+        <div class="m-item m-active" onclick="showPage('shop', this)">Готовые номера</div>
+        <div class="m-item" onclick="showPage('profile', this)">Профиль</div>
+        <div class="m-item" onclick="showPage('vouchers', this)">Ваучеры</div>
+        <div class="m-item" onclick="showPage('game', this)">Мини-игра</div>
+        <div class="m-item" onclick="showPage\номер</button>
+
+        <!-- МАГАЗИН -->
+        <div id="shop" class="page active">
+            <h2 style="margin-bottom: 15px;">Выберите страну</h2>
+            <input type="text" class="inp" placeholder="🔍 Поиск по странам" oninput="search(this.value)" style="margin-bottom: 20px;">
+            <div class="acc-grid" id="accList">Загрузка...</div>
+        </div>
+
+        <!-- ПРОФИЛЬ -->
+        <div id="profile" class="page">
+            <h2>Мой профиль</h2>
+            <div class="profile-card">
+                <p style="font-size: 14px; color: var(--text-m);">ID: <span id="pID" style="color: var(--text);">7727345054</span></p>
+                <p style="font-size: 14px; color: var(--text-m);">Дата регистрации: <span id="pDate" style="color: var(--text);">01.05.2026</span></p>
+                
+                <div class="edit-group">
+                    <input type="text" id="editLog" class="inp" placeholder="Новый логин">
+                    <input type="text" id="editMail" class="inp" placeholder="Новая почта">
+                    <input type="password" id="editPass" class="inp" placeholder="Новый пароль">
+                    <button class="main-btn" onclick="saveProfile()" style="background: var(--card); border: 1px solid var(--brd);">Сохранить изменения</button>
+                </div>
+            </div>
+            <button class="main-btn" style="background: #444; margin-top: 20px;" onclick="location.reload()">Выйти</button>
+        </div>
+
+        <!-- ВАУЧЕРЫ -->
+        <div id="vouchers" class="page">
+            <h2>Ваучеры</h2>
+            <p style="font-size: 12px; color: var(--text-m); margin-bottom: 15px;">Нажми на ваучер, чтобы скопировать код</p>
+            <div id="vouchList">
+                <!-- Коды -->
+                <div class="v-card" onclick="copyV('GIFT500')"><span>GIFT500 (500₽)</span> 📋</div>
+                <div class="v-card" onclick="copyV('NMPRODA')"><span>NMPRODA (1000₽)</span> 📋</div>
+            </div>
+            <div class="profile-card" style="margin-top: 20px;">
+                <input type="text" id="vInp" class="inp" placeholder="Вставьте код сюда">
+                <button class="main-btn" style="margin-top: 10px;" onclick="activateV()">Активировать</button>
+            </div>
+        </div>
+
+        <!-- ИГРА -->
+        <div id="game" class="page">
+            <h2>Мини-игра Кликер</h2>
+            <div id="game-box">
+                <p>Нажми на монету!</p>
+                <div class="coin" onclick="clickCoin()">💰</div>
+                <h3>Счет: <span id="score">0</span></h3>
+            </div>
+        </div>
+
+        <!-- ИНФО СТРАНИЦЫ -->
+        <div id="faq" class="page">
+            <h2>FAQ / Ответы на вопросы</h2>
+            <div class="profile-card" id="faq-content"></div>
+        </div>
+        <div id="trust" class="page">
+            <h2>Почему нам доверяют?</h2>
+            <div class="profile-card" id="trust-content"></div>
+        </div>
+        <div id="rules" class="page">
+            <h2>Правила пользования</h2>
+            <div class="profile-card" id="rules-content"></div>
+        </div>
+    </div>
+</div>
+
+<div id="menu-overlay" onclick="toggleMenu(false)">
+    <div class="menu-side" onclick="event.stopPropagation()">
+        <h3 style="margin-bottom: 20px;">Меню</h3>
+        <div class="m-item m-active" onclick="showPage('shop', this)">Готовые номера</div>
+        <div class="m-item" onclick="showPage('profile', this)">Профиль</div>
+        <div class="m-item" onclick="showPage('vouchers', this)">Ваучеры</div>
+        <div class="m-item" onclick="showPage('game', this)">Мини-игра</div>
+        <div class="m-item" onclick="showPage\tElementById('modal-text').innerText = text;
+        document.getElementById('custom-modal').style.display = 'flex';
+    }
+    function closeModal() { document.getElementById('custom-modal').style.display = 'none'; }
 
     // --- AUTH ---
-    function toggleAuth(type) {
-        ['login-form', 'reg-form', 'reset-form'].forEach(id => document.getElementById(id).style.display = 'none');
-        document.getElementById(type + '-form').style.display = 'block';
-    }
+    function handleAuth() {
+        const l = document.getElementById('loginInp').value;
+        const p = document.getElementById('passInp').value;
+        if(!l || !p) return myAlert("Ошибка", "Заполните поля!");
 
-    function handleRegister() {
-        const login = document.getElementById('regLogin').value;
-        const email = document.getElementById('regEmail').value;
-        const pass = document.getElementById('regPass').value;
-        if(login && email && pass) {
-            const date = new Date().toLocaleDateString();
-            localStorage.setItem('user_' + login, JSON.stringify({login, email, pass, date, balance: 0, history: []}));
-            alert('Аккаунт создан!');
-            toggleAuth('login');
-        }
-    }
-
-    function handleLogin() {
-        const login = document.getElementById('userLogin').value;
-        const pass = document.getElementById('userPass').value;
-        const user = JSON.parse(localStorage.getItem('user_' + login));
-
-        if(user && user.pass === pass) {
-            window.currentUser = user;
-            enterApp();
+        let saved = JSON.parse(localStorage.getItem('u_' + l));
+        if(saved) {
+            if(saved.pass === p) user = saved;
+            else return myAlert("Ошибка", "Неверный пароль!");
         } else {
-            alert('Ошибка входа!');
+            user.login = l; user.pass = p; user.email = l + "@mail.ru";
+            save();
         }
+        startApp();
     }
 
-    function enterApp() {
-        document.getElementById('auth-page').style.display = 'none';
+    function startApp() {
+        document.getElementById('auth-app').style.display = 'none';
         document.getElementById('main-app').style.display = 'block';
-        document.getElementById('topUsername').innerText = currentUser.login;
-        document.getElementById('profLogin').innerText = currentUser.login;
-        document.getElementById('profEmail').innerText = currentUser.email;
-        document.getElementById('profDate').innerText = currentUser.date;
-        userBalance = currentUser.balance || 0;
-        updateBalanceUI();
-        loadProducts();
-        renderHistory();
+        document.getElementById('uName').innerText = user.login;
+        document.getElementById('faq-content').innerText = FAQ_TEXT;
+        document.getElementById('trust-content').innerText = TRUST_TEXT;
+        document.getElementById('rules-content').innerText = RULES_TEXT;
+        updateUI();
+        loadAccs();
     }
 
     // --- МАГАЗИН ---
-    async function loadProducts() {
+    let accs = [];
+    async function loadAccs() {
         try {
             const res = await fetch(CSV_URL);
             const data = await res.text();
             const rows = data.split('\n').slice(1);
-            allProducts = rows.map(row => {const c = row.split(',');
-                return { name: c[1], price: c[2], stock: c[5], flag: c[6] };
-            }).filter(p => p.name);
-            renderProducts(allProducts);
-        } catch(e) {
-            document.getElementById('accountsList').innerHTML = "Добавьте ссылку на CSV в коде.";
-        }
+            accs = rows.map(r => {
+                const c = r.split(',');
+                return { name: c[1], price: parseFloat(c[2]), stock: c[5], flag: c[6] };
+            }).filter(x => x.name);
+            render(accs);
+        } catch { document.getElementById('accList').innerText = "Ошибка загрузки CSV."; }
     }
 
-    function renderProducts(list) {
-        const container = document.getElementById('accountsList');
-        container.innerHTML = list.map(p => `
-            <div class="acc-card" onclick="alert('Оплата по реквизитам в разделе Пополнение')">
-                <div class="acc-top">
-                    <span>${p.flag || '🚩'}</span>
-                    <span class="acc-country">${p.name}</span>
-                </div>
-                <div class="acc-service">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" width="14">
-                    Telegram
-                </div>
-                <div class="acc-footer">
-                    <span class="acc-stock">${p.stock} шт</span>
-                    <span class="acc-price">${p.price}₽</span>
+    function render(list) {
+        document.getElementById('accList').innerHTML = list.map(a => `
+            <div class="acc-card" onclick="buy('${a.name}', ${a.price})">
+                <div class="acc-top"><span>${a.flag || '🚩'}</span><span class="acc-country">${a.name}</span></div>
+                <div class="acc-serv">🔵 Telegram</div>
+                <div class="acc-foot">
+                    <span class="acc-stock">${a.stock} шт</span>
+                    <span class="acc-price">${a.price}₽</span>
                 </div>
             </div>
         `).join('');
     }
 
-    function searchCountries(val) {
-        renderProducts(allProducts.filter(p => p.name.toLowerCase().includes(val.toLowerCase())));
-    }
-
-    // --- МЕНЮ И НАВИГАЦИЯ ---
-    function toggleMenu(show) {
-        document.getElementById('menu-overlay').style.display = show ? 'block' : 'none';
-    }
-
-    function showPage(pageId, el) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById(pageId).classList.add('active');
-        if(el) {
-            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('menu-active'));
-            el.classList.add('menu-active');
+    function buy(name, price) {
+        if(user.bal >= price) {
+            user.bal -= price;
+            save(); updateUI();
+            myAlert("Успех!", `Вы купили ${name}. Товар отправлен менеджеру @nmproda`);
+        } else {
+            myAlert("Баланс", "Недостаточно средств. Активируйте ваучер!");
         }
-        toggleMenu(false);
     }
 
     // --- ВАУЧЕРЫ ---
-    function applyVoucher() {
-        const codes = {"GIFT100": 100, "PROMO": 50, "NMPRODA": 1000};
-        const code = document.getElementById('vouchCode').value;
-        if(codes[code]) {
-            userBalance += codes[code];
-            alert('Начислено ' + codes[code] + '₽');
-            updateBalanceUI();
-            saveUserData();
-        } else {
-            alert('Код неверный');
+    function copyV(code) {
+        navigator.clipboard.writeText(code);
+        myAlert("Скопировано", "Код "+code+" в буфере обмена. Вставьте его в поле ниже.");
+    }
+
+    function activateV() {
+        const c = document.getElementById('vInp').value;
+        if(user.usedV.includes(c)) return myAlert("Упс", "Вы уже использовали этот код!");
+        if(VOUCHERS_DATA[c]) {
+            user.bal += VOUCHERS_DATA[c];
+            user.usedV.push(c);
+            save(); updateUI();
+            myAlert("Готово!", "Баланс пополнен на " + VOUCHERS_DATA[c] + "₽");
+        } else { myAlert("Ошибка", "Код не существует."); }
+    }
+
+    // --- ПРОФИЛЬ ---
+    function saveProfile() {
+        const l = document.getElementById('editLog').value;
+        const m = document.getElementById('editMail').value;
+        const p = document.getElementById('editPass').value;
+        if(l) user.login = l; if(m) user.email = m; if(p) user.pass = p;
+        save(); updateUI();
+        myAlert("Профиль", "Данные обновлены!");
+    }
+
+    // --- ИГРА ---
+    function clickCoin() {
+        user.score++;
+        document.getElementById('score').innerText = user.score;
+        save();
+    }
+
+    // --- СЕРВИСНЫЕ ---
+    function save() { localStorage.setItem('u_' + user.login, JSON.stringify(user)); }
+    function updateUI() { 
+        docume"Скопировано", "Код "+code+" в буфере обмена. Вставьте его в поле ниже.");
+    }
+
+    function activateV() {
+        const c = document.getElementById('vInp').value;
+        if(user.usedV.includes(c)) return myAlert("Упс", "Вы уже использовали этот код!");
+        if(VOUCHERS_DATA[c]) {
+            user.bal += VOUCHERS_DATA[c];
+            user.usedV.push(c);
+            save(); updateUI();
+            myAlert("Готово!", "Баланс пополнен на " + VOUCHERS_DATA[c] + "₽");
+        } else { myAlert("Ошибка", "Код не существует."); }
+    }
+
+    // --- ПРОФИЛЬ ---
+    function saveProfile() {
+        const l = document.getElementById('editLog').value;
+        const m = document.getElementById('editMail').value;
+        const p = document.getElementById('editPass').value;
+        if(l) user.login = l; if(m) user.email = m; if(p) user.pass = p;
+        save(); updateUI();
+        myAlert("Профиль", "Данные обновлены!");
+    }
+
+    // --- ИГРА ---
+    function clickCoin() {
+        user.score++;
+        document.getElementById('score').innerText = user.score;
+        save();
+    }
+
+    // --- СЕРВИСНЫЕ ---
+    function save() { localStorage.setItem('u_' + user.login, JSON.stringify(user)); }
+    function updateUI() { 
+        document.getElementById('userBal').innerText = user.bal.toFixed(2);
+        document.getElementById('score').innerText = user.score;
+        document.getElementById('uName').innerText = user.login;
+    }
+    function toggleTheme() {
+        const t = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        document.body.setAttribute('data-theme', t);
+    }
+    function toggleMenu(s) { document.getElementById('menu-overlay').style.display = s ? 'block' : 'none'; }
+    function showPage(id, el) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        if(el) {
+            document.querySelectorAll('.m-item').forEach(i => i.classList.remove('m-active'));
+            el.classList.add('m-active');
         }
+        toggleMenu(false);
     }
-
-    // --- МИНИ ИГРА ---
-    function spinWheel() {
-        const wheel = document.getElementById('wheel');
-        const rand = Math.floor(Math.random() * 10);
-        wheel.style.transform = `rotate(${360 * 5 + rand * 36}deg)`;
-        setTimeout(() => {
-            alert('Вы выиграли скидку 5% на следующую покупку!');
-        }, 2100);
-    }
-
-    function updateBalanceUI() {
-        document.getElementById('headerBalance').innerText = userBalance.toFixed(2) + ' ₽';
-    }
-
-    function saveUserData() {
-        currentUser.balance = userBalance;
-        localStorage.setItem('user_' + currentUser.login, JSON.stringify(currentUser));
-    }
-
-    function renderHistory() {
-        const hist = currentUser.history || [];
-        if(hist.length > 0) {
-            document.getElementById('historyList').innerHTML = hist.map(h => `<div class="acc-card">${h}</div>`).join('');
-        }
-    }
+    function search(v) { render(accs.filter(a => a.name.toLowerCase().includes(v.toLowerCase()))); }
 </script>
-
 </body>
-</html>
+        </html>

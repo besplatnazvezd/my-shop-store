@@ -3,605 +3,389 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account Store Mini App</title>
+    <title>Elite Shop - Mini App</title>
     <style>
         :root {
-            --bg-color: #ffffff;
-            --text-color: #333333;
-            --accent-color: #0088cc; /* Голубой */
-            --card-bg: #f4f4f4;
-            --btn-text: #ffffff;
-            --gold: #FFD700;
-        }
-
-        body.dark-theme {
+            /* Темная тема (Черный / Золотой) */
             --bg-color: #000000;
-            --text-color: #ffffff;
-            --accent-color: #FFD700; /* Золотой */
             --card-bg: #1a1a1a;
-            --btn-text: #000000;
+            --text-color: #ffffff;
+            --accent-color: #d4af37;
+            --secondary-text: #aaaaaa;
+            --input-bg: #222;
         }
 
-        * { box-sizing: border-box; transition: 0.3s; }
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+        body.light-theme {
+            /* Светлая тема (Белый / Голубой) */
+            --bg-color: #ffffff;
+            --card-bg: #f0f8ff;
+            --text-color: #000000;
+            --accent-color: #007bff;
+            --secondary-text: #555555;
+            --input-bg: #e9ecef;
         }
 
-        .container { padding: 15px; padding-bottom: 80px; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; transition: 0.3s; }
+        body { background: var(--bg-color); color: var(--text-color); margin: 0; padding-bottom: 70px; }
         
-        /* Стили заголовков и навигации */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 20px;
-            border-bottom: 1px solid var(--accent-color);
-        }
+        .container { padding: 15px; }
+        .hidden { display: none !important; }
 
-        .nav-menu {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            background: var(--card-bg);
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-            border-top: 2px solid var(--accent-color);
-            z-index: 1000;
-        }
-
-        .nav-item {
-            text-align: center;
-            font-size: 10px;
-            cursor: pointer;
-            color: var(--text-color);
-            text-decoration: none;
-        }
+        /* Шапка */
+        header { padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--accent-color); }
+        .theme-toggle { cursor: pointer; font-size: 20px; }
 
         /* Карточки товаров */
-        .products-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-top: 20px;
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .product-card { 
+            background: var(--card-bg); border-radius: 12px; padding: 10px; 
+            border: 1px solid var(--accent-color); position: relative;
+        }
+        .product-card img { width: 100%; border-radius: 8px; height: 100px; object-fit: cover; }
+        .flag { position: absolute; top: 5px; left: 5px; font-size: 20px; }
+        .price { color: var(--accent-color); font-weight: bold; font-size: 1.1em; }
+        .buy-btn { 
+            background: var(--accent-color); color: white; border: none; 
+            width: 100%; padding: 8px; border-radius: 5px; cursor: pointer; margin-top: 5px;
         }
 
-        .product-card {
-            background: var(--card-bg);
-            border-radius: 15px;
-            padding: 10px;
-            border: 1px solid var(--accent-color);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
+        /* Навигация */
+        nav { 
+            position: fixed; bottom: 0; width: 100%; background: var(--card-bg); 
+            display: flex; justify-content: space-around; padding: 10px; border-top: 1px solid var(--accent-color);
         }
+        nav div { cursor: pointer; text-align: center; font-size: 12px; color: var(--secondary-text); }
+        nav div.active { color: var(--accent-color); font-weight: bold; }
 
-        .product-card img {
-            width: 100%;
-            height: 100px;
-            object-fit: cover;
-            border-radius: 10px;
+        /* Формы и окна */
+                input, select, textarea { 
+            width: 100%; padding: 10px; margin: 8px 0; border-radius: 8px; 
+            border: 1px solid var(--accent-color); background: var(--input-bg); color: var(--text-color);
         }
-
-        .product-price {
-            font-weight: bold;
-                        color: var(--accent-color);
-            font-size: 18px;
-            margin: 5px 0;
+        .modal { 
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: var(--card-bg); padding: 20px; border-radius: 15px;
+            width: 90%; z-index: 100; border: 2px solid var(--accent-color);
         }
-
-        .btn {
-            background: var(--accent-color);
-            color: var(--btn-text);
-            border: none;
-            padding: 8px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            width: 100%;
-            font-weight: bold;
-        }
-
-        .quantity-selector {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin: 5px 0;
-        }
-
-        input[type="number"], input[type="text"], input[type="password"], input[type="email"] {
-            width: 100%;
-            padding: 10px;
-            margin: 5px 0;
-            border-radius: 5px;
-            border: 1px solid var(--accent-color);
-            background: var(--bg-color);
-            color: var(--text-color);
-        }
-
-        /* Окна/Страницы */
-        .page { display: none; }
-        .page.active { display: block; }
+        .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.7); z-index: 90; }
 
         /* Профиль */
-        .profile-list {
-            list-style: none;
-            padding: 0;
-        }
-        .profile-list li {
-            padding: 10px;
-            border-bottom: 1px solid #444;
-            display: flex;
-            justify-content: space-between;
-        }
+        .profile-info { text-align: center; margin-bottom: 20px; }
+        .profile-menu { display: flex; flex-direction: column; gap: 10px; }
+        .profile-menu-item { padding: 10px; border-bottom: 1px solid var(--input-bg); display: flex; justify-content: space-between; }
 
         /* Мини-игра */
-        #gameCanvas {
-            background: #222;
-            display: block;
-            margin: 0 auto;
-            border: 2px solid var(--accent-color);
-            width: 100%;
-            max-width: 400px;
-        }
+        #gameCanvas { background: #333; display: block; margin: 0 auto; border-radius: 10px; max-width: 100%; }
 
-        /* Модальные окна */
-        .modal {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 15px;
-            border: 2px solid var(--accent-color);
-            z-index: 2000;
-            width: 90%;
-            display: none;
-        }
-        .overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 1500;
-            display: none;
-        }
+        /* Кнопка "О, я доволен" */
+        .happy-btn { background: #28a745; color: white; padding: 15px; border-radius: 10px; text-align: center; margin-top: 20px; cursor: pointer; font-weight: bold;}
 
-        .history-item {
-            font-size: 12px;
-            border-bottom: 1px solid var(--accent-color);
-            padding: 5px 0;
-        }
     </style>
 </head>
-<body class="dark-theme"> <!-- По умолчанию темная тема -->
+<body>
 
-<header>
-    <div id="theme-toggle" onclick="toggleTheme()" style="cursor: pointer;">🌓 Тема</div>
-    <div style="font-weight: bold; color: var(--accent-color);">ACC STORE</div>
-    <div id="user-balance">Баланс: 0 ₽</div>
-</header>
+    <header>
+        <div id="app-title">ELITE SHOP</div>
+        <div class="theme-toggle" onclick="toggleTheme()">🌓</div>
+    </header>
 
-<div class="container">
-    
-    <!-- СТРАНИЦА АВТОРИЗАЦИИ -->
-    <div id="page-auth" class="page active">
-        <h2>Вход в аккаунт</h2>
-        <input type="text" id="auth-login" placeholder="Логин">
-        <input type="email" id="auth-email" placeholder="Email">
-        <input type="password" id="auth-pass" placeholder="Пароль">
-        <button class="btn" onclick="login()">Войти / Зарегистрироваться</button>
-        <p onclick="alert('Письмо для восстановления отправлено на вашу почту!')" style="font-size: 12px; cursor: pointer;">Забыли пароль?</p>
+    <div class="container" id="main-content">
+        <!-- Сюда динамически подгружаются страницы -->
     </div>
 
-    <!-- СТРАНИЦА МАГАЗИНА -->
-    <div id="page-shop" class="page">
-        <h2>Каталог товаров</h2>
-        <div class="products-grid" id="products-list">
-            <!-- Сюда попадут товары из Google Таблицы -->
-            Загрузка товаров...
+    <!-- Модальное окно оплаты -->
+    <div id="payment-modal" class="modal hidden">
+        <h3>Оплата заказа</h3>
+        <p>Переведите сумму на реквизиты ниже:</p>
+        <div style="background: #333; padding: 10px; border-radius: 5px; color: gold;" id="payment-details">
+            ВСТАВЬ РЕКВИЗИТЫ (2200 5529 7019 9232/ххххх)
         </div>
+        <button onclick="copyDetails()" class="buy-btn" style="margin-top: 10px;">Копировать реквизиты</button>
+        <div class="happy-btn" onclick="confirmPayment()">О, я доволен, жми на меня</div>
+        <button onclick="closePayment()" class="buy-btn" style="background: #666;">Закрыть</button>
     </div>
+    <div id="overlay" class="overlay hidden" onclick="closePayment()"></div>
 
-    <!-- СТРАНИЦА ПРОФИЛЯ -->
-    <div id="page-profile" class="page">
-        <h2>Мой профиль</h2>
-        <div id="user-info"></div>
-        <hr>
-        <button class="btn" onclick="showModal('topup-modal')">Пополнить баланс</button>
-        <div style="margin-top: 15px;">
-            <h3>Ваучеры</h3>
-            <input type="text" id="voucher-input" placeholder="Введите код ваучера">
-            <button class="btn" style="background: var(--gold); color: black;" onclick="useVoucher()">Активировать</button>
-        </div>
-        <hr>
-        <h3>Настройки</h3>
-        <input type="text" id="new-login" placeholder="Новый логин">
-        <button class="btn" onclick="updateUser('login')">Сменить логин</button>
-        <input type="password" id="new-pass" placeholder="Новый пароль">
-        <button class="btn" onclick="updateUser('pass')">Сменить пароль</button>
-        <input type="email" id="new-email" placeholder="Новый email">
-        <button class="btn" onclick="updateUser('email')">Сменить почту</button>
-        <hr>
-        <h3>История покупок</h3>
-        <div id="purchase-history"></div>
-    </div>
+    <nav>
+                <div onclick="showPage('shop')" id="nav-shop">Магазин</div>
+        <div onclick="showPage('articles')" id="nav-articles">Статьи</div>
+        <div onclick="showPage('game')" id="nav-game">Игра</div>
+        <div onclick="showPage('profile')" id="nav-profile">Профиль</div>
+    </nav>
 
-    <!-- СТРАНИЦА ИГРЫ -->
-    <div id="page-game" class="page">
-        <h2>Ferrari Drive</h2>
-        <p>Набирай очки, объезжай препятствия!</p>
-        <canvas id="gameCanvas" width="300" height="400"></canvas>
-        <div style="text-align: center; margin-top: 10px;">
-            <button class="btn" onclick="startGame()">Начать игру</button>
-        </div>
-    </div>
-
-    <!-- ИНФО СТРАНИЦЫ -->
-    <div id="page-articles" class="page">
-        <h2>Статьи и Новости</h2>
-        <div class="product-card">
-            <img src="https://i.ibb.co/SwV17vtx/IMG-20260502-081255-383.jpg" alt="news">
-            <p>Тут будут новости о Telegram и наших аккаунтах...</p>
-        </div>
-    </div>
-
-    <div id="page-about" class="page">
-        <h2>О нас</h2>
-        <p>Мы лучший магазин аккаунтов. Почему выбирают нас?</p>
-        <ul>
-            <li>Быстрая выдача</li>
-            <li>Низкие цены</li>
-            <li>Гарантия качества</li>
-        </ul>
-    </div>
-
-    <div id="page-faq" class="page">
-        <h2>FAQ</h2>
-        <p><b>Как купить?</b> - Выберите товар, нажмите купить.</p>
-        <p><b>Где техподдержка?</b> - Пишите на email: help@example.com</p>
-    </div>
-
-    <div id="page-trust" class="page">
-        <h2>Почему нам доверяют</h2>
-        <p>У нас более 1000 довольных клиентов и отзывы в канале.</p>
-    </div>
-
-    <div id="page-offer" class="page">
-        <h2>Публичная оферта</h2>
-        <p>Текст оферты... При покупке вы соглашаетесь с правилами.</p>
-    </div>
-
-</div>
-
-<!-- Навигация -->
-<nav class="nav-menu">
-    <div class="nav-item" onclick="showPage('shop')">🛒<br>Магазин</div>
-    <div class="nav-item" onclick="showPage('game')">🏎️<br>Игра</div>
-    <div class="nav-item" onclick="showPage('articles')">📰<br>Новости</div>
-    <div class="nav-item" onclick="showPage('profile')">👤<br>Профиль</div>
-    <div class="nav-item" onclick="showPage('about')">ℹ️<br>Инфо</div>
-</nav>
-
-<!-- Модальное окно оплаты -->
-<div class="overlay" id="overlay" onclick="closeModal()"></div>
-<div class="modal" id="payment-modal">
-    <h3>Оплата товара</h3>
-    <p id="payment-details"></p>
-    <p>Реквизиты: <b id="rekvizity">2200 5529 7019 9232</b> <button onclick="copyRek()">📋</button></p>
-    <button class="btn" onclick="confirmPurchase()">Жми на меня</button>
-</div>
-
-<!-- Модальное окно пополнения -->
-<div class="modal" id="topup-modal">
-    <h3>Пополнение баланса</h3>
-    <p>Выберите способ:</p>
-    <button class="btn" onclick="window.open('https://crypto-bot.com/pay/link')">Crypto Bot</button>
-    <button class="btn" style="margin-top:10px" onclick="window.open('https://pay.card-link.ru')">Банковская карта</button>
-    <button class="btn" style="margin-top:10px; background: grey;" onclick="closeModal()">Отмена</button>
-</div>
-
-<script>
-    // --- КОНФИГУРАЦИЯ ---
-    const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1bxpXTKxDHUwk5VX79PeXbjxrJxAkzaZag6opznV_Kq8/export?format=csv';
-    const ADMIN_USER = 'nmproda';
-    const ADMIN_ID = '7727345054';
-    const BOT_TOKEN = '8780961369:AAHsQp2Fi4N1swxLkpE2Jxn74fvv4qitJLM'; // Для отправки уведомлений админу
-
-    let currentUser = null;
-    let products = [];
-    let vouchers = [
-        {code: 'START', discount: 100}, // Пример ваучера
-        {code: 'GOLD2024', discount: 500}
-    ];
-
-    // --- ЛОГИКА ТЕМЫ ---
-    function toggleTheme() {
-        document.body.classList.toggle('dark-theme');
-        const isDark = document.body.classList.contains('dark-theme');
-        if(isDark) {
-            document.body.style.setProperty('--bg-color', '#000000');
-        } else {
-            document.body.style.setProperty('--bg-color', '#ffffff');
-        }
-    }
-
-    // --- УПРАВЛЕНИЕ СТРАНИЦАМИ ---
-    function showPage(pageId) {
-        if (!currentUser && pageId !== 'auth') {
-            alert('Сначала авторизуйтесь!');
-            return;
-        }
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById('page-' + pageId).classList.add('active');
+    <script>
+        // --- КОНФИГУРАЦИЯ ---
+        const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1bxpXTKxDHUwk5VX79PeXbjxrJxAkzaZag6opznV_Kq8/export?format=csv';
+        const MANAGER_USER = 'nmproda';
+        const MANAGER_ID = '7727345054';
+        const BOT_TOKEN = '8780961369:AAHsQp2Fi4N1swxLkpE2Jxn74fvv4qitJLM'; // Для отправки уведомлений
         
-        if(pageId === 'profile') updateProfileUI();
-    }
+        let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+        let products = [];
+        let vouchers = [
+            {code: 'PROMO10', discount: 10, count: 5},
+            {code: 'GOLD2026', discount: 50, count: 1}
+        ];
 
-    // --- АВТОРИЗАЦИЯ ---
-    function login() {
-        const loginVal = document.getElementById('auth-login').value;
-        const emailVal = document.getElementById('auth-email').value;
-        const passVal = document.getElementById('auth-pass').value;
-
-        if (!loginVal || !emailVal || !passVal) return alert('Заполните все поля');
-
-        let users = JSON.parse(localStorage.getItem('users') || '{}');
-        
-        if (!users[loginVal]) {
-            users[loginVal] = {
-                login: loginVal,
-                email: emailVal,
-                pass: passVal,
-                balance: 0,
-                regDate: new Date().toLocaleDateString(),
-                history: []
-            };
-        } else if (users[loginVal].pass !== passVal) {
-            return alert('Неверный пароль');
+        // --- ИНИЦИАЛИЗАЦИЯ ---
+        function init() {
+            if (!currentUser) {
+                showAuth();
+            } else {
+                showPage('shop');
+            }
+            loadProducts();
         }
 
-        currentUser = users[loginVal];
-        localStorage.setItem('users', JSON.stringify(users));
-        localStorage.setItem('lastSession', loginVal);
-        
-        alert('Успешный вход!');
-        showPage('shop');
-        loadProducts();
-        updateBalanceDisplay();
-    }
-
-    function updateProfileUI() {
-        const info = document.getElementById('user-info');
-        info.innerHTML = `
-            <p><b>Логин:</b> ${currentUser.login}</p>
-            <p><b>Email:</b> ${currentUser.email}</p>
-            <p><b>Дата регистрации:</b> ${currentUser.regDate}</p>
-        `;
-        
-        const hist = document.getElementById('purchase-history');
-        hist.innerHTML = currentUser.history.map(h => `
-            <div class="history-item">📦 ${h.name} - ${h.price}₽ (${h.date})</div>
-        `).join('') || 'Покупок еще нет';
-    }
-
-    function updateUser(type) {
-        let users = JSON.parse(localStorage.getItem('users'));
-        if (type === 'login') {
-            const oldLogin = currentUser.login;
-            const newLogin = document.getElementById('new-login').value;
-            users[newLogin] = users[oldLogin];
-            users[newLogin].login = newLogin;
-            delete users[oldLogin];
-            currentUser = users[newLogin];
-        } else if (type === 'pass') {
-            currentUser.pass = document.getElementById('new-pass').value;
-            users[currentUser.login].pass = currentUser.pass;
-        } else if (type === 'email') {
-            currentUser.email = document.getElementById('new-email').value;
-            users[currentUser.login].email = currentUser.email;
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
         }
-        localStorage.setItem('users', JSON.stringify(users));
-        alert('Данные обновлены!');
-        updateProfileUI();
-    }
 
-    // --- РАБОТА С ТОВАРАМИ ---
-    async function loadProducts() {
-        try {
-            // Заглушка, если нет ссылки на CSV. В реале: fetch(SHEET_URL)...
-            const mockData = `Категория,Название,Цена,Описание,Фото,Количество,Флаг
-Аккаунты,Telegram Premium,250,Премиум на месяц,https://via.placeholder.com/150,10,🇷🇺
-Аккаунты,VPN Unlimited,100,Быстрый доступ,https://via.placeholder.com/150,5,🇺🇸`;
-            
-            // Расшифровка CSV (простой парсер)
-            const rows = mockData.split('\n').slice(1);
-            products = rows.map(row => {
-                const cols = row.split(',');
-                return { cat: cols[0], name: cols[1], price: cols[2], desc: cols[3], img: cols[4], qty: cols[5], flag: cols[6] };
-            });
-
-            renderProducts();
-        } catch (e) {
-            document.getElementById('products-list').innerText = "Ошибка загрузки данных.";
-        }
-    }
-
-    function renderProducts() {
-        const list = document.getElementById('products-list');
-        list.innerHTML = products.map((p, idx) => `
-            <div class="product-card">
-                <img src="${p.img}" alt="img">
-                <div style="font-size:12px; color: grey;">${p.cat} ${p.flag}</div>
-                <div style="font-weight:bold;">${p.name}</div>
-                <div class="product-price">${p.price} ₽</div>
-                <div style="font-size:10px; margin-bottom:5px;">В наличии: ${p.qty} шт.</div>
-                <div class="quantity-selector">
-                    <button onclick="changeQty(${idx}, -1)">-</button>
-                    <span id="qty-${idx}">1</span>
-                    <button onclick="changeQty(${idx}, 1)">+</button>
+        // --- АВТОРИЗАЦИЯ ---
+        function showAuth() {
+            const html = `
+                <div class="modal">
+                    <h2>Вход / Регистрация</h2>
+                    <input type="text" id="auth-login" placeholder="Логин (или почта)">
+                    <input type="password" id="auth-pass" placeholder="Пароль">
+                    <button class="buy-btn" onclick="login()">Войти</button>
+                    <button class="buy-btn" style="background:#444" onclick="register()">Регистрация</button>
+                    <p onclick="alert('Восстановление через почту: скоро появится')" style="font-size:12px; cursor:pointer">Забыли пароль?</p>
                 </div>
-                <button class="btn" onclick="openPayment(${idx})">Купить</button>
-            </div>
-        `).join('');
-    }
-
-    function changeQty(idx, delta) {
-        const el = document.getElementById(`qty-${idx}`);
-        let current = parseInt(el.innerText);
-        current = Math.max(1, Math.min(current + delta, products[idx].qty));
-        el.innerText = current;
-    }
-
-    // --- ОПЛАТА ---
-    let currentOrder = null;
-
-    function openPayment(idx) {
-        const qty = parseInt(document.getElementById(`qty-${idx}`).innerText);
-        const total = products[idx].price * qty;
-        currentOrder = { ...products[idx], buyQty: qty, totalPrice: total };
-        
-        document.getElementById('payment-details').innerText = `Товар: ${currentOrder.name} (${qty} шт.). Итого к оплате: ${total} ₽`;
-        showModal('payment-modal');
-    }
-
-    function confirmPurchase() {
-        // Логика списания баланса или уведомления
-        if (currentUser.balance >= currentOrder.totalPrice) {
-            currentUser.balance -= currentOrder.totalPrice;
-        } else {
-            // Если баланса нет, считаем, что оплатил картой и ждет подтверждения
+            `;
+            document.getElementById('main-content').innerHTML = html;
         }
 
-        currentUser.history.push({
-            name: currentOrder.name,
-            price: currentOrder.totalPrice,
-            date: new Date().toLocaleString()
-        });
-
-        saveUser();
-        updateBalanceDisplay();
-        
-        // Отправка боту (имитация через alert или реальный fetch)
-        const msg = `Привет! Купил(а) [${currentOrder.name} / ${currentOrder.buyQty} шт] юз: ${currentUser.login}, айди: ${currentUser.email}. Выдай заказ!`;
-        console.log("Отправка админу:", msg);
-        
-        alert("Заявка отправлена! " + msg);
-        closeModal();
-    }
-
-    // --- ВАУЧЕРЫ ---
-    function useVoucher() {
-        const code = document.getElementById('voucher-input').value;
-        const v = vouchers.find(x => x.code === code\ 
-);
-        if (v) {
-            currentUser.balance += v.discount;
-            vouchers = vouchers.filter(x => x.code !== code); // Удаляем использованный
-            saveUser();
-            updateBalanceDisplay();
-            alert(`Ваучер активирован! Получено ${v.discount} ₽`);
-        } else {
-            alert('Неверный или уже использованный ваучер');
+        function register() {
+            const l = document.getElementById('auth-login').value;
+            const p = document.getElementById('auth-pass').value;
+            if(l && p) {
+                let user = { login: l, pass: p, email: l, balance: 0, date: new Date().toLocaleDateString(), history: [] };
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                currentUser = user;
+                location.reload();
+            }
         }
-    }
 
-    // --- МИНИ-ИГРА (CAR DODGE) ---
-    let gameInterval;
-    function startGame() {
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        let carX = 135;
-        let obstacles = [];
-        let score = 0;
-        let frames = 0;
+        function login() {
+            const l = document.getElementById('auth-login').value;
+            const p = document.getElementById('auth-pass').value;
+            let stored = JSON.parse(localStorage.getItem('currentUser'));
+            if(stored && stored.login === l && stored.pass === p) {
+                currentUser = stored;
+                showPage('shop');
+            } else {
+                alert('Неверные данные');
+            }
+        }
 
-        if(gameInterval) clearInterval(gameInterval);
+        // --- ЗАГРУЗКА ТОВАРОВ (CSV) ---
+        async function loadProducts() {
+            try {
+                const response = await fetch(SHEET_URL);
+                const data = await response.text();
+                const rows = data.split('\n').slice(1);
+                products = rows.map(row => {
+                    const cols = row.split(',');
+                    return {
+                        cat: cols[0], name: cols[1], price: cols[2], desc: cols[3], img: cols[4], count: cols[5], flag: cols[6]
+                    };
+                });
+                if (document.getElementById('nav-shop').classList.contains('active')) showPage('shop');
+            } catch (e) {
+                console.log("Ошибка загрузки товаров. Использую демо-данные.");
+                products = [
+                    {cat: 'A', name: 'Premium TG', price: '500', desc: 'На месяц', img: 'ВСТАВЬ ССЫЛКУ НА КАРТИНКУ', count: 10, flag: '🇷🇺'},
+                    {cat: 'B', name: 'Stars', price: '100', desc: '50 звезд', img: 'ВСТАВЬ ССЫЛКУ НА КАРТИНКУ', count: 50, flag: '🌍'}
+                ];
+            }
+        }
 
-        gameInterval = setInterval(() => {
-            frames++;
-            ctx.clearRect(0,0,300,400);
+        // --- РОУТИНГ ---
+        function showPage(page) {
+            document.querySelectorAll('nav div').forEach(d => d.classList.remove('active'));
+            document.getElementById('nav-' + page).classList.add('active');
+            const container = document.getElementById('main-content');
+
+            if (page === 'shop') {
+                let html = '<div class="grid">';
+                products.forEach((p, index) => {
+                    html += `
+                        <div class="product-card">
+                            <span class="flag">${p.flag || '📦'}</span>
+                            <img src="${p.img}" alt="pic">
+                            <div style="font-weight:bold; margin: 5px 0;">${p.name}</div>
+                            <div style="font-size:12px; color:var(--secondary-text)">${p.desc}</div>
+                            <div class="price">${p.price} ₽</div>
+                            <input type="number" value="1" min="1" max="${p.count}" id="qty-${index}" style="width:50px; padding:2px">
+                            <button class="buy-btn" onclick="openPayment(${index})">Купить</button>
+                        </div>
+                    `;});
+                container.innerHTML = html + '</div>';
+            } 
             
-            // Рисуем машину (Феррари)
-            ctx.fillStyle = "red";
-            ctx.fillRect(carX, 350, 30, 50);
-            ctx.fillStyle = "white";
-            ctx.fillText("Ferrari", carX, 380);
-
-            if(frames % 60 === 0) {
-                obstacles.push({x: Math.random() * 270, y: -50});
+            else if (page === 'profile') {
+                container.innerHTML = `
+                    <div class="profile-info">
+                        <img src="ВСТАВЬ ССЫЛКУ НА КАРТИНКУ" style="width:80px; border-radius:50%">
+                        <h2>${currentUser.login}</h2>
+                        <p>Баланс: ${currentUser.balance} ₽ (ваучеры)</p>
+                        <p>Дата регистрации: ${currentUser.date}</p>
+                    </div>
+                    <div class="profile-menu">
+                        <div class="profile-menu-item"><span>Сменить логин:</span> <input type="text" placeholder="Новый логин" onchange="updateProfile('login', this.value)"></div>
+                        <div class="profile-menu-item"><span>Сменить пароль:</span> <input type="password" placeholder="Новый пароль" onchange="updateProfile('pass', this.value)"></div>
+                        <div class="profile-menu-item"><span>Сменить почту:</span> <input type="email" placeholder="Новая почта" onchange="updateProfile('email', this.value)"></div>
+                        <div class="profile-menu-item"><span>Ваучер:</span> <input type="text" placeholder="Код" id="v-code"> <button onclick="useVoucher()" class="buy-btn" style="width:80px">OK</button></div>
+                        <div class="profile-menu-item"><span>Пополнить:</span> <button onclick="window.open('ССЫЛКА_НА_ОПЛАТУ')" class="buy-btn">Картой</button></div>
+                        <hr>
+                        <div onclick="showContentPage('FAQ')">FAQ</div>
+                        <div onclick="showContentPage('Оферта')">Оферта</div>
+                        <div onclick="showContentPage('Почему нам доверяют')">Доверие</div>
+                        <div onclick="showContentPage('О нас')">О нас</div>
+                        <h3>История покупок:</h3>
+                        <div id="history-list">${currentUser.history.map(h => `<div>${h.date} - ${h.item} (${h.price}₽)</div>`).join('') || 'Нет покупок'}</div>
+                    </div>
+                `;
             }
 
-            obstacles.forEach((o, i) => {
-                o.y += 5;
-                ctx.fillStyle = "gold";
-                ctx.fillRect(o.x, o.y, 30, 30);
+            else if (page === 'articles') {
+                container.innerHTML = `<h2>Статьи</h2><div class="product-card"><h3>Новости Телеграм</h3><p>Тут ваши новости о аккаунтах...</p><img src="ВСТАВЬ ССЫЛКУ НА КАРТИНКУ" style="width:100%"></div>`;
+            }
 
-                // Столкновение
-                if(o.y > 320 && o.y < 400 && o.x > carX - 25 && o.x < carX + 25) {
-                    clearInterval(gameInterval);
-                    alert("Бум! Твой счет: " + score);
-                }
-
-                if(o.y > 400) {
-                    obstacles.splice(i, 1);
-                    score++;
-                }
-            });
-
-            ctx.fillStyle = "white";
-            ctx.fillText("Очки: " + score, 10, 20);
-        }, 20);
-
-        window.onkeydown = (e) => {
-            if(e.key === "ArrowLeft") carX -= 15;
-            if(e.key === "ArrowRight") carX += 15;
-        };
-        // Для тач-устройств
-        canvas.onclick = (e) => {
-            if(e.clientX < window.innerWidth / 2) carX -= 20;
-            else carX += 20;
-        };
-    }
-
-    // --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
-    function showModal(id) {
-        document.getElementById('overlay').style.display = 'block';
-        document.getElementById(id).style.display = 'block';
-    }
-    function closeModal() {
-        document.querySelectorAll('.modal, .overlay').forEach(el => el.style.display = 'none');
-    }
-    function copyRek() {
-        const rek = document.getElementById('rekvizity').innerText;
-        navigator.clipboard.writeText(rek);
-        alert('Реквизиты скопированы!');
-    }
-    function saveUser() {
-        let users = JSON.parse(localStorage.getItem('users'));
-        users[currentUser.login] = currentUser;
-        localStorage.setItem('users', JSON.stringify(users));
-    }
-    function updateBalanceDisplay() {
-        document.getElementById('user-balance').innerText = `Баланс: ${currentUser ? currentUser.balance : 0} ₽`;
-    }
-
-    // Проверка сессии при загрузке
-    window.onload = () => {
-        const last = localStorage.getItem('lastSession');
-        if(last) {
-            let users = JSON.parse(localStorage.getItem('users'));
-            currentUser = users[last];
-            showPage('shop');
-            loadProducts();
-            updateBalanceDisplay();
+            else if (page === 'game') {
+                container.innerHTML = `
+                    <div style="text-align:center">
+                        <h2>Ferrari Challenge</h2>
+                        <p>Очки: <span id="score">0</span></p>
+                        <canvas id="gameCanvas" width="300" height="400"></canvas>
+                        <p>Управляйте кнопками ниже или кликом</p>
+                        <button class="buy-btn" onclick="startGame()">Начать игру</button>
+                    </div>
+                `;
+            }
         }
-    };
 
-</script>
+        function showContentPage(title) {
+            document.getElementById('main-content').innerHTML = `
+                <button onclick="showPage('profile')" class="buy-btn" style="width:100px">⬅ Назад</button>
+                <h2>${title}</h2>
+                <p>Здесь будет ваш текст для страницы "${title}". Вставьте его сами в HTML код.</p>
+                <img src="ВСТАВЬ ССЫЛКУ НА КАРТИНКУ" width="100%">
+            `;
+        }
 
+        // --- ЛОГИКА ОПЛАТЫ ---
+        let currentOrder = null;
+        function openPayment(index) {
+            const qty = document.getElementById('qty-'+index).value;
+            const product = products[index];
+            const totalPrice = product.price * qty;
+            currentOrder = {name: product.name, qty: qty, price: totalPrice };
+            
+            document.getElementById('payment-modal').classList.remove('hidden');
+            document.getElementById('overlay').classList.remove('hidden');
+        }
+
+        function closePayment() {
+            document.getElementById('payment-modal').classList.add('hidden');
+            document.getElementById('overlay').classList.add('hidden');
+        }
+
+        function copyDetails() {
+            const text = document.getElementById('payment-details').innerText;
+            navigator.clipboard.writeText(text);
+            alert('Реквизиты скопированы!');
+        }
+
+        function confirmPayment() {
+            // Имитация отправки в бот
+            const message = `Привет! Купил(а) ${currentOrder.name} в кол-ве ${currentOrder.qty}. Юз: @${currentUser.login}, ID: ${MANAGER_ID}. Выдай заказ!`;
+            const url = `https://t.me/${MANAGER_USER}?text=${encodeURIComponent(message)}`;
+            
+            // Сохраняем в историю
+            currentUser.history.push({date: new Date().toLocaleDateString(), item: currentOrder.name, price: currentOrder.price});
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            
+            window.open(url, '_blank');
+            closePayment();
+            alert('Заявка отправлена менеджеру!');
+        }
+
+        // --- ВАУЧЕРЫ ---
+        function useVoucher() {
+            const code = document.getElementById('v-code').value;
+            const vIndex = vouchers.findIndex(v => v.code === code && v.count > 0);
+            if(vIndex !== -1) {
+                currentUser.balance += vouchers[vIndex].discount;
+                vouchers[vIndex].count--;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                alert(`Ваучер активирован! Добавлено ${vouchers[vIndex].discount} ₽`);
+                showPage('profile');
+            } else {
+                alert('Неверный код или закончились активации');
+            }
+        }
+
+        function updateProfile(key, val) {
+            currentUser[key] = val;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            alert('Данные обновлены');
+        }
+
+        // --- МИНИ ИГРА (FERRARI) ---
+        let gameInterval;
+        function startGame() {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            let carX = 135;
+            let obstacles = [];
+            let score = 0;
+            let gameActive = true;
+
+            if(gameInterval) clearInterval(gameInterval);
+
+            gameInterval = setInterval(() => {
+                if(!gameActive) return;
+                ctx.clearRect(0,0,300,400);
+                
+                // Дорога
+                ctx.fillStyle = "#444";
+                ctx.fillRect(0,0,300,400);
+
+                // Игрок (Феррари)
+                ctx.fillStyle = "red";
+                ctx.fillRect(carX, 350, 30, 40);
+
+                // Препятствия
+                if(Math.random() < 0.05) obstacles.push({x: Math.random()*270, y: -40});
+                
+                obstacles.forEach((o, i) => {
+                    o.y += 5;
+                    ctx.fillStyle = "gold";
+                    ctx.fillRect(o.x, o.y, 30, 30);
+
+                    // Коллизия
+                    if(o.y > 320 && o.y < 390 && o.x > carX - 25 && o.x < carX + 25) {
+                        gameActive = false;
+                        alert("Игра окончена! Очки: " + score);
+                        clearInterval(gameInterval);
+                    }
+
+                    if(o.y > 400) {
+                        obstacles.splice(i, 1);
+                        score++;document.getElementById('score').innerText = score;
+                    }
+                });
+            }, 30);
+
+            canvas.onclick = (e) => {
+                if(e.offsetX < 150) carX = Math.max(10, carX - 30);
+                else carX = Math.min(260, carX + 30);
+            };
+        }
+
+        window.onload = init;
+    </script>
 </body>
 </html>

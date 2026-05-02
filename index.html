@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NMPRODA PREMIUM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #FFD700;
+            --bg: #000;
+            --card: #0d0d0d;
+            --text: #fff;
+            --accent: #FFD700;
+            --shadow: rgba(255, 215, 0, 0.2);
+        }
+
+        .light-theme {
+            --gold: #3b82f6;
+            --bg: #ffffff;
+            --card: #f3f4f6;
+            --text: #111827;
+            --accent: #3b82f6;
+            --shadow: rgba(59, 130, 246, 0.1);
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding-bottom: 100px;
+            overflow-x: hidden;
+            transition: 0.3s;
+        }
+
+        .boss-card {
+            background: var(--card);
+            border-radius: 20px;
+            border: 1px solid var(--shadow);
+            transition: 0.3s;
+        }
+
+        .btn-gold {
+            background: var(--accent);
+            color: #000;
+            font-weight: 900;
+            text-transform: uppercase;
+            border-radius: 14px;
+            transition: 0.2s;
+        }
+
+        .btn-gold:active { transform: scale(0.96); }
+
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: rgba(13, 13, 13, 0.95);
+            backdrop-filter: blur(15px);
+            border-top: 1px solid var(--shadow);
+            padding: 12px 10px;
+            display: flex;
+            justify-content: space-around;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            color: #555;
+            font-size: 8px;
+            font-weight: 800;
+            text-transform: uppercase;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .nav-item.active { color: var(--accent); }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(8px);
+                      z-index: 20000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .hidden { display: none !important; }
+
+        input {
+            background: var(--card) !important;
+            border: 1px solid var(--shadow) !important;
+            border-radius: 12px;
+            padding: 14px;
+            color: var(--text);
+            width: 100%;
+            font-weight: 600;
+        }
+
+        /* Стиль Сейфа */
+        .safe-dial {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #222 0%, #000 100%);
+            border: 8px solid #333;
+            box-shadow: 0 0 20px var(--shadow), inset 0 0 15px #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 900;
+            color: var(--accent);
+            margin: 20px auto;
+        }
+        
+        .numpad button {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 15px;
+            font-weight: 900;
+            color: var(--text);
+        }
+    </style>
+</head>
+<body id="body">
+
+    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-yellow-500 text-black px-6 py-2 rounded-full font-black text-[10px] z-[30000] hidden uppercase"></div>
+
+    <!-- АВТОРИЗАЦИЯ -->
+    <div id="auth-screen" class="p-8 flex flex-col justify-center min-h-screen">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-black italic text-yellow-500 tracking-tighter">NMPRODA</h1>
+            <p class="text-[9px] opacity-40 uppercase tracking-[4px] mt-2">Premium Access</p>
+        </div>
+        
+        <div id="auth-box" class="space-y-4">
+            <input type="text" id="auth-login" placeholder="ЛОГИН ИЛИ EMAIL">
+            <input type="password" id="auth-pass" placeholder="ПАРОЛЬ">
+            <button onclick="handleAuth('login')" class="w-full btn-gold py-5 shadow-lg shadow-yellow-500/20">ВОЙТИ</button>
+            <div class="flex justify-between text-[10px] font-bold opacity-40 px-2 pt-4">
+                              <span onclick="toggleAuthMode('reg')">РЕГИСТРАЦИЯ</span>
+                <span onclick="toggleAuthMode('reset')">ЗАБЫЛИ ПАРОЛЬ?</span>
+            </div>
+        </div>
+
+        <div id="reg-box" class="space-y-4 hidden">
+            <input type="text" id="reg-login" placeholder="ЛОГИН">
+            <input type="email" id="reg-email" placeholder="EMAIL">
+            <input type="password" id="reg-pass" placeholder="ПАРОЛЬ">
+            <button onclick="handleAuth('reg')" class="w-full btn-gold py-5">СОЗДАТЬ</button>
+            <p onclick="toggleAuthMode('login')" class="text-center text-[10px] font-bold opacity-40 pt-4">ЕСТЬ АККАУНТ</p>
+        </div>
+
+        <div id="reset-box" class="space-y-4 hidden">
+            <p class="text-[10px] text-center opacity-60">ВВЕДИТЕ ПОЧТУ ДЛЯ ВОССТАНОВЛЕНИЯ</p>
+            <input type="email" id="reset-email" placeholder="EMAIL">
+            <button onclick="handleAuth('reset')" class="w-full btn-gold py-5">ВОССТАНОВИТЬ</button>
+            <p onclick="toggleAuthMode('login')" class="text-center text-[10px] font-bold opacity-40 pt-4">НАЗАД</p>
+        </div>
+    </div>
+
+    <!-- КОНТЕНТ -->
+    <main id="app" class="px-5 pt-8 hidden"></main>
+
+    <!-- ОКНО ПОПОЛНЕНИЯ (ЗАЯВКА АДМИНУ) -->
+    <div id="m-topup" class="modal hidden">
+        <div class="boss-card w-full max-w-sm p-8 text-center">
+            <h2 class="text-yellow-500 font-black italic uppercase mb-2 text-xl">Пополнение</h2>
+            <p class="text-[9px] opacity-40 mb-6">Введите сумму, которую хотите пополнить</p>
+            
+            <input type="number" id="topup-amount" placeholder="Сумма (₽)" class="mb-4 text-center text-xl">
+            
+            <div class="space-y-2 mb-6">
+                <div onclick="copyText('РЕКВИЗИТЫ_КАРТЫ')" class="bg-white/5 p-4 rounded-xl border border-white/5 text-left">
+                    <p class="text-[7px] opacity-40 uppercase">Карта для оплаты</p>
+                    <p class="font-bold text-yellow-500">ВСТАВЬ РЕКВИЗИТЫ</p>
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="closeModal('m-topup')" class="w-1/3 py-4 text-[10px] font-bold opacity-30 uppercase">Отмена</button>
+                <button onclick="sendTopupRequest()" class="w-2/3 btn-gold py-4 text-[10px]">Я ОПЛАТИЛ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ОБЫЧНАЯ МОДАЛКА (ТЕКСТ) -->
+    <div id="m-msg" class="modal hidden">
+        <div class="boss-card w-full max-w-xs p-8 text-center border-2 border-yellow-500/30">
+            <p id="msg-text" class="text-sm font-bold leading-relaxed"></p>
+            <button onclick="closeModal('m-msg')" class="w-full btn-gold py-4 mt-8 text-[10px]">ОК, ПОНЯТНО</button>
+        </div>
+    </div>
+
+    <!-- МЕНЮ -->
+    <nav id="navbar" class="nav-bar hidden">
+        <div onclick="render('shop')" id="n-shop" class="nav-item">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" stroke-width="2"/></svg>
+            <span>Магазин</span>
+        </div>
+        <div onclick="render('articles')" id="n-articles" class="nav-item">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2z" stroke-width="2"/></svg>
+            <span>Статьи</span>
+        </div>
+        <div onclick="render('game')" id="n-game" class="nav-item">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-width="2"/></svg>
+            <span>Сейф</span>
+        </div>
+        <div onclick="render('profile')" id="n-profile" class="nav-item">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-width="2"/></svg>
+            <span>Профиль</span>
+        </div>
+    </nav>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        const BOT_TOKEN = 'ВСТАВЬ_ТОКЕН_БОТА';
+        const ADMIN_ID = '7727345054';
+        const CSV_URL = 'https://docs.google.com/spreadsheets/d/1bxpXTKxDHUwk5VX79PeXbjxrJxAkzaZag6opznV_Kq8/export?format=csv';
+
+        let db = JSON.parse(localStorage.getItem('NMPRODA_DB')) || {
+            users: [],
+            currentUser: null,
+            theme: 'dark',
+            vouchers: [{code: 'HELLO', value: 100, used: false}]
+        };
+
+        function saveDB() { localStorage.setItem('NMPRODA_DB', JSON.stringify(db)); }
+
+        // --- AUTH ---
+        function toggleAuthMode(mode) {
+            ['auth-box', 'reg-box', 'reset-box'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            document.getElementById(mode + '-box').classList.remove('hidden');
+        }
+
+        function handleAuth(type) {
+            if (type === 'reg') {
+                const login = document.getElementById('reg-login').value;
+                const email = document.getElementById('reg-email').value;
+                const pass = document.getElementById('reg-pass').value;
+                if (!login || !email || !pass) return showMsg('Заполните все поля!');
+                db.users.push({ login, email, pass, balance: 0, regDate: new Date().toLocaleDateString(), history: [] });
+                db.currentUser = login;
+            } else if (type === 'login') {
+                const login = document.getElementById('auth-login').value;
+                const pass = document.getElementById('auth-pass').value;
+                const user = db.users.find(u => (u.login === login || u.email === login) && u.pass === pass);
+                if (user) db.currentUser = user.login; else return showMsg('Ошибка входа!');
+            }
+            saveDB();
+            initApp();
+        }
+
+        function initApp() {
+            if (!db.currentUser) return;
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+            document.getElementById('navbar').classList.remove('hidden');
+            render('shop');
+        }
+
+        // --- PAGES ---
+        let products = [];
+        let curCat = 'BCE';
+
+        async function render(page) {
+            const app = document.getElementById('app');
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            document.getElementById('n-' + page).classList.add('active');
+            const user = db.users.find(u => u.login === db.currentUser);
+
+            if (page === 'shop') {
+                app.innerHTML = `
+                    <div class="flex justify-between items-end mb-8">
+                        <div>
+                            <h1 class="text-2xl font-black italic text-yellow-500 uppercase">NMPRODA</h1>
+                            <p class="text-[7px] opacity-40 tracking-widest uppercase">Premium Store</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[8px] opacity-40 uppercase font-black">Ваш Баланс</p>
+                            <p class="text-xl font-black text-yellow-500">${user.balance} ₽</p>
+                        </div>
+                    </div>
+                    <div id="cat-bar" class="flex gap-2 overflow-x-auto pb-4 no-scrollbar"></div>
+                    <div id="grid" class="grid grid-cols-2 gap-4 pb-20"></div>
+                `;
+                if (products.length === 0) await loadProducts();
+                renderCats();
+                setCat(curCat);
+            } 
+            
+            else if (page === 'profile') {
+                app.innerHTML = `
+                    <div class="boss-card p-6 mb-4">
+                        <div class="flex justify-between mb-6">
+                            <p class="text-[9px] font-black opacity-30 uppercase">Личный кабинет</p>
+                            <p class="text-[8px] opacity-30 uppercase">ID: ${user.login}</p>
+                        </div>
+                        <h2 class="text-2xl font-black mb-1">${user.login}</h2>
+                        <p class="text-yellow-500 font-black text-xl mb-8">${user.balance} ₽</p>
+                        
+                        <div class="grid grid-cols-1 gap-3 mb-10">
+                            <button onclick="document.getElementById('m-topup').classList.remove('hidden')" class="btn-gold py-4 text-[10px]">ПОПОЛНИТЬ БАЛАНС</button>
+                            <button onclick="applyVoucher()" class="bg-white/5 border border-white/10 py-4 text-[10px] rounded-xl font-black uppercase">АКТИВИРОВАТЬ ВАУЧЕР</button>
+                        </div>
+
+                        <div class="space-y-4 pt-6 border-t border-white/5">
+                             <p class="text-[8px] font-black opacity-30 uppercase">Настройки данных</p>
+                             <div class="flex flex-col gap-3">
+                                <input type="text" id="e-login" value="${user.login}" placeholder="Логин">
+                                <input type="email" id="e-email" value="${user.email}" placeholder="Почта">
+                                <input type="password" id="e-pass" placeholder="Новый пароль">
+                                <button onclick="updateUser()" class="btn-gold py-3 text-[9px]">СОХРАНИТЬ ИЗМЕНЕНИЯ</button>
+                             </div>
+                        </div>
+                    </div>
+                    
+                    <div class="boss-card p-6">
+                        <p class="text-[8px] font-black opacity-30 mb-4 uppercase">История покупок</p>
+                        <div class="space-y-3">
+                            ${user.history.length ? user.history.map(h => `
+                                <div class="flex justify-between items-center bg-white/5 p-3 rounded-lg">
+                                    <span class="text-[10px] font-bold">${h.name}</span>
+                                    <span class="text-yellow-500 font-black text-[10px]">${h.price}₽</span>
+                                </div>
+                            `).join('') : '<p class="text-[10px] opacity-20 italic">Тут пока пусто</p>'}
+                        </div>
+                    </div>
+                    <button onclick="location.reload()" class="w-full mt-6 text-red-500/50 text-[10px] font-bold uppercase tracking-widest">Выйти из системы</button>
+                `;
+            }
+
+            else if (page === 'game') {
+                app.innerHTML = `
+                    <div class="text-center pt-4">
+                        <h2 class="text-2xl font-black text-yellow-500 italic mb-2">SAFE BREAKER</h2>
+                        <p class="text-[9px] opacity-40 uppercase mb-8">Угадай 4-значный код и получи приз</p>
+                        
+                        <div class="safe-dial" id="safe-display">0000</div>
+                        
+                        <div class="numpad grid grid-cols-3 gap-3 max-w-[250px] mx-auto mt-8">
+                            ${[1,2,3,4,5,6,7,8,9].map(n => `<button onclick="pressSafe(${n})">${n}</button>`).join('')}
+                            <button onclick="pressSafe('C')" class="text-red-500">C</button>
+                            <button onclick="pressSafe(0)">0</button>
+                            <button onclick="pressSafe('OK')" class="text-green-500">OK</button>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            else if (page === 'articles') {
+                app.innerHTML = `<h2 class="text-xl font-black text-yellow-500 mb-6 uppercase italic">Новости и Статьи</h2>
+                <div class="boss-card p-5 mb-4">
+                    <div class="w-full h-40 bg-zinc-900 rounded-xl mb-4 overflow-hidden">
+                        <img src="ВСТАВЬ_ССЫЛКУ" class="w-full h-full object-cover">
+                    </div>
+                    <h3 class="font-black text-sm mb-2">Обновление Telegram 2026</h3>
+                    <p class="text-[11px] opacity-50 leading-relaxed">ВСТАВЬ_ТЕКСТ_НОВОСТИ</p>
+                </div>`;
+            }
+        }
+
+        // --- МАГАЗИН ЛОГИКА ---
+        async function loadProducts() {
+            try {
+                const res = await fetch(CSV_URL);
+                const data = await res.text();
+                products = data.split('\n').slice(1).map(row => {const c = row.split(',');
+                    return { cat: c[0], name: c[1], price: parseFloat(c[2]), desc: c[3], img: c[4], stock: c[5], flag: c[6] };
+                });
+            } catch(e) { showMsg('Ошибка загрузки данных'); }
+        }
+
+        function renderCats() {
+            const cats = ['BCE', ...new Set(products.map(p => p.cat))].filter(Boolean);
+            document.getElementById('cat-bar').innerHTML = cats.map(c => `
+                <div onclick="setCat('${c}')" class="px-5 py-2 rounded-full bg-zinc-900 text-[10px] font-black uppercase whitespace-nowrap ${curCat === c ? 'text-yellow-500 border border-yellow-500/50' : 'opacity-40'}">${c}</div>
+            `).join('');
+        }
+
+        function setCat(c) {
+            curCat = c; renderCats();
+            const grid = document.getElementById('grid');
+            const filt = c === 'BCE' ? products : products.filter(p => p.cat === c);
+            grid.innerHTML = filt.map(p => `
+                <div class="boss-card p-3 flex flex-col relative">
+                    <div class="absolute top-2 left-2 z-10 bg-black/50 px-2 py-1 rounded text-[10px]">${p.flag || '🔥'}</div>
+                    <img src="${p.img || 'ВСТАВЬ_ССЫЛКУ'}" class="w-full aspect-square object-cover rounded-xl mb-3">
+                    <h3 class="text-[10px] font-black uppercase mb-1 truncate">${p.name}</h3>
+                    <p class="text-[12px] font-black text-yellow-500 mb-3">${p.price} ₽</p>
+                    <button onclick="showMsg('Для покупки пополните баланс в профиле и используйте его или напишите менеджеру @nmproda')" class="mt-auto btn-gold py-2 text-[8px]">КУПИТЬ</button>
+                </div>
+            `).join('');
+        }
+
+        // --- ПОПОЛНЕНИЕ ЧЕРЕЗ БОТА ---
+        function sendTopupRequest() {
+            const amount = document.getElementById('topup-amount').value;
+            const user = db.users.find(u => u.login === db.currentUser);
+            if (!amount || amount < 10) return showMsg('Минимум 10 ₽');
+
+            const text = `💰 ЗАЯВКА НА ПОПОЛНЕНИЕ\n👤 Клиент: ${user.login}\n📧 Почта: ${user.email}\n💵 Сумма: ${amount} ₽\n\nПроверьте оплату и выдайте ваучер!`;
+            
+            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${ADMIN_ID}&text=${encodeURIComponent(text)}`);
+            
+            showMsg('Заявка отправлена! После проверки оплаты менеджер пришлет вам Ваучер в Telegram.');
+            closeModal('m-topup');
+        }
+
+        function applyVoucher() {
+            const code = prompt('Введите код ваучера:');
+            const v = db.vouchers.find(x => x.code === code && !x.used);
+            if (v) {
+                const user = db.users.find(u => u.login === db.currentUser);
+                user.balance += v.value;
+                v.used = true;
+                saveDB();
+                showMsg(`Успешно! Баланс пополнен на ${v.value} ₽`);
+                render('profile');
+            } else { showMsg('Код неверный или уже использован'); }
+        }
+
+        // --- ИГРА СЕЙФ ---
+        let currentGuess = "";
+        let secretCode = "1234"; // Можно рандомить
+        function pressSafe(val) {
+            const display = document.getElementById('safe-display');
+            if (val === 'C') { currentGuess = ""; }
+            else if (val === 'OK') {
+                if (currentGuess === secretCode) {
+                    showMsg('СЕЙФ ОТКРЫТ! Ваш приз: Ваучер "SAFE777" на 50₽');
+                } else {
+                    showMsg('НЕВЕРНЫЙ КОД');
+                    currentGuess = "";
+                }
+            } else {
+                if (currentGuess.length < 4) currentGuess += val;}
+            display.innerText = currentGuess.padEnd(4, '0');
+        }
+
+        // --- УТИЛИТЫ ---
+        function showMsg(t) {
+            document.getElementById('msg-text').innerText = t;
+            document.getElementById('m-msg').classList.remove('hidden');
+        }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+        function copyText(t) {
+            navigator.clipboard.writeText(t);
+            const toast = document.getElementById('toast');
+            toast.innerText = 'СКОПИРОВАНО';
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 1500);
+        }
+        function updateUser() {
+            const user = db.users.find(u => u.login === db.currentUser);
+            user.login = document.getElementById('e-login').value;
+            user.email = document.getElementById('e-email').value;
+            if (document.getElementById('e-pass').value) user.pass = document.getElementById('e-pass').value;
+            db.currentUser = user.login;
+            saveDB();
+            showMsg('Данные сохранены');
+            render('profile');
+        }
+
+        if (db.currentUser) initApp();
+    </script>
+</body>
+</html>

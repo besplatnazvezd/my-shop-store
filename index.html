@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NMPRODA STORE - Premium</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+        :root { --bg: #0b0e11; --card: #151a21; --accent: #d4af37; --text: #ffffff; --border: #232a35; --btn-blue: #009dff; }
+        body.light { --bg: #ffffff; --card: #f1f5f9; --accent: #009dff; --text: #0f172a; --border: #e2e8f0; }
+        body { background-color: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; transition: 0.3s; margin: 0; overflow-x: hidden; }
+        .card { background-color: var(--card); border: 1px solid var(--border); border-radius: 20px; }
+        .btn-blue { background-color: #009dff; color: white; border-radius: 12px; font-weight: 700; transition: 0.2s; }
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; }
+        #toast { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; padding: 12px 30px; border-radius: 50px; font-weight: 900; z-index: 1000; transition: 0.5s; box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
+        #toast.show { top: 20px; }
+        input { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; color: var(--text); width: 100%; outline: none; }
+        .faq-item.active .faq-answer { max-height: 200px; opacity: 1; padding-bottom: 15px; }
+        .faq-answer { max-height: 0; overflow: hidden; transition: 0.3s; opacity: 0; }
+    </style>
+</head>
+<body>
+
+    <div id="toast">СКОПИРОВАНО</div>
+
+    <!-- Шапка -->
+    <header class="p-4 flex justify-between items-center sticky top-0 z-50 bg-opacity-90 backdrop-blur-md" style="background-color: var(--bg);">
+        <div class="flex items-center gap-2">
+            <div class="bg-blue-600 px-2 py-1 rounded text-[10px] font-black uppercase">SMS PREMIUM</div>
+            <button onclick="toggleTheme()" class="text-xl ml-2"><i class="fas fa-adjust"></i></button>
+        </div>
+        <div class="flex items-center gap-3">
+                      <div class="glass px-3 py-1.5 rounded-full flex items-center gap-2 border border-gray-700">
+                <i class="fas fa-wallet text-blue-400"></i>
+                <span id="headerBal" class="font-bold text-sm">0</span> ₽
+            </div>
+            <button onclick="openProfile()" id="navUser" class="text-sm font-bold underline">Войти</button>
+            <i class="fas fa-bars text-xl cursor-pointer" onclick="showModal('menuModal')"></i>
+        </div>
+    </header>
+
+    <main class="p-4 max-w-lg mx-auto">
+        <button class="w-full btn-blue py-4 mb-8 shadow-lg uppercase tracking-widest" onclick="window.scrollTo(0, 500)">Купить номер</button>
+        <h1 class="text-2xl font-black mb-2">Готовые аккаунты Telegram</h1>
+        <p class="text-sm opacity-50 mb-8">Быстрая выдача сразу после оплаты.</p>
+
+        <div class="flex gap-2 mb-8">
+            <button class="btn-blue px-6 py-2.5 text-xs uppercase" onclick="location.reload()">Аккаунты</button>
+            <button class="card px-6 py-2.5 text-xs uppercase font-bold" onclick="showStaticModal('news')">Статьи</button>
+        </div>
+
+        <input type="text" id="searchInput" placeholder="Поиск страны..." class="mb-6" oninput="renderProducts()">
+
+        <!-- Сетка товаров -->
+        <div id="productGrid" class="grid grid-cols-2 gap-3 mb-12"></div>
+
+        <!-- FAQ -->
+        <div class="mb-12">
+            <h2 class="text-xl font-black mb-6">FAQ</h2>
+            <div id="faqList" class="card p-2 space-y-1"></div>
+        </div>
+    </main>
+
+    <!-- МОДАЛКИ (Профиль, Оплата, Успех) -->
+    <div id="profileModal" class="fixed inset-0 hidden z-[100] overflow-y-auto" style="background-color: var(--bg);">
+        <div class="p-6 max-w-lg mx-auto">
+            <div class="flex justify-between items-center mb-8">
+                <button onclick="closeModal('profileModal')">Назад</button>
+                <span class="font-black uppercase text-sm">Профиль</span>
+            </div>
+            <div id="authBox" class="card p-8">
+                <input type="text" id="authEmail" placeholder="Логин" class="mb-3">
+                <input type="password" id="authPass" placeholder="Пароль" class="mb-6">
+                                <button onclick="handleAuth()" class="w-full btn-blue py-4">Войти</button>
+            </div>
+            <div id="userBox" class="hidden space-y-6">
+                <div class="card p-6">
+                    <div class="text-3xl font-black mb-4"><span id="userBal">0</span> ₽</div>
+                    <button onclick="showModal('topupModal')" class="w-full btn-blue py-3">Пополнить</button>
+                </div>
+                <div class="card p-6 space-y-4">
+                    <h3 class="font-bold">Данные</h3>
+                    <div class="flex gap-2"><input id="updLogin" class="h-10 text-sm"><button onclick="updateData('login')" class="text-blue-500 text-xs">Изм.</button></div>
+                    <div class="flex gap-2"><input id="updEmail" class="h-10 text-sm"><button onclick="updateData('email')" class="text-blue-500 text-xs">Изм.</button></div>
+                </div>
+                <div class="card p-6 text-center">
+                    <canvas id="gameCanvas" width="300" height="200" class="bg-black rounded-xl mx-auto"></canvas>
+                    <div class="flex justify-between mt-4">
+                        <button class="bg-gray-700 px-6 py-2 rounded-xl" onmousedown="moveBasket(-15)" onmouseup="stopBasket()">◀</button>
+                        <span id="gameScore" class="font-bold">0</span>
+                        <button class="bg-gray-700 px-6 py-2 rounded-xl" onmousedown="moveBasket(15)"onmouseup="stopBasket()">▶</button>
+                    </div>
+                </div>
+                <button onclick="logout()" class="w-full opacity-30 text-xs py-4 underline">Выйти</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ОКНО ОПЛАТЫ -->
+    <div id="topupModal" class="fixed inset-0 flex items-center justify-center hidden z-[200] p-4">
+        <div class="absolute inset-0 bg-black/80" onclick="closeModal('topupModal')"></div>
+        <div class="glass w-full max-w-xs p-8 text-center relative">
+            <h2 class="text-orange-500 font-black text-2xl mb-8 uppercase italic">Оплата</h2>
+            <div class="space-y-3 mb-8">
+                <a href="https://t.me/CryptoBot?start=topup" target="_blank" class="block bg-black/40 p-4 rounded-2xl border border-white/5 text-left">
+                    <div class="text-[9px] opacity-40 uppercase">Крипто-бот</div>
+                    <div class="font-bold">Открыть</div>
+                </a>
+                <div class="bg-black/40 p-4 rounded-2xl border border-white/5 cursor-pointer text-left" onclick="copyText('2200 1111 2222 3333')">
+                    <div class="text-[9px] opacity-40 uppercase">Карта (Т-Банк)</div>
+                    <div class="font-bold text-sm">2200 5529 7019 9232</div>
+                </div>
+            </div>
+            <button onclick="notifyAdmin('topup')" class="w-full bg-gradient-to-r from-orange-500 to-red-600 text-white font-black py-4 rounded-2xl mb-4">Я ОПЛАТИЛ(А)</button>
+            <button onclick="closeModal('topupModal')" class="text-xs opacity-40 uppercase">Отмена</button>
+        </div>
+    </div>
+
+    <!-- МОДАЛКА ВЫБОРА КОЛ-ВА -->
+    <div id="buyModal" class="fixed inset-0 flex items-center justify-center hidden z-[150] p-4">
+        <div class="card p-6 w-full max-w-xs text-center">
+            <h2 id="buyTitle" class="text-xl font-bold mb-6"></h2>
+            <input type="number" id="buyQty" value="1" min="1" class="mb-4 text-center">
+            <div class="text-2xl font-black mb-6">Итого: <span id="buyTotal">0</span> ₽</div>
+            <button onclick="processPurchase()" class="w-full btn-blue py-3 mb-2">Оплатить</button>
+            <button onclick="closeModal('buyModal')" class="opacity-30 text-xs uppercase">Отмена</button>
+        </div>
+    </div>
+
+    <!-- УСПЕХ -->
+    <div id="successModal" class="fixed inset-0 flex items-center justify-center hidden z-[250] p-4">
+        <div class="card p-8 w-full max-w-sm text-center">
+            <div class="text-6xl text-green-500 mb-4 font-bold">✓</div>
+            <h2 class="text-2xl font-black mb-4">Заказ принят!</h2>
+            <button onclick="notifyAdmin('order')" class="w-full btn-blue py-4 uppercase">Жми на меня</button>
+        </div>
+    </div>
+
+    <!-- МЕНЮ -->
+    <div id="menuModal" class="fixed inset-0 bg-black/95 hidden z-[200] p-8">
+        <div class="flex justify-between items-center mb-12">
+            <span class="font-black text-xl">МЕНЮ</span>
+            <i class="fas fa-times text-2xl cursor-pointer" onclick="closeModal('menuModal')"></i>
+        </div>
+        <div class="flex flex-col gap-6 text-xl font-bold uppercase">
+            <button onclick="location.reload()" class="text-left">Магазин</button>
+            <button onclick="openProfile()" class="text-left">Личный кабинет</button>
+            <button onclick="showStaticModal('news')" class="text-left">Новости</button>
+        </div>
+    </div>
+
+    <!-- ТЕКСТОВАЯ МОДАЛКА -->
+    <div id="textModal" class="fixed inset-0 bg-black/98 hidden z-[300] p-6 overflow-y-auto">
+        <div class="flex justify-between items-center mb-8">
+          <h2 id="textTitle" class="font-black text-xl"></h2>
+            <i class="fas fa-times text-2xl cursor-pointer" onclick="closeModal('textModal')"></i>
+        </div>
+        <div id="textContent" class="text-sm opacity-60 leading-relaxed"></div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. ВСТАВЬ СВОИ ДАННЫЕ ТУТ
+        // ==========================================
+        const CSV_URL = "https://docs.google.com/spreadsheets/d/1bxpXTKxDHUwk5VX79PeXbjxrJxAkzaZag6opznV_Kq8/export?format=csv"; 
+        const BOT_TOKEN = "8780961369:AAHsQp2Fi4N1swxLkpE2Jxn74fvv4qitJLM";
+        const ADMIN_ID = "7727345054";
+        // ==========================================
+
+        let currentUser = JSON.parse(localStorage.getItem('u_db')) || null;
+        let products = [];
+        let selected = null;
+
+        window.onload = () => {
+            loadCSV();
+            renderFAQ();
+            updateUI();
+            initGame();
+        };
+
+        async function loadCSV() {
+            try {
+                const res = await fetch(CSV_URL);
+                const data = await res.text();
+                const rows = data.split('\n').slice(1);
+                products = rows.map(r => {
+                    const c = r.split(',');
+                    return { cat: c[0], name: c[1], price: parseInt(c[2]), qty: c[5], flag: c[6] || '🌐' };
+                }).filter(p => p.name);
+                renderProducts();
+            } catch(e) { console.error("Ошибка CSV"); }
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById('productGrid');
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            grid.innerHTML = products.filter(p => p.name.toLowerCase().includes(term)).map((p, i) => `
+                <div class="card p-4 active:scale-95 transition cursor-pointer" onclick="openBuy(${i})">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-xl">${p.flag}</span>
+                        <div class="text-[11px] font-black uppercase truncate">${p.name}</div>
+                    </div>
+                    <div class="flex justify-between items-end">
+                        <div class="text-[10px] opacity-30">${p.qty} ШТ</div>
+                        <div class="text-sm font-black text-blue-500">${p.price}₽</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openBuy(i) {
+            selected = products[i];
+            document.getElementById('buyTitle').innerText = selected.name;
+            document.getElementById('buyQty').value = 1;
+            updateTotal();
+            showModal('buyModal');
+        }
+
+        function updateTotal() {
+            document.getElementById('buyTotal').innerText = selected.price * document.getElementById('buyQty').value;
+        }
+        document.getElementById('buyQty').oninput = updateTotal;
+
+        function processPurchase() {
+            if(!currentUser) return openProfile();
+            const total = parseInt(document.getElementById('buyTotal').innerText);
+            if(currentUser.bal >= total) {
+                currentUser.bal -= total;
+                save(); updateUI();
+                closeModal('buyModal');
+                showModal('successModal');
+            } else { showModal('topupModal'); }
+        }
+
+        async function notifyAdmin(type) {
+            let msg = "";
+            const user = currentUser ? currentUser.login : "Аноним";
+            if(type === 'topup') {
+                msg = `💰 ПОПОЛНЕНИЕ\nЮзер: ${user}\nНажал "Я оплатил" (Карта)`;
+                window.open(`https://t.me/nmproda?text=Привет! Перевел на карту, зачисли баланс! ID:7727345054`, '_blank');
+            } else {
+                msg = `🛒 ПОКУПКА\nЮзер: ${user}\nТовар: ${selected.name}\nВыдай заказ!`;
+                window.open(`https://t.me/nmproda?text=Привет! Купил ${selected.name}, выдай заказ!`, '_blank');
+            }
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: ADMIN_ID, text: msg, parse_mode: "HTML" })
+            });
+            closeModal('topupModal'); closeModal('successModal');
+        }
+
+        // --- УТИЛИТЫ ---
+        function toggleTheme() { document.body.classList.toggle('light'); }
+        function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+        function openProfile() { showModal('profileModal'); }
+        function save() { localStorage.setItem('u_db', JSON.stringify(currentUser)); }
+        function logout() { localStorage.clear(); location.reload(); }
+        function copyText(t) { navigator.clipboard.writeText(t); const s=document.getElementById('toast'); s.classList.add('show'); setTimeout(()=>s.classList.remove('show'),2000); }
+
+        function handleAuth() {
+            const l = document.getElementById('authEmail').value;
+            if(!l) return;
+            currentUser = { login: l, email: l+'@mail.com', bal: 0 };
+            save(); updateUI();
+        }
+
+        function updateUI() {
+            if(!currentUser) return;
+            document.getElementById('navUser').innerText = currentUser.login;
+            document.getElementById('headerBal').innerText = currentUser.bal;
+            document.getElementById('userBal').innerText = currentUser.bal;
+            document.getElementById('updLogin').value = currentUser.login;
+            document.getElementById('updEmail').value = currentUser.email;
+            document.getElementById('authBox').classList.add('hidden');
+            document.getElementById('userBox').classList.remove('hidden');
+        }
+
+        function renderFAQ() {
+            const f = [{q:"Как купить?", a:"Выбери номер и оплати."}, {q:"Как пополнить?", a:"Через Крипто-бот или карту в профиле."}];
+            document.getElementById('faqList').innerHTML = f.map(x => `<div class="faq-item p-4 cursor-pointer" onclick="this.classList.toggle('active')"><div class="font-bold text-sm">${x.q}</div><div class="faq-answer text-xs opacity-40 mt-2">${x.a}</div></div>`).join('');
+        }
+
+        function showStaticModal(k) {
+            document.getElementById('textTitle').innerText = k.toUpperCase();
+            document.getElementById('textContent').innerText = "Здесь будут ваши статьи и новости.";
+            showModal('textModal');
+        }
+
+        // --- ИГРА ---
+        let cv, cx, bk, cn=[], sc=0;
+        function initGame() { cv=document.getElementById("gameCanvas"); cx=cv.getContext("2d"); bk={x:130, w:40, h:10, dx:0}; setInterval(updG, 30); }
+        function moveBasket(s){bk.dx=s;} function stopBasket(){bk.dx=0;}
+        function updG(){
+            cx.clearRect(0,0,300,200); bk.x+=bk.dx; if(bk.x<0)bk.x=0; if(bk.x>260)bk.x=260;
+            cx.fillStyle="#009dff"; cx.fillRect(bk.x, 180, bk.w, bk.h);
+            if(Math.random()<0.05) cn.push({x:Math.random()*280, y:0});
+            cx.fillStyle="#d4af37"; cn.forEach((c,i)=>{ c.y+=3; cx.beginPath(); cx.arc(c.x,c.y,5,0,7); cx.fill();
+                if(c.y>180 && c.x>bk.x && c.x<bk.x+bk.w){ sc++; document.getElementById('gameScore').innerText=sc; cn.splice(i,1); }
+                if(c.y>200) cn.splice(i,1);
+            });
+        }
+    </script>
+</body>
+</html>

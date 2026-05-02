@@ -3,337 +3,449 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMS PRO - Купить аккаунты</title>
+    <title>PRODA STORE - Аккаунты</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --bg: #1e1e2d; --card: #2b2b3d; --text: #ffffff; --muted: #a2a2b5;
-            --accent: #d4af37; --blue: #0088ff; --brd: #3f3f5a;
+            --bg: #1a1c23; --card: #242731; --accent: #009dff; --text: #ffffff; --gold: #d4af37;
         }
-        [data-theme="light"] {
-            --bg: #f5f5f9; --card: #ffffff; --text: #333333; --muted: #777777;
-            --accent: #007bff; --blue: #007bff; --brd: #e0e0e0;
+        body.light {
+            --bg: #f0f2f5; --card: #ffffff; --accent: #009dff; --text: #1a1a1a; --gold: #0056b3;
         }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; transition: 0.2s; }
-        body { background-color: var(--bg); color: var(--text); }
-
-        /* --- МОДАЛКА (ВМЕСТО ALERT) --- */
-        #modal-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); z-index: 10000; justify-content: center; align-items: center;
+        body { background-color: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; transition: 0.3s; }
+        .card { background-color: var(--card); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
+        .btn-blue { background-color: var(--accent); color: white; border-radius: 8px; font-weight: 600; }
+        .glass { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        
+        /* Стили карточки товара как на скрине */
+        .product-grid-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05);
         }
-        .modal-box { background: var(--card); padding: 25px; border-radius: 15px; width: 90%; max-width: 350px; text-align: center; border: 1px solid var(--brd); }
-
-        /* --- ЭКРАН ВХОДА --- */
-        #auth-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; padding: 20px; }
-        .auth-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-        .tab-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; padding: 5px 10px; }
-        .tab-btn.active { color: var(--blue); border-bottom: 2px solid var(--blue); font-weight: bold; }
-        .auth-card { background: var(--card); padding: 30px; border-radius: 15px; width: 100%; max-width: 400px; border: 1px solid var(--brd); }
-
-        /* --- ШАПКА --- */
-        header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: var(--bg); border-bottom: 1px solid var(--brd); position: sticky; top: 0; z-index: 100; }
-        .header-right { display: flex; align-items: center; gap: 12px; }
-        .bal-badge { background: var(--card); padding: 6px 12px; border-radius: 10px; border: 1px solid var(--brd); font-size: 13px; font-weight: bold; color: var(--accent); }
-
-        /* --- СЕТКА ТОВАРОВ --- */
-        .acc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-                .acc-card { background: var(--card); border-radius: 12px; padding: 12px; border: 1px solid var(--brd); cursor: pointer; }
-        .acc-top { display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 14px; margin-bottom: 4px; }
-        .acc-serv { font-size: 11px; color: var(--blue); display: flex; align-items: center; gap: 4px; margin-bottom: 15px; }
-        .acc-foot { display: flex; justify-content: space-between; align-items: center; padding-top: 8px; border-top: 1px solid var(--brd); }
-        .acc-price { font-weight: bold; font-size: 15px; }
-
-        /* --- КНОПКИ И ПОЛЯ --- */
-        .btn { background: var(--blue); color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
-        .inp { width: 100%; padding: 12px; background: var(--bg); border: 1px solid var(--brd); color: var(--text); border-radius: 8px; outline: none; margin-bottom: 10px; }
-
-        /* --- ПРОФИЛЬ --- */
-        .profile-section { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid var(--brd); margin-bottom: 20px; }
-        .edit-col { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
-        .coin-game { text-align: center; margin-top: 20px; }
-        .coin-btn { width: 80px; height: 80px; background: var(--accent); border-radius: 50%; margin: 10px auto; display: flex; align-items: center; justify-content: center; font-size: 30px; cursor: pointer; border: 4px solid rgba(255,255,255,0.2); }
-        .coin-btn:active { transform: scale(0.9); }
-
-        /* --- МЕНЮ --- */
-        #menu-overlay { display: none; position: fixed; top: 0; right: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; }
-        .menu-side { background: var(--card); width: 280px; height: 100%; float: right; padding: 20px; }
-        .m-item { padding: 15px; border-bottom: 1px solid var(--brd); cursor: pointer; font-size: 15px; }
-        .m-active { background: var(--blue); border-radius: 8px; font-weight: bold; }
-
-        .container { padding: 20px; max-width: 800px; margin: auto; }
-        .page { display: none; }
-        .active { display: block; }
+        .item-flag { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; margin-right: 10px; }
+        
+        input { background: #2d313e; border: 1px solid #3f4454; border-radius: 8px; padding: 10px; color: white; }
+        body.light input { background: #e4e6eb; border: 1px solid #ccd0d5; color: black; }
+        
+        .hidden { display: none; }
     </style>
 </head>
-<body>
+<body class=""> <!-- По умолчанию темная (без класса light) -->
 
-<!-- КАСТОМНАЯ МОДАЛКА -->
-<div id="modal-overlay" onclick="closeModal()">
-    <div class="modal-box" onclick="event.stopPropagation()">
-        <h3 id="m-title" style="margin-bottom: 10px; color: var(--accent);"></h3>
-        <p id="m-text" style="font-size: 14px; margin-bottom: 20px; color: var(--muted);"></p>
-        <button class="btn" onclick="closeModal()">Хорошо</button>
-    </div>
-</div>
-
-<!-- ЭКРАН ВХОДА И РЕГИСТРАЦИИ -->
-<div id="auth-screen">
-    <h1 style="color: var(--blue); margin-bottom: 5px;">SMS PRO</h1>
-    <p style="color: var(--muted); margin-bottom: 20px;">Вход в кабинет</p>
-    
-    <div class="auth-tabs">
-        <button id="tab-login" class="tab-btn active" onclick="switchTab('login')">Вход</button>
-        <button id="tab-reg" class="tab-btn" onclick="switchTab('reg')">Регистрация</button>
-    </div>
-
-    <div class="auth-card" id="login-form">
-        <input type="text" id="l-log" class="inp" placeholder="Логин">
-        <input type="password" id="l-pas" class="inp" placeholder="Пароль">
-        <button class="btn" onclick="doLogin()">Войти</button>
-    </div>
-
-    <div class="auth-card" id="reg-form" style="display:none;">
-        <input type="text" id="r-log" class="inp" placeholder="Придумайте логин">
-        <input type="email" id="r-mail" class="inp" placeholder="Ваш Email">
-        <input type="password" id="r-pas" class="inp" placeholder="Придумайте пароль">
-        <button class="btn" onclick="doRegister()">Создатьаккаунт</button>
-    </div>
-</div>
-
-<!-- ОСНОВНОЙ КОНТЕНТ -->
-<div id="main-app" style="display:none;">
-    <header>
-        <div style="font-weight: bold; color: var(--blue); cursor:pointer;" onclick="showPage('shop')">SMS PRO</div>
-        <div class="header-right">
-            <div class="bal-badge">👛 <span id="u-bal">0.00</span>₽</div>
-            <div id="u-name-top" style="font-size: 14px; opacity: 0.8;"></div>
-            <div style="cursor:pointer;" onclick="toggleTheme()">🌓</div>
-            <div style="cursor:pointer;" onclick="toggleMenu(true)">☰</div>
+    <!-- Header -->
+    <header class="p-4 flex justify-between items-center sticky top-0 z-50 bg-[#1a1c23] border-b border-gray-800">
+        <div class="flex items-center gap-2">
+            <div class="bg-blue-600 p-1 rounded text-xs font-bold">SMS PRO</div>
+            <button onclick="toggleTheme()" class="text-sm opacity-70"><i class="fas fa-moon"></i></button>
+        </div>
+        <div class="flex items-center gap-4">
+            <div id="userBalance" class="bg-[#242731] px-3 py-1 rounded-full border border-gray-700 text-sm hidden">
+                <i class="fas fa-wallet text-blue-400"></i> <span id="balValue">0</span> ₽
+            </div>
+                        <button onclick="openProfile()" id="navUser" class="text-sm font-medium">Войти</button>
+            <i class="fas fa-bars text-xl cursor-pointer" onclick="showModal('menuModal')"></i>
         </div>
     </header>
 
-    <div class="container">
-        <button class="btn" style="padding: 16px; font-size: 16px; margin-bottom: 25px;" onclick="showPage('shop')">Купить номер</button>
+    <main class="p-4 max-w-lg mx-auto">
+        <!-- Кнопка сверху -->
+        <button class="w-full btn-blue py-3 mb-6">Купить аккаунт</button>
 
-        <!-- МАГАЗИН -->
-        <div id="shop" class="page active">
-            <h2 style="margin-bottom:15px;">Выберите страну</h2>
-            <input type="text" class="inp" placeholder="🔍 Поиск по странам" oninput="search(this.value)">
-            <div class="acc-grid" id="acc-list">Загрузка товаров...</div>
+        <!-- Заголовок -->
+        <h1 class="text-2xl font-bold mb-2">Виртуальные номера и готовые аккаунты Telegram</h1>
+        <p class="text-sm opacity-60 mb-6">Удобная и безопасная оплата, быстрая выдача сразу после оплаты.</p>
+
+        <!-- Табы -->
+        <div class="flex gap-2 mb-6">
+            <button class="btn-blue px-4 py-2 text-sm">Номера Telegram</button>
+            <button class="bg-white text-black px-4 py-2 text-sm rounded-lg">Статьи</button>
         </div>
 
-        <!-- ПРОФИЛЬ -->
-        <div id="profile" class="page">
-            <h2>Мой профиль</h2>
-            <div class="profile-section">
-                <p style="font-size:14px; color:var(--muted)">Логин: <span id="p-log" style="color:var(--text)"></span></p>
-                <p style="font-size:14px; color:var(--muted)">Email: <span id="p-mail" style="color:var(--text)"></span></p>
-                <p style="font-size:14px; color:var(--muted)">ID: <span>7727345054</span></p>
-                <p style="font-size:14px; color:var(--muted)">Дата регистрации: <span id="p-date"></span></p>
+        <!-- Поиск -->
+        <div class="relative mb-4">
+            <i class="fas fa-search absolute left-3 top-3 opacity-40"></i>
+            <input type="text" placeholder="Поиск по странам" class="w-full pl-10" id="searchInput" oninput="renderProducts()">
+        </div>
+
+        <!-- Сетка товаров (Два столбца) -->
+        <div id="productContainer" class="grid grid-cols-2 gap-2">
+            <!-- Сюда рендерятся товары -->
+        </div>
+
+        <!-- Блок Доверия -->
+        <div class="mt-10 p-4 card">
+            <h3 class="font-bold mb-3 text-center">Почему нам доверяют?</h3>
+            <ul class="text-sm space-y-3 opacity-80">
+                <li><i class="fas fa-check-circle text-blue-500 mr-2"></i> Мгновенная выдача</li>
+                <li><i class="fas fa-shield-alt text-blue-500 mr-2"></i> Безопасные способы оплаты</li>
+                <li><i class="fas fa-sync text-blue-500 mr-2"></i> Замена при сбое</li>
+            </ul>
+            <p class="text-[10px] mt-4 opacity-40 italic">ВСТАВЬ ССЫЛКУ НА КАРТИНКУ</p>
+        </div>
+    </main>
+
+    <!-- Меню (Модалка) -->
+    <div id="menuModal" class="fixed inset-0 bg-black bg-opacity-90 hidden z-[100] p-6">
+        <div class="flex justify-between items-center mb-8">
+            <span class="font-bold text-xl">Меню</span>
+                        <span class="text-3xl" onclick="closeModal('menuModal')">&times;</span>
+        </div>
+        <div class="flex flex-col gap-4 text-lg">
+            <button onclick="showPage('shop')">Магазин</button>
+            <button onclick="openProfile()">Профиль</button>
+            <button onclick="showStaticModal('faq')">FAQ</button>
+            <button onclick="showStaticModal('about')">О нас</button>
+            <button onclick="showStaticModal('news')">Статьи</button>
+            <button onclick="showStaticModal('trust')">Почему мы?</button>
+            <button onclick="showStaticModal('tos')">Оферта</button>
+            <hr class="border-gray-800">
+            <div class="text-sm opacity-50">Поддержка: @nmproda</div>
+        </div>
+    </div>
+
+    <!-- Модалка Профиля -->
+    <div id="profileModal" class="fixed inset-0 bg-[#1a1c23] hidden z-[110] overflow-y-auto">
+        <div class="p-4">
+            <div class="flex justify-between items-center mb-6">
+                <button onclick="closeModal('profileModal')"><i class="fas fa-arrow-left"></i> Назад</button>
+                <span class="font-bold">Личный кабинет</span>
+            </div>
+
+            <div id="authSection">
+                <div class="card p-6">
+                    <h2 class="text-xl font-bold mb-4">Вход в аккаунт</h2>
+                    <input type="text" id="authLog" placeholder="Логин или Email" class="w-full mb-3">
+                    <input type="password" id="authPass" placeholder="Пароль" class="w-full mb-4">
+                    <button onclick="handleAuth()" class="w-full btn-blue py-3">Войти / Регистрация</button>
+                    <button onclick="alert('ВСТАВЬ ТЕКСТ ВОССТАНОВЛЕНИЯ')" class="w-full text-xs opacity-50 mt-4">Забыли пароль?</button>
+                </div>
+            </div>
+
+            <div id="userSection" class="hidden space-y-4">
+                <!-- Статистика как на скринах -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="card p-4">
+                        <div class="text-xs opacity-50">Всего покупок</div>
+                        <div class="text-xl font-bold text-blue-400" id="statOrders">0</div>
+                    </div>
+                    <div class="card p-4">
+                        <div class="text-xs opacity-50">Потрачено</div>
+                        <div class="text-xl font-bold text-red-500" id="statSpent">0 ₽</div>
+                    </div>
+                </div>
+
+                <div class="card p-4">
+                    <h3 class="font-bold mb-4 border-b border-gray-700 pb-2">Информация</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-xs opacity-50">Логин:</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="updLogin" class="flex-1 text-sm p-1">
+                                <button onclick="updateUserData('login')" class="text-blue-400 text-xs">Изм.</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-xs opacity-50">E-mail:</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="updEmail" class="flex-1 text-sm p-1">
+                                <button onclick="updateUserData('email')" class="text-blue-400 text-xs">Изм.</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-xs opacity-50">Новый пароль:</label>
+                            <div class="flex gap-2">
+                                <input type="password" id="updPass" class="flex-1 text-sm p-1">
+                                <button onclick="updateUserData('pass')" class="text-blue-400 text-xs">Изм.</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card p-4">
+                    <h3 class="font-bold mb-2">Ваучеры</h3>
+                    <div id="myVouchers" class="flex flex-wrap gap-2 mb-2"></div>
+                    <p class="text-[10px] opacity-40">Нажми на ваучер, чтобы скопировать. Он спишется при оплате.</p>
+                </div>
+
+                <div class="card p-4">
+                    <h3 class="font-bold mb-2">История покупок</h3>
+                    <div id="historyList" class="text-xs space-y-2"></div>
+                </div>
+
+                <div class="card p-4">
+                    <h3 class="font-bold mb-2 text-center">Мини-игра</h3>
+                    <div id="gameBox" class="h-24 bg-black rounded flex items-center justify-center cursor-pointer select-none" onclick="playGame()">
+                        КЛИКАЙ ТУТ (Счёт: <span id="gameScore">0</span>)
+                    </div>
+                </div>
+
+                <button onclick="logout()" class="w-full p-3 opacity-50 underline">Выйти</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка Оплаты (Стиль как на скриншоте 10) -->
+    <div id="payModal" class="fixed inset-0 flex items-center justify-center hidden z-[200] p-4">
+        <div class="absolute inset-0 bg-black bg-opacity-60" onclick="closeModal('payModal')"></div>
+        <div class="glass w-full max-w-xs p-6 rounded-[30px] text-center relative">
+            <h2 class="text-orange-500 font-black text-xl mb-6 uppercase tracking-widest">Оплата</h2>
+            
+            <div class="space-y-3 mb-6">
+                <div class="bg-gray-800 bg-opacity-50 p-3 rounded-xl cursor-pointer" onclick="copy('4100 1191 2197 6236')">
+                    <div class="text-[10px] opacity-50 uppercase">Юmoney</div>
+                    <div class="font-mono font-bold">4100 1191 2197 6236</div>
+                </div>
+                <div class="bg-gray-800 bg-opacity-50 p-3 rounded-xl cursor-pointer" onclick="copy('2200 7019 5529 9232')">
+                    <div class="text-[10px] opacity-50 uppercase">Карта T-Банк</div>
+                    <div class="font-mono font-bold">2200 7019 5529 9232</div>
+                </div>
+                <div class="bg-gray-800 bg-opacity-50 p-3 rounded-xl cursor-pointer" onclick="copy('+7 950 170 07 87')">
+                    <div class="text-[10px] opacity-50 uppercase">СБП T-Банк</div>
+                    <div class="font-mono font-bold">+7 950 170 07 87</div>
+                </div>
+            </div>
+
+            <button onclick="confirmPay()" class="w-full bg-gradient-to-r from-orange-500 to-red-600 text-white font-bold py-4 rounded-2xl shadow-lg mb-4">Я ОПЛАТИЛ(А)</button>
+            <button onclick="closeModal('payModal')" class="text-xs opacity-50 uppercase tracking-widest">Отмена</button>
+        </div>
+    </div>
+
+    <!-- Модалка Купли -->
+    <div id="buyStepModal" class="fixed inset-0 bg-black bg-opacity-80 hidden z-[150] flex items-center justify-center p-4">
+        <div class="card p-6 w-full max-w-sm">
+            <h2 id="buyTitle" class="text-xl font-bold mb-2"></h2>
+            <div id="buyDesc" class="text-sm opacity-60 mb-4"></div>
+            
+            <div class="flex items-center justify-between mb-4">
+                <span>Количество:</span>
+                <input type="number" id="buyQty" value="1" min="1" class="w-20 text-center">
+            </div>
+
+            <input type="text" id="buyVoucher" placeholder="Введите ваучер" class="w-full mb-4">
+            
+            <div class="text-2xl font-bold mb-6 text-center">Итого: <span id="buyTotal">0</span> ₽</div>
+            
+            <button onclick="goToPay()" class="w-full btn-blue py-3 mb-3">Перейти к оплате</button>
+            <button onclick="closeModal('buyStepModal')" class="w-full opacity-50">Назад</button>
+        </div>
+    </div>
+
+    <!-- Общая текстовая модалка -->
+    <div id="textModal" class="fixed inset-0 bg-black bg-opacity-90 hidden z-[250] p-6 overflow-y-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h2 id="textModalTitle" class="font-bold text-xl"></h2>
+            <span class="text-3xl" onclick="closeModal('textModal')">&times;</span>
+        </div>
+        <div id="textModalContent" class="text-sm leading-relaxed opacity-80"></div>
+    </div>
+
+    <script>
+        // --- ДАННЫЕ ---
+        let currentUser = JSON.parse(localStorage.getItem('curr_u')) || null;
+        let users = JSON.parse(localStorage.getItem('users_db')) || [];
+        let products = [];
+        let selectedProduct = null;
+
+        const STATIC_TEXTS = {
+            faq: { t: "FAQ", c: "ВСТАВЬ ТЕКСТ FAQ. Вопрос: Как получить товар? Ответ: Сразу после оплаты." },
+            about: { t: "О нас", c: "ВСТАВЬ ТЕКСТ О НАС. Мы лучший магазин аккаунтов. Почему мы? Потому что быстро. <br><br> <img src='ВСТАВЬ ССЫЛКУ НА КАРТИНКУ' class='w-full rounded'>" },
+            news: { t: "Новости", c: "ВСТАВЬ ТЕКСТ НОВОСТЕЙ. Телеграм обновился! Наши аккаунты живут дольше." },
+            trust: { t: "Доверие", c: "ВСТАВЬ ТЕКСТ ПОЧЕМУ ДОВЕРЯТЬ. Более 1000 успешных сделок." },
+            tos: { t: "Оферта", c: "ВСТАВЬ ТЕКСТ ОФЕРТЫ. Совершая покупку, вы соглашаетесь с правилами..." }
+        };
+
+        // --- ИНИЦИАЛИЗАЦИЯ ---
+        window.onload = () => {
+            fetchProducts();
+            updateGlobalUI();
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('light');
+        }
+
+        async function fetchProducts() {
+            // Имитация загрузки из CSV (A:Категория, B:Название, C:Цена, D:Описание, E:Фото, F:Кол-во, G:Флаг)
+            // Реальную ссылку CSV вставлять в fetch("ССЫЛКА")
+            products = [
+                { cat: 'Telegram', name: 'США', price: 55, desc: 'Отлежка 7 дней, формат TDATA', img: '🇺🇸', qty: 171 },
+                { cat: 'Telegram', name: 'Бангладеш', price: 58, desc: 'Авторег, микс', img: '🇧🇩', qty: 73 },
+                { cat: 'Telegram', name: 'Индонезия', price: 62, desc: 'Чистые IP', img: '🇮🇩', qty: 56 },
+                { cat: 'Telegram', name: 'Бразилия', price: 148, desc: 'Премиум аккаунты', img: '🇧🇷', qty: 37 },
+                { cat: 'Telegram', name: 'Казахстан', price: 200, desc: 'Для спама/инвайта', img: '🇰🇿', qty: 20 }
+            ];
+            renderProducts();
+        }
+
+        function renderProducts() {
+            const container = document.getElementById('productContainer');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            
+            container.innerHTML = products
+                .filter(p => p.name.toLowerCase().includes(search))
+                .map((p, i) => `
+                <div class="card p-3 cursor-pointer hover:border-blue-500 transition" onclick="openBuy(${i})">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-xl">${p.img}</span>
+                        <div class="text-[11px] font-bold truncate">${p.name}</div>
+                    </div>
+                    <div class="flex items-center gap-1 text-[10px] opacity-50 mb-3">
+                        <i class="fab fa-telegram text-blue-400"></i> Telegram
+                    </div>
+                    <div class="flex justify-between items-end">
+                        <div class="text-[10px] opacity-40">${p.qty} шт</div>
+                        <div class="text-sm font-bold text-blue-400">${p.price}.00₽</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // --- ЛОГИКА ПОКУПКИ ---
+        function openBuy(idx) {
+            selectedProduct = products[idx];
+            document.getElementById('buyTitle').innerText = selectedProduct.name;
+            document.getElementById('buyDesc').innerText = selectedProduct.desc;
+            document.getElementById('buyQty').value = 1;
+            document.getElementById('buyVoucher').value = '';
+            calcTotal();
+            showModal('buyStepModal');
+        }
+
+        document.getElementById('buyQty').oninput = calcTotal;
+        document.getElementById('buyVoucher').oninput = calcTotal;
+
+        function calcTotal() {
+            const qty = document.getElementById('buyQty').value;
+            let total = selectedProduct.price * qty;
+            
+            // Логика ваучера: если ввел "GIFT50", скидка 50р
+            if (document.getElementById('buyVoucher').value === "GIFT50") total -= 50;
+            
+            document.getElementById('buyTotal').innerText = total > 0 ? total : 0;
+        }
+
+        function goToPay() {
+            closeModal('buyStepModal');
+            showModal('payModal');
+        }
+
+        function confirmPay() {
+            closeModal('payModal');
+            // После оплаты - выдача
+            alert("ОПЛАТА ПРОВЕРЯЕТСЯ. ВСТАВЬ ТЕКСТ ПОСЛЕ ОПЛАТЫ. \n\nДанные: account_data:pass_123");
+            
+            if(currentUser) {
+                currentUser.orders = currentUser.orders || [];
+                currentUser.orders.push({
+                    date: new Date().toLocaleDateString(),
+                    item: selectedProduct.name,
+                    price: document.getElementById('buyTotal').innerText
+                });
+                currentUser.spent = (currentUser.spent || 0) + Number(document.getElementById('buyTotal').innerText);
+                saveUser();
+            }
+        }
+
+        // --- ПРОФИЛЬ ---
+        function openProfile() {
+            showModal('profileModal');
+            if (currentUser) {
+                document.getElementById('authSection').classList.add('hidden');
+                document.getElementById('userSection').classList.remove('hidden');
+                document.getElementById('updLogin').value = currentUser.login;
+                document.getElementById('updEmail').value = currentUser.email;
+                document.getElementById('statOrders').innerText = currentUser.orders ? currentUser.orders.length : 0;
+                document.getElementById('statSpent').innerText = (currentUser.spent || 0) + " ₽";
                 
-                <div class="edit-col">
-                    <input type="text" id="e-log" class="inp" placeholder="Изменить логин">
-                    <input type="text" id="e-mail" class="inp" placeholder="Изменить почту">
-                    <input type="password" id="e-pas" class="inp" placeholder="Изменить пароль">
-                    <button class="btn" style="background:var(--brd)" onclick="updateProfile()">Сохранить изменения</button>
-                </div>
-            </div>
+                // Ваучеры
+                const vList = document.getElementById('myVouchers');
+                vList.innerHTML = (currentUser.vouchers || ["GIFT50", "WELCOME10"]).map(v => `
+                    <span onclick="copy('${v}')" class="bg-blue-600 px-2 py-1 rounded text-[10px] font-bold cursor-pointer">${v}</span>
+                `).join('');
 
-            <div class="profile-section coin-game">
-                <p>Мини-игра: Кликай на монету!</p>
-                <div class="coin-btn" onclick="clickCoin()">💰</div>
-                <p>Счет: <span id="u-score">0</span></p>
-            </div>
-
-            <button class="btn" style="background:#444;" onclick="location.reload()">Выйти</button>
-        </div>
-
-        <!-- ВАУЧЕРЫ -->
-        <div id="vouchers" class="page">
-            <h2>Ваучеры</h2>
-            <p style="font-size: 12px; color:var(--muted); margin-bottom:10px;">Нажми на код, чтобы скопировать:</p>
-            <div class="profile-section" style="cursor:pointer; border:1px dashed var(--accent);" onclick="copyV('NMPRODA')">
-                🎁 Код: <b>NMPRODA</b> (на 500₽)
-            </div>
-            <div class="profile-section">
-                <input type="text" id="v-inp" class="inp" placeholder="Вставьте код здесь">
-                <button class="btn" onclick="useVoucher()">Активировать</button>
-            </div>
-        </div>
-
-        <!-- FAQ / ПРАВИЛА -->
-        <div id="faq" class="page">
-            <h2>FAQ</h2>
-            <div class="profile-section">Здесь будут ответы на вопросы...</div>
-        </div>
-        <div id="rules" class="page">
-            <h2>Правила</h2>
-            <div class="profile-section">1. Не спамить. 2. Гарантия 24ч...</div>
-        </div>
-    </div>
-</div>
-
-<!-- МЕНЮ -->
-<div id="menu-overlay" onclick="toggleMenu(false)">
-    <div class="menu-side" onclick="event.stopPropagation()">
-        <h3 style="margin-bottom:20px;">Меню</h3>
-        <div class="m-item m-active" onclick="showPage('shop', this)">Готовые номера</div>
-        <div class="m-item" onclick="showPage('profile', this)">Профиль</div>
-        <div class="m-item" onclick="showPage('vouchers', this)">Ваучеры</div>
-        <div class="m-item" onclick="showPage('faq', this)">FAQ</div>
-        <div class="m-item" onclick="showPage('rules', this)">Правила</div>
-    </div>
-</div>
-
-<script>
-    const CSV_URL = 'https://docs.google.com/spreadsheets/d/1bxpXTKxDHUwk5VX79PeXbjxrJxAkzaZag6opznV_Kq8/export?format=csv';
-    let user = null;
-    let accs = [];
-
-    // --- МОДАЛКА ---
-    function myMsg(title, text) {
-        document.getElementById('m-title').innerText = title;
-        document.getElementById('m-text').innerText = text;
-        document.getElementById('modal-overlay').style.display = 'flex';
-    }
-    function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
-
-    // --- AUTH ---
-    function switchTab(type) {
-        document.getElementById('login-form').style.display = type === 'login' ? 'block' : 'none';
-        document.getElementById('reg-form').style.display = type === 'reg' ? 'block' : 'none';
-        document.getElementById('tab-login').classList.toggle('active', type === 'login');
-        document.getElementById('tab-reg').classList.toggle('active', type === 'reg');
-    }
-
-    function doRegister() {
-        const log = document.getElementById('r-log').value;
-        const mail = document.getElementById('r-mail').value;
-        const pas = document.getElementById('r-pas').value;
-        if(!log || !pas) return myMsg("Ошибка", "Заполните поля!");
-
-        if(localStorage.getItem('user_' + log)) return myMsg("Ошибка", "Логин занят!");
-
-        const newUser = { log, mail, pas, bal: 0, score: 0, date: new Date().toLocaleDateString() };
-        localStorage.setItem('user_' + log, JSON.stringify(newUser));
-        myMsg("Успех", "Аккаунт создан! Теперь войдите.");
-        switchTab('login');
-    }
-
-    function doLogin() {
-        const log = document.getElementById('l-log').value;
-        const pas = document.getElementById('l-pas').value;
-        const saved = JSON.parse(localStorage.getItem('user_' + log));
-
-        if(saved && saved.pas === pas) {
-            user = saved;
-            start();
-        } else {
-            myMsg("Ошибка", "Неверный логин или пароль!");
+                // История
+                const hList = document.getElementById('historyList');
+                hList.innerHTML = currentUser.orders ? currentUser.orders.map(o => `
+                    <div class="flex justify-between border-b border-gray-800 py-1">
+                        <span>${o.date} - ${o.item}</span>
+                        <span class="text-blue-400">${o.price}₽</span>
+                    </div>
+                `).join('') : "Покупок нет";
+            }
         }
-    }
 
-    function start() {
-        document.getElementById('auth-screen').style.display = 'none';
-        document.getElementById('main-app').style.display = 'block';
-        updateUI();
-        loadAccs();
-    }
+        function handleAuth() {
+            const login = document.getElementById('authLog').value;
+            const pass = document.getElementById('authPass').value;
+            if(!login || !pass) return alert("Заполни поля");
 
-    function updateUI() {
-        document.getElementById('u-bal').innerText = user.bal.toFixed(2);
-        document.getElementById('u-name-top').innerText = user.log;
-        document.getElementById('p-log').innerText = user.log;
-        document.getElementById('p-mail').innerText = user.mail;
-        document.getElementById('p-date').innerText = user.date;
-        document.getElementById('u-score').innerText = user.score;
-    }
-
-    // --- МАГАЗИН ---
-    async function loadAccs() {
-        try {
-            const res = await fetch(CSV_URL);
-            const text = await res.text();
-            const rows = text.split('\n').slice(1);
-            accs = rows.map(r => {
-                const c = r.split(',');
-                return { name: c[1], price: c[2], stock: c[5], flag: c[6] };
-            }).filter(a => a.name);
-            render(accs);
-        } catch { document.getElementById('acc-list').innerText = "Ошибка CSV"; }
-    }
-
-    function render(list) {
-        document.getElementById('acc-list').innerHTML = list.map(a => `
-            <div class="acc-card" onclick="buy('${a.name}', ${a.price})">
-                <div class="acc-top"><span>${a.flag || '🚩'}</span> ${a.name}</div>
-                <div class="acc-serv">🔵 Telegram</div>
-                <div class="acc-foot">
-                    <span style="font-size:11px; opacity:0.6;">${a.stock} шт</span>
-                    <span class="acc-price">${a.price}₽</span>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    function buy(name, price) {
-        if(user.bal >= price) {
-            user.bal -= price;
-            save(); updateUI();
-            myMsg("Успех!", "Куплено: " + name + ". Товар в истории.");
-        } else {
-            myMsg("Баланс", "Недостаточно средств!");
+            let user = users.find(u => u.login === login || u.email === login);
+            if (user) {
+                if(user.pass === pass) {
+                    currentUser = user;
+                } else {
+                    return alert("Неверный пароль");
+                }
+            } else {
+                // Регистрация
+                currentUser = { login, email: login + "@shop.ru", pass, date: new Date().toLocaleDateString(), spent: 0, orders: [], vouchers: ["GIFT50"] };
+                users.push(currentUser);
+            }
+            saveUser();
+            updateGlobalUI();
+            openProfile();
         }
-    }
 
-    // --- ПРОФИЛЬ ---
-    function updateProfile() {
-        const nl = document.getElementById('e-log').value;
-        const nm = document.getElementById('e-mail').value;
-        const np = document.getElementById('e-pas').value;
-        if(nl) user.log = nl; if(nm) user.mail = nm; if(np) user.pas = np;
-        save(); updateUI();
-        myMsg("Профиль", "Данные сохранены!");
-    }
-
-    function clickCoin() {
-        user.score++;
-        updateUI();
-        save();
-    }
-
-    // --- ВАУЧЕРЫ ---
-    function copyV(c) {
-        navigator.clipboard.writeText(c);
-        myMsg("Скопировано", "Вставьте код в поле активации.");
-    }
-    function useVoucher() {
-        const v = document.getElementById('v-inp').value;
-        if(v === "NMPRODA") {
-            user.bal += 500;
-            save(); updateUI();
-            myMsg("Успех", "Начислено 500₽!");
-        } else { myMsg("Ошибка", "Код неверный."); }
-    }
-
-    // --- СЕРВИС ---
-    function save() { localStorage.setItem('user_' + user.log, JSON.stringify(user)); }
-    function toggleTheme() {
-        const t = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-        document.body.setAttribute('data-theme', t);
-    }
-    function toggleMenu(s) { document.getElementById('menu-overlay').style.display = s ? 'block' : 'none'; }
-    function showPage(id, el) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        if(el) {
-            document.querySelectorAll('.m-item').forEach(i => i.classList.remove('m-active'));
-            el.classList.add('m-active');
+        function updateUserData(type) {
+            if (type === 'login') currentUser.login = document.getElementById('updLogin').value;
+            if (type === 'email') currentUser.email = document.getElementById('updEmail').value;
+            if (type === 'pass') currentUser.pass = document.getElementById('updPass').value;
+            saveUser();
+            alert("Данные изменены");
         }
-        toggleMenu(false);
-    }
-    function search(v) { render(accs.filter(a => a.name.toLowerCase().includes(v.toLowerCase()))); }
-</script>
+
+        function saveUser() {
+            localStorage.setItem('curr_u', JSON.stringify(currentUser));
+            const idx = users.findIndex(u => u.login === currentUser.login);
+            if(idx !== -1) users[idx] = currentUser;
+            localStorage.setItem('users_db', JSON.stringify(users));
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('curr_u');
+            location.reload();
+        }
+
+        // --- УТИЛИТЫ ---
+        function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+        
+        function showStaticModal(key) {
+            document.getElementById('textModalTitle').innerText = STATIC_TEXTS[key].t;
+            document.getElementById('textModalContent').innerHTML = STATIC_TEXTS[key].c;
+            showModal('textModal');
+        }
+
+        function copy(text) {
+            navigator.clipboard.writeText(text);
+            alert("Скопировано: " + text);
+        }
+
+        function updateGlobalUI() {
+            if(currentUser) {
+                document.getElementById('navUser').innerText = currentUser.login;
+            }
+        }
+
+        let score = 0;
+        function playGame() {
+            score++;
+            document.getElementById('gameScore').innerText = score;
+            const box = document.getElementById('gameBox');
+            box.style.backgroundColor = score % 2 === 0 ? '#1e222c' : '#009dff';
+        }
+    </script>
 </body>
 </html>

@@ -3,305 +3,605 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NMPRODA STORE - Premium</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Account Store Mini App</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
-        :root { --bg: #0b0e11; --card: #151a21; --accent: #d4af37; --text: #ffffff; --border: #232a35; --btn-blue: #009dff; }
-        body.light { --bg: #ffffff; --card: #f1f5f9; --accent: #009dff; --text: #0f172a; --border: #e2e8f0; }
-        body { background-color: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; transition: 0.3s; margin: 0; overflow-x: hidden; }
-        .card { background-color: var(--card); border: 1px solid var(--border); border-radius: 20px; }
-        .btn-blue { background-color: #009dff; color: white; border-radius: 12px; font-weight: 700; transition: 0.2s; }
-        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; }
-        #toast { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; padding: 12px 30px; border-radius: 50px; font-weight: 900; z-index: 1000; transition: 0.5s; box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
-        #toast.show { top: 20px; }
-        input { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; color: var(--text); width: 100%; outline: none; }
-        .faq-item.active .faq-answer { max-height: 200px; opacity: 1; padding-bottom: 15px; }
-        .faq-answer { max-height: 0; overflow: hidden; transition: 0.3s; opacity: 0; }
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --accent-color: #0088cc; /* Голубой */
+            --card-bg: #f4f4f4;
+            --btn-text: #ffffff;
+            --gold: #FFD700;
+        }
+
+        body.dark-theme {
+            --bg-color: #000000;
+            --text-color: #ffffff;
+            --accent-color: #FFD700; /* Золотой */
+            --card-bg: #1a1a1a;
+            --btn-text: #000000;
+        }
+
+        * { box-sizing: border-box; transition: 0.3s; }
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .container { padding: 15px; padding-bottom: 80px; }
+        
+        /* Стили заголовков и навигации */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            border-bottom: 1px solid var(--accent-color);
+        }
+
+        .nav-menu {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: var(--card-bg);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            border-top: 2px solid var(--accent-color);
+            z-index: 1000;
+        }
+
+        .nav-item {
+            text-align: center;
+            font-size: 10px;
+            cursor: pointer;
+            color: var(--text-color);
+            text-decoration: none;
+        }
+
+        /* Карточки товаров */
+        .products-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .product-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 10px;
+            border: 1px solid var(--accent-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .product-card img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .product-price {
+            font-weight: bold;
+                        color: var(--accent-color);
+            font-size: 18px;
+            margin: 5px 0;
+        }
+
+        .btn {
+            background: var(--accent-color);
+            color: var(--btn-text);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+        }
+
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 5px 0;
+        }
+
+        input[type="number"], input[type="text"], input[type="password"], input[type="email"] {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border: 1px solid var(--accent-color);
+            background: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        /* Окна/Страницы */
+        .page { display: none; }
+        .page.active { display: block; }
+
+        /* Профиль */
+        .profile-list {
+            list-style: none;
+            padding: 0;
+        }
+        .profile-list li {
+            padding: 10px;
+            border-bottom: 1px solid #444;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Мини-игра */
+        #gameCanvas {
+            background: #222;
+            display: block;
+            margin: 0 auto;
+            border: 2px solid var(--accent-color);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        /* Модальные окна */
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid var(--accent-color);
+            z-index: 2000;
+            width: 90%;
+            display: none;
+        }
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1500;
+            display: none;
+        }
+
+        .history-item {
+            font-size: 12px;
+            border-bottom: 1px solid var(--accent-color);
+            padding: 5px 0;
+        }
     </style>
 </head>
-<body>
+<body class="dark-theme"> <!-- По умолчанию темная тема -->
 
-    <div id="toast">СКОПИРОВАНО</div>
+<header>
+    <div id="theme-toggle" onclick="toggleTheme()" style="cursor: pointer;">🌓 Тема</div>
+    <div style="font-weight: bold; color: var(--accent-color);">ACC STORE</div>
+    <div id="user-balance">Баланс: 0 ₽</div>
+</header>
 
-    <!-- Шапка -->
-    <header class="p-4 flex justify-between items-center sticky top-0 z-50 bg-opacity-90 backdrop-blur-md" style="background-color: var(--bg);">
-        <div class="flex items-center gap-2">
-            <div class="bg-blue-600 px-2 py-1 rounded text-[10px] font-black uppercase">SMS PREMIUM</div>
-            <button onclick="toggleTheme()" class="text-xl ml-2"><i class="fas fa-adjust"></i></button>
-        </div>
-        <div class="flex items-center gap-3">
-                      <div class="glass px-3 py-1.5 rounded-full flex items-center gap-2 border border-gray-700">
-                <i class="fas fa-wallet text-blue-400"></i>
-                <span id="headerBal" class="font-bold text-sm">0</span> ₽
-            </div>
-            <button onclick="openProfile()" id="navUser" class="text-sm font-bold underline">Войти</button>
-            <i class="fas fa-bars text-xl cursor-pointer" onclick="showModal('menuModal')"></i>
-        </div>
-    </header>
+<div class="container">
+    
+    <!-- СТРАНИЦА АВТОРИЗАЦИИ -->
+    <div id="page-auth" class="page active">
+        <h2>Вход в аккаунт</h2>
+        <input type="text" id="auth-login" placeholder="Логин">
+        <input type="email" id="auth-email" placeholder="Email">
+        <input type="password" id="auth-pass" placeholder="Пароль">
+        <button class="btn" onclick="login()">Войти / Зарегистрироваться</button>
+        <p onclick="alert('Письмо для восстановления отправлено на вашу почту!')" style="font-size: 12px; cursor: pointer;">Забыли пароль?</p>
+    </div>
 
-    <main class="p-4 max-w-lg mx-auto">
-        <button class="w-full btn-blue py-4 mb-8 shadow-lg uppercase tracking-widest" onclick="window.scrollTo(0, 500)">Купить номер</button>
-        <h1 class="text-2xl font-black mb-2">Готовые аккаунты Telegram</h1>
-        <p class="text-sm opacity-50 mb-8">Быстрая выдача сразу после оплаты.</p>
-
-        <div class="flex gap-2 mb-8">
-            <button class="btn-blue px-6 py-2.5 text-xs uppercase" onclick="location.reload()">Аккаунты</button>
-            <button class="card px-6 py-2.5 text-xs uppercase font-bold" onclick="showStaticModal('news')">Статьи</button>
-        </div>
-
-        <input type="text" id="searchInput" placeholder="Поиск страны..." class="mb-6" oninput="renderProducts()">
-
-        <!-- Сетка товаров -->
-        <div id="productGrid" class="grid grid-cols-2 gap-3 mb-12"></div>
-
-        <!-- FAQ -->
-        <div class="mb-12">
-            <h2 class="text-xl font-black mb-6">FAQ</h2>
-            <div id="faqList" class="card p-2 space-y-1"></div>
-        </div>
-    </main>
-
-    <!-- МОДАЛКИ (Профиль, Оплата, Успех) -->
-    <div id="profileModal" class="fixed inset-0 hidden z-[100] overflow-y-auto" style="background-color: var(--bg);">
-        <div class="p-6 max-w-lg mx-auto">
-            <div class="flex justify-between items-center mb-8">
-                <button onclick="closeModal('profileModal')">Назад</button>
-                <span class="font-black uppercase text-sm">Профиль</span>
-            </div>
-            <div id="authBox" class="card p-8">
-                <input type="text" id="authEmail" placeholder="Логин" class="mb-3">
-                <input type="password" id="authPass" placeholder="Пароль" class="mb-6">
-                                <button onclick="handleAuth()" class="w-full btn-blue py-4">Войти</button>
-            </div>
-            <div id="userBox" class="hidden space-y-6">
-                <div class="card p-6">
-                    <div class="text-3xl font-black mb-4"><span id="userBal">0</span> ₽</div>
-                    <button onclick="showModal('topupModal')" class="w-full btn-blue py-3">Пополнить</button>
-                </div>
-                <div class="card p-6 space-y-4">
-                    <h3 class="font-bold">Данные</h3>
-                    <div class="flex gap-2"><input id="updLogin" class="h-10 text-sm"><button onclick="updateData('login')" class="text-blue-500 text-xs">Изм.</button></div>
-                    <div class="flex gap-2"><input id="updEmail" class="h-10 text-sm"><button onclick="updateData('email')" class="text-blue-500 text-xs">Изм.</button></div>
-                </div>
-                <div class="card p-6 text-center">
-                    <canvas id="gameCanvas" width="300" height="200" class="bg-black rounded-xl mx-auto"></canvas>
-                    <div class="flex justify-between mt-4">
-                        <button class="bg-gray-700 px-6 py-2 rounded-xl" onmousedown="moveBasket(-15)" onmouseup="stopBasket()">◀</button>
-                        <span id="gameScore" class="font-bold">0</span>
-                        <button class="bg-gray-700 px-6 py-2 rounded-xl" onmousedown="moveBasket(15)"onmouseup="stopBasket()">▶</button>
-                    </div>
-                </div>
-                <button onclick="logout()" class="w-full opacity-30 text-xs py-4 underline">Выйти</button>
-            </div>
+    <!-- СТРАНИЦА МАГАЗИНА -->
+    <div id="page-shop" class="page">
+        <h2>Каталог товаров</h2>
+        <div class="products-grid" id="products-list">
+            <!-- Сюда попадут товары из Google Таблицы -->
+            Загрузка товаров...
         </div>
     </div>
 
-    <!-- ОКНО ОПЛАТЫ -->
-    <div id="topupModal" class="fixed inset-0 flex items-center justify-center hidden z-[200] p-4">
-        <div class="absolute inset-0 bg-black/80" onclick="closeModal('topupModal')"></div>
-        <div class="glass w-full max-w-xs p-8 text-center relative">
-            <h2 class="text-orange-500 font-black text-2xl mb-8 uppercase italic">Оплата</h2>
-            <div class="space-y-3 mb-8">
-                <a href="https://t.me/CryptoBot?start=topup" target="_blank" class="block bg-black/40 p-4 rounded-2xl border border-white/5 text-left">
-                    <div class="text-[9px] opacity-40 uppercase">Крипто-бот</div>
-                    <div class="font-bold">Открыть</div>
-                </a>
-                <div class="bg-black/40 p-4 rounded-2xl border border-white/5 cursor-pointer text-left" onclick="copyText('2200 1111 2222 3333')">
-                    <div class="text-[9px] opacity-40 uppercase">Карта (Т-Банк)</div>
-                    <div class="font-bold text-sm">2200 5529 7019 9232</div>
-                </div>
-            </div>
-            <button onclick="notifyAdmin('topup')" class="w-full bg-gradient-to-r from-orange-500 to-red-600 text-white font-black py-4 rounded-2xl mb-4">Я ОПЛАТИЛ(А)</button>
-            <button onclick="closeModal('topupModal')" class="text-xs opacity-40 uppercase">Отмена</button>
+    <!-- СТРАНИЦА ПРОФИЛЯ -->
+    <div id="page-profile" class="page">
+        <h2>Мой профиль</h2>
+        <div id="user-info"></div>
+        <hr>
+        <button class="btn" onclick="showModal('topup-modal')">Пополнить баланс</button>
+        <div style="margin-top: 15px;">
+            <h3>Ваучеры</h3>
+            <input type="text" id="voucher-input" placeholder="Введите код ваучера">
+            <button class="btn" style="background: var(--gold); color: black;" onclick="useVoucher()">Активировать</button>
+        </div>
+        <hr>
+        <h3>Настройки</h3>
+        <input type="text" id="new-login" placeholder="Новый логин">
+        <button class="btn" onclick="updateUser('login')">Сменить логин</button>
+        <input type="password" id="new-pass" placeholder="Новый пароль">
+        <button class="btn" onclick="updateUser('pass')">Сменить пароль</button>
+        <input type="email" id="new-email" placeholder="Новый email">
+        <button class="btn" onclick="updateUser('email')">Сменить почту</button>
+        <hr>
+        <h3>История покупок</h3>
+        <div id="purchase-history"></div>
+    </div>
+
+    <!-- СТРАНИЦА ИГРЫ -->
+    <div id="page-game" class="page">
+        <h2>Ferrari Drive</h2>
+        <p>Набирай очки, объезжай препятствия!</p>
+        <canvas id="gameCanvas" width="300" height="400"></canvas>
+        <div style="text-align: center; margin-top: 10px;">
+            <button class="btn" onclick="startGame()">Начать игру</button>
         </div>
     </div>
 
-    <!-- МОДАЛКА ВЫБОРА КОЛ-ВА -->
-    <div id="buyModal" class="fixed inset-0 flex items-center justify-center hidden z-[150] p-4">
-        <div class="card p-6 w-full max-w-xs text-center">
-            <h2 id="buyTitle" class="text-xl font-bold mb-6"></h2>
-            <input type="number" id="buyQty" value="1" min="1" class="mb-4 text-center">
-            <div class="text-2xl font-black mb-6">Итого: <span id="buyTotal">0</span> ₽</div>
-            <button onclick="processPurchase()" class="w-full btn-blue py-3 mb-2">Оплатить</button>
-            <button onclick="closeModal('buyModal')" class="opacity-30 text-xs uppercase">Отмена</button>
+    <!-- ИНФО СТРАНИЦЫ -->
+    <div id="page-articles" class="page">
+        <h2>Статьи и Новости</h2>
+        <div class="product-card">
+            <img src="https://i.ibb.co/SwV17vtx/IMG-20260502-081255-383.jpg" alt="news">
+            <p>Тут будут новости о Telegram и наших аккаунтах...</p>
         </div>
     </div>
 
-    <!-- УСПЕХ -->
-    <div id="successModal" class="fixed inset-0 flex items-center justify-center hidden z-[250] p-4">
-        <div class="card p-8 w-full max-w-sm text-center">
-            <div class="text-6xl text-green-500 mb-4 font-bold">✓</div>
-            <h2 class="text-2xl font-black mb-4">Заказ принят!</h2>
-            <button onclick="notifyAdmin('order')" class="w-full btn-blue py-4 uppercase">Жми на меня</button>
-        </div>
+    <div id="page-about" class="page">
+        <h2>О нас</h2>
+        <p>Мы лучший магазин аккаунтов. Почему выбирают нас?</p>
+        <ul>
+            <li>Быстрая выдача</li>
+            <li>Низкие цены</li>
+            <li>Гарантия качества</li>
+        </ul>
     </div>
 
-    <!-- МЕНЮ -->
-    <div id="menuModal" class="fixed inset-0 bg-black/95 hidden z-[200] p-8">
-        <div class="flex justify-between items-center mb-12">
-            <span class="font-black text-xl">МЕНЮ</span>
-            <i class="fas fa-times text-2xl cursor-pointer" onclick="closeModal('menuModal')"></i>
-        </div>
-        <div class="flex flex-col gap-6 text-xl font-bold uppercase">
-            <button onclick="location.reload()" class="text-left">Магазин</button>
-            <button onclick="openProfile()" class="text-left">Личный кабинет</button>
-            <button onclick="showStaticModal('news')" class="text-left">Новости</button>
-        </div>
+    <div id="page-faq" class="page">
+        <h2>FAQ</h2>
+        <p><b>Как купить?</b> - Выберите товар, нажмите купить.</p>
+        <p><b>Где техподдержка?</b> - Пишите на email: help@example.com</p>
     </div>
 
-    <!-- ТЕКСТОВАЯ МОДАЛКА -->
-    <div id="textModal" class="fixed inset-0 bg-black/98 hidden z-[300] p-6 overflow-y-auto">
-        <div class="flex justify-between items-center mb-8">
-          <h2 id="textTitle" class="font-black text-xl"></h2>
-            <i class="fas fa-times text-2xl cursor-pointer" onclick="closeModal('textModal')"></i>
-        </div>
-        <div id="textContent" class="text-sm opacity-60 leading-relaxed"></div>
+    <div id="page-trust" class="page">
+        <h2>Почему нам доверяют</h2>
+        <p>У нас более 1000 довольных клиентов и отзывы в канале.</p>
     </div>
 
-    <script>
-        // ==========================================
-        // 1. ВСТАВЬ СВОИ ДАННЫЕ ТУТ
-        // ==========================================
-        const CSV_URL = "https://docs.google.com/spreadsheets/d/1bxpXTKxDHUwk5VX79PeXbjxrJxAkzaZag6opznV_Kq8/export?format=csv"; 
-        const BOT_TOKEN = "8780961369:AAHsQp2Fi4N1swxLkpE2Jxn74fvv4qitJLM";
-        const ADMIN_ID = "7727345054";
-        // ==========================================
+    <div id="page-offer" class="page">
+        <h2>Публичная оферта</h2>
+        <p>Текст оферты... При покупке вы соглашаетесь с правилами.</p>
+    </div>
 
-        let currentUser = JSON.parse(localStorage.getItem('u_db')) || null;
-        let products = [];
-        let selected = null;
+</div>
 
-        window.onload = () => {
-            loadCSV();
-            renderFAQ();
-            updateUI();
-            initGame();
-        };
+<!-- Навигация -->
+<nav class="nav-menu">
+    <div class="nav-item" onclick="showPage('shop')">🛒<br>Магазин</div>
+    <div class="nav-item" onclick="showPage('game')">🏎️<br>Игра</div>
+    <div class="nav-item" onclick="showPage('articles')">📰<br>Новости</div>
+    <div class="nav-item" onclick="showPage('profile')">👤<br>Профиль</div>
+    <div class="nav-item" onclick="showPage('about')">ℹ️<br>Инфо</div>
+</nav>
 
-        async function loadCSV() {
-            try {
-                const res = await fetch(CSV_URL);
-                const data = await res.text();
-                const rows = data.split('\n').slice(1);
-                products = rows.map(r => {
-                    const c = r.split(',');
-                    return { cat: c[0], name: c[1], price: parseInt(c[2]), qty: c[5], flag: c[6] || '🌐' };
-                }).filter(p => p.name);
-                renderProducts();
-            } catch(e) { console.error("Ошибка CSV"); }
+<!-- Модальное окно оплаты -->
+<div class="overlay" id="overlay" onclick="closeModal()"></div>
+<div class="modal" id="payment-modal">
+    <h3>Оплата товара</h3>
+    <p id="payment-details"></p>
+    <p>Реквизиты: <b id="rekvizity">2200 5529 7019 9232</b> <button onclick="copyRek()">📋</button></p>
+    <button class="btn" onclick="confirmPurchase()">Жми на меня</button>
+</div>
+
+<!-- Модальное окно пополнения -->
+<div class="modal" id="topup-modal">
+    <h3>Пополнение баланса</h3>
+    <p>Выберите способ:</p>
+    <button class="btn" onclick="window.open('https://crypto-bot.com/pay/link')">Crypto Bot</button>
+    <button class="btn" style="margin-top:10px" onclick="window.open('https://pay.card-link.ru')">Банковская карта</button>
+    <button class="btn" style="margin-top:10px; background: grey;" onclick="closeModal()">Отмена</button>
+</div>
+
+<script>
+    // --- КОНФИГУРАЦИЯ ---
+    const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1bxpXTKxDHUwk5VX79PeXbjxrJxAkzaZag6opznV_Kq8/export?format=csv';
+    const ADMIN_USER = 'nmproda';
+    const ADMIN_ID = '7727345054';
+    const BOT_TOKEN = '8780961369:AAHsQp2Fi4N1swxLkpE2Jxn74fvv4qitJLM'; // Для отправки уведомлений админу
+
+    let currentUser = null;
+    let products = [];
+    let vouchers = [
+        {code: 'START', discount: 100}, // Пример ваучера
+        {code: 'GOLD2024', discount: 500}
+    ];
+
+    // --- ЛОГИКА ТЕМЫ ---
+    function toggleTheme() {
+        document.body.classList.toggle('dark-theme');
+        const isDark = document.body.classList.contains('dark-theme');
+        if(isDark) {
+            document.body.style.setProperty('--bg-color', '#000000');
+        } else {
+            document.body.style.setProperty('--bg-color', '#ffffff');
+        }
+    }
+
+    // --- УПРАВЛЕНИЕ СТРАНИЦАМИ ---
+    function showPage(pageId) {
+        if (!currentUser && pageId !== 'auth') {
+            alert('Сначала авторизуйтесь!');
+            return;
+        }
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('page-' + pageId).classList.add('active');
+        
+        if(pageId === 'profile') updateProfileUI();
+    }
+
+    // --- АВТОРИЗАЦИЯ ---
+    function login() {
+        const loginVal = document.getElementById('auth-login').value;
+        const emailVal = document.getElementById('auth-email').value;
+        const passVal = document.getElementById('auth-pass').value;
+
+        if (!loginVal || !emailVal || !passVal) return alert('Заполните все поля');
+
+        let users = JSON.parse(localStorage.getItem('users') || '{}');
+        
+        if (!users[loginVal]) {
+            users[loginVal] = {
+                login: loginVal,
+                email: emailVal,
+                pass: passVal,
+                balance: 0,
+                regDate: new Date().toLocaleDateString(),
+                history: []
+            };
+        } else if (users[loginVal].pass !== passVal) {
+            return alert('Неверный пароль');
         }
 
-        function renderProducts() {
-            const grid = document.getElementById('productGrid');
-            const term = document.getElementById('searchInput').value.toLowerCase();
-            grid.innerHTML = products.filter(p => p.name.toLowerCase().includes(term)).map((p, i) => `
-                <div class="card p-4 active:scale-95 transition cursor-pointer" onclick="openBuy(${i})">
-                    <div class="flex items-center gap-2 mb-2">
-                        <span class="text-xl">${p.flag}</span>
-                        <div class="text-[11px] font-black uppercase truncate">${p.name}</div>
-                    </div>
-                    <div class="flex justify-between items-end">
-                        <div class="text-[10px] opacity-30">${p.qty} ШТ</div>
-                        <div class="text-sm font-black text-blue-500">${p.price}₽</div>
-                    </div>
+        currentUser = users[loginVal];
+        localStorage.setItem('users', JSON.stringify(users));
+        localStorage.setItem('lastSession', loginVal);
+        
+        alert('Успешный вход!');
+        showPage('shop');
+        loadProducts();
+        updateBalanceDisplay();
+    }
+
+    function updateProfileUI() {
+        const info = document.getElementById('user-info');
+        info.innerHTML = `
+            <p><b>Логин:</b> ${currentUser.login}</p>
+            <p><b>Email:</b> ${currentUser.email}</p>
+            <p><b>Дата регистрации:</b> ${currentUser.regDate}</p>
+        `;
+        
+        const hist = document.getElementById('purchase-history');
+        hist.innerHTML = currentUser.history.map(h => `
+            <div class="history-item">📦 ${h.name} - ${h.price}₽ (${h.date})</div>
+        `).join('') || 'Покупок еще нет';
+    }
+
+    function updateUser(type) {
+        let users = JSON.parse(localStorage.getItem('users'));
+        if (type === 'login') {
+            const oldLogin = currentUser.login;
+            const newLogin = document.getElementById('new-login').value;
+            users[newLogin] = users[oldLogin];
+            users[newLogin].login = newLogin;
+            delete users[oldLogin];
+            currentUser = users[newLogin];
+        } else if (type === 'pass') {
+            currentUser.pass = document.getElementById('new-pass').value;
+            users[currentUser.login].pass = currentUser.pass;
+        } else if (type === 'email') {
+            currentUser.email = document.getElementById('new-email').value;
+            users[currentUser.login].email = currentUser.email;
+        }
+        localStorage.setItem('users', JSON.stringify(users));
+        alert('Данные обновлены!');
+        updateProfileUI();
+    }
+
+    // --- РАБОТА С ТОВАРАМИ ---
+    async function loadProducts() {
+        try {
+            // Заглушка, если нет ссылки на CSV. В реале: fetch(SHEET_URL)...
+            const mockData = `Категория,Название,Цена,Описание,Фото,Количество,Флаг
+Аккаунты,Telegram Premium,250,Премиум на месяц,https://via.placeholder.com/150,10,🇷🇺
+Аккаунты,VPN Unlimited,100,Быстрый доступ,https://via.placeholder.com/150,5,🇺🇸`;
+            
+            // Расшифровка CSV (простой парсер)
+            const rows = mockData.split('\n').slice(1);
+            products = rows.map(row => {
+                const cols = row.split(',');
+                return { cat: cols[0], name: cols[1], price: cols[2], desc: cols[3], img: cols[4], qty: cols[5], flag: cols[6] };
+            });
+
+            renderProducts();
+        } catch (e) {
+            document.getElementById('products-list').innerText = "Ошибка загрузки данных.";
+        }
+    }
+
+    function renderProducts() {
+        const list = document.getElementById('products-list');
+        list.innerHTML = products.map((p, idx) => `
+            <div class="product-card">
+                <img src="${p.img}" alt="img">
+                <div style="font-size:12px; color: grey;">${p.cat} ${p.flag}</div>
+                <div style="font-weight:bold;">${p.name}</div>
+                <div class="product-price">${p.price} ₽</div>
+                <div style="font-size:10px; margin-bottom:5px;">В наличии: ${p.qty} шт.</div>
+                <div class="quantity-selector">
+                    <button onclick="changeQty(${idx}, -1)">-</button>
+                    <span id="qty-${idx}">1</span>
+                    <button onclick="changeQty(${idx}, 1)">+</button>
                 </div>
-            `).join('');
+                <button class="btn" onclick="openPayment(${idx})">Купить</button>
+            </div>
+        `).join('');
+    }
+
+    function changeQty(idx, delta) {
+        const el = document.getElementById(`qty-${idx}`);
+        let current = parseInt(el.innerText);
+        current = Math.max(1, Math.min(current + delta, products[idx].qty));
+        el.innerText = current;
+    }
+
+    // --- ОПЛАТА ---
+    let currentOrder = null;
+
+    function openPayment(idx) {
+        const qty = parseInt(document.getElementById(`qty-${idx}`).innerText);
+        const total = products[idx].price * qty;
+        currentOrder = { ...products[idx], buyQty: qty, totalPrice: total };
+        
+        document.getElementById('payment-details').innerText = `Товар: ${currentOrder.name} (${qty} шт.). Итого к оплате: ${total} ₽`;
+        showModal('payment-modal');
+    }
+
+    function confirmPurchase() {
+        // Логика списания баланса или уведомления
+        if (currentUser.balance >= currentOrder.totalPrice) {
+            currentUser.balance -= currentOrder.totalPrice;
+        } else {
+            // Если баланса нет, считаем, что оплатил картой и ждет подтверждения
         }
 
-        function openBuy(i) {
-            selected = products[i];
-            document.getElementById('buyTitle').innerText = selected.name;
-            document.getElementById('buyQty').value = 1;
-            updateTotal();
-            showModal('buyModal');
-        }
+        currentUser.history.push({
+            name: currentOrder.name,
+            price: currentOrder.totalPrice,
+            date: new Date().toLocaleString()
+        });
 
-        function updateTotal() {
-            document.getElementById('buyTotal').innerText = selected.price * document.getElementById('buyQty').value;
-        }
-        document.getElementById('buyQty').oninput = updateTotal;
+        saveUser();
+        updateBalanceDisplay();
+        
+        // Отправка боту (имитация через alert или реальный fetch)
+        const msg = `Привет! Купил(а) [${currentOrder.name} / ${currentOrder.buyQty} шт] юз: ${currentUser.login}, айди: ${currentUser.email}. Выдай заказ!`;
+        console.log("Отправка админу:", msg);
+        
+        alert("Заявка отправлена! " + msg);
+        closeModal();
+    }
 
-        function processPurchase() {
-            if(!currentUser) return openProfile();
-            const total = parseInt(document.getElementById('buyTotal').innerText);
-            if(currentUser.bal >= total) {
-                currentUser.bal -= total;
-                save(); updateUI();
-                closeModal('buyModal');
-                showModal('successModal');
-            } else { showModal('topupModal'); }
+    // --- ВАУЧЕРЫ ---
+    function useVoucher() {
+        const code = document.getElementById('voucher-input').value;
+        const v = vouchers.find(x => x.code === code\ 
+);
+        if (v) {
+            currentUser.balance += v.discount;
+            vouchers = vouchers.filter(x => x.code !== code); // Удаляем использованный
+            saveUser();
+            updateBalanceDisplay();
+            alert(`Ваучер активирован! Получено ${v.discount} ₽`);
+        } else {
+            alert('Неверный или уже использованный ваучер');
         }
+    }
 
-        async function notifyAdmin(type) {
-            let msg = "";
-            const user = currentUser ? currentUser.login : "Аноним";
-            if(type === 'topup') {
-                msg = `💰 ПОПОЛНЕНИЕ\nЮзер: ${user}\nНажал "Я оплатил" (Карта)`;
-                window.open(`https://t.me/nmproda?text=Привет! Перевел на карту, зачисли баланс! ID:7727345054`, '_blank');
-            } else {
-                msg = `🛒 ПОКУПКА\nЮзер: ${user}\nТовар: ${selected.name}\nВыдай заказ!`;
-                window.open(`https://t.me/nmproda?text=Привет! Купил ${selected.name}, выдай заказ!`, '_blank');
+    // --- МИНИ-ИГРА (CAR DODGE) ---
+    let gameInterval;
+    function startGame() {
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let carX = 135;
+        let obstacles = [];
+        let score = 0;
+        let frames = 0;
+
+        if(gameInterval) clearInterval(gameInterval);
+
+        gameInterval = setInterval(() => {
+            frames++;
+            ctx.clearRect(0,0,300,400);
+            
+            // Рисуем машину (Феррари)
+            ctx.fillStyle = "red";
+            ctx.fillRect(carX, 350, 30, 50);
+            ctx.fillStyle = "white";
+            ctx.fillText("Ferrari", carX, 380);
+
+            if(frames % 60 === 0) {
+                obstacles.push({x: Math.random() * 270, y: -50});
             }
-            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: ADMIN_ID, text: msg, parse_mode: "HTML" })
+
+            obstacles.forEach((o, i) => {
+                o.y += 5;
+                ctx.fillStyle = "gold";
+                ctx.fillRect(o.x, o.y, 30, 30);
+
+                // Столкновение
+                if(o.y > 320 && o.y < 400 && o.x > carX - 25 && o.x < carX + 25) {
+                    clearInterval(gameInterval);
+                    alert("Бум! Твой счет: " + score);
+                }
+
+                if(o.y > 400) {
+                    obstacles.splice(i, 1);
+                    score++;
+                }
             });
-            closeModal('topupModal'); closeModal('successModal');
-        }
 
-        // --- УТИЛИТЫ ---
-        function toggleTheme() { document.body.classList.toggle('light'); }
-        function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
-        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-        function openProfile() { showModal('profileModal'); }
-        function save() { localStorage.setItem('u_db', JSON.stringify(currentUser)); }
-        function logout() { localStorage.clear(); location.reload(); }
-        function copyText(t) { navigator.clipboard.writeText(t); const s=document.getElementById('toast'); s.classList.add('show'); setTimeout(()=>s.classList.remove('show'),2000); }
+            ctx.fillStyle = "white";
+            ctx.fillText("Очки: " + score, 10, 20);
+        }, 20);
 
-        function handleAuth() {
-            const l = document.getElementById('authEmail').value;
-            if(!l) return;
-            currentUser = { login: l, email: l+'@mail.com', bal: 0 };
-            save(); updateUI();
-        }
+        window.onkeydown = (e) => {
+            if(e.key === "ArrowLeft") carX -= 15;
+            if(e.key === "ArrowRight") carX += 15;
+        };
+        // Для тач-устройств
+        canvas.onclick = (e) => {
+            if(e.clientX < window.innerWidth / 2) carX -= 20;
+            else carX += 20;
+        };
+    }
 
-        function updateUI() {
-            if(!currentUser) return;
-            document.getElementById('navUser').innerText = currentUser.login;
-            document.getElementById('headerBal').innerText = currentUser.bal;
-            document.getElementById('userBal').innerText = currentUser.bal;
-            document.getElementById('updLogin').value = currentUser.login;
-            document.getElementById('updEmail').value = currentUser.email;
-            document.getElementById('authBox').classList.add('hidden');
-            document.getElementById('userBox').classList.remove('hidden');
-        }
+    // --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
+    function showModal(id) {
+        document.getElementById('overlay').style.display = 'block';
+        document.getElementById(id).style.display = 'block';
+    }
+    function closeModal() {
+        document.querySelectorAll('.modal, .overlay').forEach(el => el.style.display = 'none');
+    }
+    function copyRek() {
+        const rek = document.getElementById('rekvizity').innerText;
+        navigator.clipboard.writeText(rek);
+        alert('Реквизиты скопированы!');
+    }
+    function saveUser() {
+        let users = JSON.parse(localStorage.getItem('users'));
+        users[currentUser.login] = currentUser;
+        localStorage.setItem('users', JSON.stringify(users));
+    }
+    function updateBalanceDisplay() {
+        document.getElementById('user-balance').innerText = `Баланс: ${currentUser ? currentUser.balance : 0} ₽`;
+    }
 
-        function renderFAQ() {
-            const f = [{q:"Как купить?", a:"Выбери номер и оплати."}, {q:"Как пополнить?", a:"Через Крипто-бот или карту в профиле."}];
-            document.getElementById('faqList').innerHTML = f.map(x => `<div class="faq-item p-4 cursor-pointer" onclick="this.classList.toggle('active')"><div class="font-bold text-sm">${x.q}</div><div class="faq-answer text-xs opacity-40 mt-2">${x.a}</div></div>`).join('');
+    // Проверка сессии при загрузке
+    window.onload = () => {
+        const last = localStorage.getItem('lastSession');
+        if(last) {
+            let users = JSON.parse(localStorage.getItem('users'));
+            currentUser = users[last];
+            showPage('shop');
+            loadProducts();
+            updateBalanceDisplay();
         }
+    };
 
-        function showStaticModal(k) {
-            document.getElementById('textTitle').innerText = k.toUpperCase();
-            document.getElementById('textContent').innerText = "Здесь будут ваши статьи и новости.";
-            showModal('textModal');
-        }
+</script>
 
-        // --- ИГРА ---
-        let cv, cx, bk, cn=[], sc=0;
-        function initGame() { cv=document.getElementById("gameCanvas"); cx=cv.getContext("2d"); bk={x:130, w:40, h:10, dx:0}; setInterval(updG, 30); }
-        function moveBasket(s){bk.dx=s;} function stopBasket(){bk.dx=0;}
-        function updG(){
-            cx.clearRect(0,0,300,200); bk.x+=bk.dx; if(bk.x<0)bk.x=0; if(bk.x>260)bk.x=260;
-            cx.fillStyle="#009dff"; cx.fillRect(bk.x, 180, bk.w, bk.h);
-            if(Math.random()<0.05) cn.push({x:Math.random()*280, y:0});
-            cx.fillStyle="#d4af37"; cn.forEach((c,i)=>{ c.y+=3; cx.beginPath(); cx.arc(c.x,c.y,5,0,7); cx.fill();
-                if(c.y>180 && c.x>bk.x && c.x<bk.x+bk.w){ sc++; document.getElementById('gameScore').innerText=sc; cn.splice(i,1); }
-                if(c.y>200) cn.splice(i,1);
-            });
-        }
-    </script>
 </body>
 </html>

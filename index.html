@@ -3,449 +3,366 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PRODA STORE - Аккаунты</title>
+    <title>PRODA STORE - Premium</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --bg: #1a1c23; --card: #242731; --accent: #009dff; --text: #ffffff; --gold: #d4af37;
-        }
-        body.light {
-            --bg: #f0f2f5; --card: #ffffff; --accent: #009dff; --text: #1a1a1a; --gold: #0056b3;
-        }
-        body { background-color: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; transition: 0.3s; }
-        .card { background-color: var(--card); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
-        .btn-blue { background-color: var(--accent); color: white; border-radius: 8px; font-weight: 600; }
-        .glass { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        :root { --bg: #111317; --card: #1c1f26; --accent: #009dff; --text: #ffffff; --gold: #d4af37; }
+        body.light { --bg: #ffffff; --card: #f3f4f6; --accent: #009dff; --text: #111827; }
+        body { background-color: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; transition: 0.3s; margin: 0; overflow-x: hidden; }
+        .card { background-color: var(--card); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); }
+        body.light .card { border: 1px solid rgba(0,0,0,0.05); }
+        .btn-blue { background-color: var(--accent); color: white; border-radius: 12px; font-weight: 600; transition: 0.2s; }
+        .btn-blue:active { transform: scale(0.98); }
+        .glass { background: rgba(28, 31, 38, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; }
         
-        /* Стили карточки товара как на скрине */
-        .product-grid-item {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05);
+        /* Уведомление Скопировано */
+        #toast {
+            position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
+            background: var(--accent); color: white; padding: 12px 24px;
+            border-radius: 50px; font-weight: bold; z-index: 1000;
+            transition: top 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
         }
-        .item-flag { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; margin-right: 10px; }
+        #toast.show { top: 20px; }
+
+        /* Игра Змейка */
+        #snakeCanvas { background: #000; border-radius: 10px; width: 100%; max-width: 300px; touch-action: none; }
         
-        input { background: #2d313e; border: 1px solid #3f4454; border-radius: 8px; padding: 10px; color: white; }
-        body.light input { background: #e4e6eb; border: 1px solid #ccd0d5; color: black; }
-        
+        input { background: #2d313e; border: 1px solid #3f4454; border-radius: 10px; padding: 12px; color: white; width: 100%; }
+        body.light input { background: #fff; border: 1px solid #d1d5db; color: black; }
         .hidden { display: none; }
     </style>
 </head>
-<body class=""> <!-- По умолчанию темная (без класса light) -->
+<body>
 
-    <!-- Header -->
-    <header class="p-4 flex justify-between items-center sticky top-0 z-50 bg-[#1a1c23] border-b border-gray-800">
-        <div class="flex items-center gap-2">
-            <div class="bg-blue-600 p-1 rounded text-xs font-bold">SMS PRO</div>
-            <button onclick="toggleTheme()" class="text-sm opacity-70"><i class="fas fa-moon"></i></button>
+    <!-- Уведомление сверху -->
+    <div id="toast">Скопировано!</div>
+
+    <header class="p-4 flex justify-between items-center sticky top-0 z-50 bg-opacity-80 backdrop-blur-lg border-b border-gray-800" style="background-color: var(--bg);">
+        <div class="flex items-center gap-3">
+                       <div class="bg-blue-600 px-2 py-1 rounded text-[10px] font-black uppercase">SMS PRO</div>
+            <button onclick="toggleTheme()" class="opacity-70 text-lg"><i class="fas fa-adjust"></i></button>
         </div>
         <div class="flex items-center gap-4">
-            <div id="userBalance" class="bg-[#242731] px-3 py-1 rounded-full border border-gray-700 text-sm hidden">
-                <i class="fas fa-wallet text-blue-400"></i> <span id="balValue">0</span> ₽
-            </div>
-                        <button onclick="openProfile()" id="navUser" class="text-sm font-medium">Войти</button>
+            <button onclick="openProfile()" id="navUser" class="text-sm font-semibold opacity-90">Войти</button>
             <i class="fas fa-bars text-xl cursor-pointer" onclick="showModal('menuModal')"></i>
         </div>
     </header>
 
     <main class="p-4 max-w-lg mx-auto">
-        <!-- Кнопка сверху -->
-        <button class="w-full btn-blue py-3 mb-6">Купить аккаунт</button>
+        <button class="w-full btn-blue py-4 mb-8 shadow-lg shadow-blue-900/20">Купить аккаунт</button>
 
-        <!-- Заголовок -->
-        <h1 class="text-2xl font-bold mb-2">Виртуальные номера и готовые аккаунты Telegram</h1>
-        <p class="text-sm opacity-60 mb-6">Удобная и безопасная оплата, быстрая выдача сразу после оплаты.</p>
+        <h1 class="text-2xl font-extrabold mb-2 tracking-tight">Виртуальные номера и готовые аккаунты Telegram</h1>
+        <p class="text-sm opacity-50 mb-8 leading-relaxed">Быстрая выдача и замена в случае проблем - всё для комфортного старта без лишних сложностей.</p>
 
-        <!-- Табы -->
-        <div class="flex gap-2 mb-6">
-            <button class="btn-blue px-4 py-2 text-sm">Номера Telegram</button>
-            <button class="bg-white text-black px-4 py-2 text-sm rounded-lg">Статьи</button>
+        <!-- Вкладки (Статьи теперь работают) -->
+        <div class="flex gap-2 mb-8">
+            <button class="btn-blue px-6 py-2.5 text-sm" onclick="location.reload()">Номера Telegram</button>
+            <button class="bg-gray-800 text-white px-6 py-2.5 text-sm rounded-xl" onclick="showStaticModal('news')">Статьи</button>
         </div>
 
-        <!-- Поиск -->
-        <div class="relative mb-4">
-            <i class="fas fa-search absolute left-3 top-3 opacity-40"></i>
-            <input type="text" placeholder="Поиск по странам" class="w-full pl-10" id="searchInput" oninput="renderProducts()">
+        <div class="relative mb-6">
+            <i class="fas fa-search absolute left-4 top-4 opacity-30"></i>
+            <input type="text" placeholder="Поиск по странам" class="pl-12" id="searchInput" oninput="renderProducts()">
         </div>
 
-        <!-- Сетка товаров (Два столбца) -->
-        <div id="productContainer" class="grid grid-cols-2 gap-2">
-            <!-- Сюда рендерятся товары -->
+        <!-- Сетка товаров 2 столбца -->
+        <div id="productContainer" class="grid grid-cols-2 gap-3 mb-10">
+            <!-- Сюда попадут данные из CSV -->
         </div>
 
-        <!-- Блок Доверия -->
-        <div class="mt-10 p-4 card">
-            <h3 class="font-bold mb-3 text-center">Почему нам доверяют?</h3>
-            <ul class="text-sm space-y-3 opacity-80">
-                <li><i class="fas fa-check-circle text-blue-500 mr-2"></i> Мгновенная выдача</li>
-                <li><i class="fas fa-shield-alt text-blue-500 mr-2"></i> Безопасные способы оплаты</li>
-                <li><i class="fas fa-sync text-blue-500 mr-2"></i> Замена при сбое</li>
-            </ul>
-            <p class="text-[10px] mt-4 opacity-40 italic">ВСТАВЬ ССЫЛКУ НА КАРТИНКУ</p>
+        <!-- Доверие -->
+        <div class="p-6 card">
+            <h3 class="font-bold mb-4 text-center">Почему выбирают нас?</h3>
+            <div class="space-y-4">
+                <div class="flex items-center gap-3"><i class="fas fa-bolt text-blue-500"></i> <span class="text-sm">Мгновенная выдача после оплаты</span></div>
+                <div class="flex items-center gap-3"><i class="fas fa-lock text-blue-500"></i> <span class="text-sm">Безопасные способы оплаты</span></div>
+                                <div class="flex items-center gap-3"><i class="fas fa-undo text-blue-500"></i> <span class="text-sm">Замена при сбое получения кода</span></div>
+            </div>
+            <p class="text-[10px] mt-6 opacity-30 text-center uppercase tracking-widest">ВСТАВЬ ССЫЛКУ НА КАРТИНКУ</p>
         </div>
     </main>
 
-    <!-- Меню (Модалка) -->
-    <div id="menuModal" class="fixed inset-0 bg-black bg-opacity-90 hidden z-[100] p-6">
-        <div class="flex justify-between items-center mb-8">
-            <span class="font-bold text-xl">Меню</span>
-                        <span class="text-3xl" onclick="closeModal('menuModal')">&times;</span>
-        </div>
-        <div class="flex flex-col gap-4 text-lg">
-            <button onclick="showPage('shop')">Магазин</button>
-            <button onclick="openProfile()">Профиль</button>
-            <button onclick="showStaticModal('faq')">FAQ</button>
-            <button onclick="showStaticModal('about')">О нас</button>
-            <button onclick="showStaticModal('news')">Статьи</button>
-            <button onclick="showStaticModal('trust')">Почему мы?</button>
-            <button onclick="showStaticModal('tos')">Оферта</button>
-            <hr class="border-gray-800">
-            <div class="text-sm opacity-50">Поддержка: @nmproda</div>
-        </div>
-    </div>
-
-    <!-- Модалка Профиля -->
-    <div id="profileModal" class="fixed inset-0 bg-[#1a1c23] hidden z-[110] overflow-y-auto">
-        <div class="p-4">
-            <div class="flex justify-between items-center mb-6">
-                <button onclick="closeModal('profileModal')"><i class="fas fa-arrow-left"></i> Назад</button>
-                <span class="font-bold">Личный кабинет</span>
-            </div>
-
-            <div id="authSection">
-                <div class="card p-6">
-                    <h2 class="text-xl font-bold mb-4">Вход в аккаунт</h2>
-                    <input type="text" id="authLog" placeholder="Логин или Email" class="w-full mb-3">
-                    <input type="password" id="authPass" placeholder="Пароль" class="w-full mb-4">
-                    <button onclick="handleAuth()" class="w-full btn-blue py-3">Войти / Регистрация</button>
-                    <button onclick="alert('ВСТАВЬ ТЕКСТ ВОССТАНОВЛЕНИЯ')" class="w-full text-xs opacity-50 mt-4">Забыли пароль?</button>
+    <!-- Модалка Оплаты (Скриншот 10) -->
+    <div id="payModal" class="fixed inset-0 flex items-center justify-center hidden z-[300] p-4">
+        <div class="absolute inset-0 bg-black/80" onclick="closeModal('payModal')"></div>
+        <div class="glass w-full max-w-xs p-8 text-center relative animate-modal">
+            <h2 class="text-orange-500 font-black text-xl mb-8 uppercase tracking-widest">Оплата</h2>
+            
+            <div class="space-y-3 mb-8">
+                <div class="bg-gray-800/40 p-4 rounded-2xl cursor-pointer border border-white/5 active:bg-gray-700" onclick="copyText('4100 1191 2197 6236')">
+                    <div class="text-[9px] opacity-40 uppercase mb-1">Юmoney</div>
+                    <div class="font-bold text-sm">4100 1191 2197 6236</div>
+                </div>
+                <div class="bg-gray-800/40 p-4 rounded-2xl cursor-pointer border border-white/5 active:bg-gray-700" onclick="copyText('2200 7019 5529 9232')">
+                    <div class="text-[9px] opacity-40 uppercase mb-1">Карта T-Банк</div>
+                    <div class="font-bold text-sm">2200 7019 5529 9232</div>
+                    </div>
+                <div class="bg-gray-800/40 p-4 rounded-2xl cursor-pointer border border-white/5 active:bg-gray-700" onclick="copyText('+7 950 170 07 87')">
+                    <div class="text-[9px] opacity-40 uppercase mb-1">СБП T-Банк</div>
+                    <div class="font-bold text-sm">+7 950 170 07 87</div>
                 </div>
             </div>
 
-            <div id="userSection" class="hidden space-y-4">
-                <!-- Статистика как на скринах -->
+            <button onclick="confirmPay()" class="w-full bg-gradient-to-r from-orange-500 to-red-600 text-white font-black py-4 rounded-2xl shadow-xl shadow-orange-900/20 mb-6">Я ОПЛАТИЛ(А)</button>
+            <button onclick="closeModal('payModal')" class="text-xs opacity-40 uppercase font-bold tracking-widest">Отмена</button>
+        </div>
+    </div>
+
+    <!-- Меню -->
+    <div id="menuModal" class="fixed inset-0 bg-black/95 hidden z-[200] p-8">
+        <div class="flex justify-between items-center mb-12">
+            <span class="font-black text-2xl uppercase tracking-tighter">Меню</span>
+            <i class="fas fa-times text-2xl" onclick="closeModal('menuModal')"></i>
+        </div>
+        <div class="flex flex-col gap-6 text-xl font-bold">
+            <button onclick="location.reload()" class="text-left">Магазин</button>
+            <button onclick="openProfile()" class="text-left">Профиль</button>
+            <button onclick="showStaticModal('news')" class="text-left">Новости</button>
+            <button onclick="showStaticModal('faq')" class="text-left">FAQ</button>
+            <button onclick="showStaticModal('about')" class="text-left">О нас</button>
+            <button onclick="showStaticModal('tos')" class="text-left">Оферта</button>
+            <hr class="border-gray-800 my-4">
+            <div class="text-sm opacity-40 font-normal">Менеджер: @nmproda (7727345054)<br>Email: ВСТАВЬ ПОЧТУ</div>
+        </div>
+    </div>
+
+    <!-- Профиль -->
+    <div id="profileModal" class="fixed inset-0 bg-[#111317] hidden z-[150] overflow-y-auto">
+        <div class="p-6 max-w-lg mx-auto">
+            <div class="flex items-center justify-between mb-8">
+                <button onclick="closeModal('profileModal')" class="text-sm"><i class="fas fa-chevron-left mr-2"></i>Назад</button>
+                <span class="font-extrabold uppercase">Личный кабинет</span>
+            </div>
+
+            <div id="authSection" class="card p-8 text-center">
+                <h2 class="text-xl font-bold mb-6">Вход или Регистрация</h2>
+                <input type="text" id="authLog" placeholder="Логин или Почта" class="mb-3">
+                <input type="password" id="authPass" placeholder="Пароль" class="mb-6">
+                <button onclick="handleAuth()" class="w-full btn-blue py-4 shadow-lg">Продолжить</button>
+            </div>
+
+            <div id="userSection" class="hidden space-y-6">
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="card p-4">
-                        <div class="text-xs opacity-50">Всего покупок</div>
-                        <div class="text-xl font-bold text-blue-400" id="statOrders">0</div>
+                    <div class="card p-5 text-center">
+                        <div class="text-[10px] uppercase opacity-40 mb-1">Покупок</div>
+                        <div class="text-2xl font-black text-blue-500" id="statOrders">0</div>
                     </div>
-                    <div class="card p-4">
-                        <div class="text-xs opacity-50">Потрачено</div>
-                        <div class="text-xl font-bold text-red-500" id="statSpent">0 ₽</div>
+                    <div class="card p-5 text-center">
+                        <div class="text-[10px] uppercase opacity-40 mb-1">Траты</div>
+                        <div class="text-2xl font-black text-red-500" id="statSpent">0₽</div>
                     </div>
                 </div>
 
-                <div class="card p-4">
-                    <h3 class="font-bold mb-4 border-b border-gray-700 pb-2">Информация</h3>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="text-xs opacity-50">Логин:</label>
-                            <div class="flex gap-2">
-                                <input type="text" id="updLogin" class="flex-1 text-sm p-1">
-                                <button onclick="updateUserData('login')" class="text-blue-400 text-xs">Изм.</button>
-                            </div>
+                <div class="card p-6 space-y-5">
+                    <h3 class="font-bold border-b border-gray-800 pb-2">Данные профиля</h3>
+                    <div><label class="text-[10px] opacity-40 uppercase block mb-1">Логин</label>
+                        <div class="flex gap-2"><input id="updLogin" class="text-sm p-2 h-10"><button onclick="updateData('login')" class="text-blue-500 text-xs">Изм.</button></div>
+                    </div>
+                    <div><label class="text-[10px] opacity-40 uppercase block mb-1">Почта</label>
+                        <div class="flex gap-2"><input id="updEmail" class="text-sm p-2 h-10"><button onclick="updateData('email')" class="text-blue-500 text-xs">Изм.</button></div>
+                    </div>
+                    <div><label class="text-[10px] opacity-40 uppercase block mb-1">Новый пароль</label>
+                        <div class="flex gap-2"><input id="updPass" type="password" class="text-sm p-2 h-10"><button onclick="updateData('pass')" class="text-blue-500 text-xs">Изм.</button></div>
+                    </div>
+                </div>
+
+                <div class="card p-6">
+                    <h3 class="font-bold mb-4">Ваши ваучеры</h3>
+                    <div id="myVouchers" class="flex flex-wrap gap-2"></div>
+                </div>
+
+                <div class="card p-6">
+                    <h3 class="font-bold mb-4 text-center">Мини-игра: Змейка</h3>
+                    <div class="flex justify-center flex-col items-center">
+                        <canvas id="snakeCanvas" width="300" height="300"></canvas>
+                        <div class="flex gap-4 mt-4">
+                            <button class="bg-gray-700 p-4 rounded-xl" onclick="changeDir('UP')">▲</button>
                         </div>
-                        <div>
-                            <label class="text-xs opacity-50">E-mail:</label>
-                            <div class="flex gap-2">
-                                <input type="text" id="updEmail" class="flex-1 text-sm p-1">
-                                <button onclick="updateUserData('email')" class="text-blue-400 text-xs">Изм.</button>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="text-xs opacity-50">Новый пароль:</label>
-                            <div class="flex gap-2">
-                                <input type="password" id="updPass" class="flex-1 text-sm p-1">
-                                <button onclick="updateUserData('pass')" class="text-blue-400 text-xs">Изм.</button>
-                            </div>
+                        <div class="flex gap-4 mt-2">
+                            <button class="bg-gray-700 p-4 rounded-xl" onclick="changeDir('LEFT')">◀</button>
+                            <button class="bg-gray-700 p-4 rounded-xl" onclick="changeDir('DOWN')">▼</button>
+                            <button class="bg-gray-700 p-4 rounded-xl" onclick="changeDir('RIGHT')">▶</button>
                         </div>
                     </div>
                 </div>
 
-                <div class="card p-4">
-                    <h3 class="font-bold mb-2">Ваучеры</h3>
-                    <div id="myVouchers" class="flex flex-wrap gap-2 mb-2"></div>
-                    <p class="text-[10px] opacity-40">Нажми на ваучер, чтобы скопировать. Он спишется при оплате.</p>
-                </div>
-
-                <div class="card p-4">
-                    <h3 class="font-bold mb-2">История покупок</h3>
-                    <div id="historyList" class="text-xs space-y-2"></div>
-                </div>
-
-                <div class="card p-4">
-                    <h3 class="font-bold mb-2 text-center">Мини-игра</h3>
-                    <div id="gameBox" class="h-24 bg-black rounded flex items-center justify-center cursor-pointer select-none" onclick="playGame()">
-                        КЛИКАЙ ТУТ (Счёт: <span id="gameScore">0</span>)
-                    </div>
-                </div>
-
-                <button onclick="logout()" class="w-full p-3 opacity-50 underline">Выйти</button>
+                <button onclick="logout()" class="w-full opacity-30 text-sm py-4">Выйти из системы</button>
             </div>
         </div>
     </div>
 
-    <!-- Модалка Оплаты (Стиль как на скриншоте 10) -->
-    <div id="payModal" class="fixed inset-0 flex items-center justify-center hidden z-[200] p-4">
-        <div class="absolute inset-0 bg-black bg-opacity-60" onclick="closeModal('payModal')"></div>
-        <div class="glass w-full max-w-xs p-6 rounded-[30px] text-center relative">
-            <h2 class="text-orange-500 font-black text-xl mb-6 uppercase tracking-widest">Оплата</h2>
-            
-            <div class="space-y-3 mb-6">
-                <div class="bg-gray-800 bg-opacity-50 p-3 rounded-xl cursor-pointer" onclick="copy('4100 1191 2197 6236')">
-                    <div class="text-[10px] opacity-50 uppercase">Юmoney</div>
-                    <div class="font-mono font-bold">4100 1191 2197 6236</div>
-                </div>
-                <div class="bg-gray-800 bg-opacity-50 p-3 rounded-xl cursor-pointer" onclick="copy('2200 7019 5529 9232')">
-                    <div class="text-[10px] opacity-50 uppercase">Карта T-Банк</div>
-                    <div class="font-mono font-bold">2200 7019 5529 9232</div>
-                </div>
-                <div class="bg-gray-800 bg-opacity-50 p-3 rounded-xl cursor-pointer" onclick="copy('+7 950 170 07 87')">
-                    <div class="text-[10px] opacity-50 uppercase">СБП T-Банк</div>
-                    <div class="font-mono font-bold">+7 950 170 07 87</div>
-                </div>
-            </div>
-
-            <button onclick="confirmPay()" class="w-full bg-gradient-to-r from-orange-500 to-red-600 text-white font-bold py-4 rounded-2xl shadow-lg mb-4">Я ОПЛАТИЛ(А)</button>
-            <button onclick="closeModal('payModal')" class="text-xs opacity-50 uppercase tracking-widest">Отмена</button>
+    <!-- Текстовое окно -->
+    <div id="textModal" class="fixed inset-0 bg-black/90 hidden z-[400] p-6 overflow-y-auto">
+        <div class="flex justify-between items-center mb-8">
+            <h2 id="textModalTitle" class="font-black text-xl uppercase"></h2>
+            <i class="fas fa-times text-2xl" onclick="closeModal('textModal')"></i>
         </div>
-    </div>
-
-    <!-- Модалка Купли -->
-    <div id="buyStepModal" class="fixed inset-0 bg-black bg-opacity-80 hidden z-[150] flex items-center justify-center p-4">
-        <div class="card p-6 w-full max-w-sm">
-            <h2 id="buyTitle" class="text-xl font-bold mb-2"></h2>
-            <div id="buyDesc" class="text-sm opacity-60 mb-4"></div>
-            
-            <div class="flex items-center justify-between mb-4">
-                <span>Количество:</span>
-                <input type="number" id="buyQty" value="1" min="1" class="w-20 text-center">
-            </div>
-
-            <input type="text" id="buyVoucher" placeholder="Введите ваучер" class="w-full mb-4">
-            
-            <div class="text-2xl font-bold mb-6 text-center">Итого: <span id="buyTotal">0</span> ₽</div>
-            
-            <button onclick="goToPay()" class="w-full btn-blue py-3 mb-3">Перейти к оплате</button>
-            <button onclick="closeModal('buyStepModal')" class="w-full opacity-50">Назад</button>
-        </div>
-    </div>
-
-    <!-- Общая текстовая модалка -->
-    <div id="textModal" class="fixed inset-0 bg-black bg-opacity-90 hidden z-[250] p-6 overflow-y-auto">
-        <div class="flex justify-between items-center mb-6">
-            <h2 id="textModalTitle" class="font-bold text-xl"></h2>
-            <span class="text-3xl" onclick="closeModal('textModal')">&times;</span>
-        </div>
-        <div id="textModalContent" class="text-sm leading-relaxed opacity-80"></div>
+        <div id="textModalContent" class="text-sm opacity-70 leading-relaxed"></div>
     </div>
 
     <script>
-        // --- ДАННЫЕ ---
+        // --- КОНФИГУРАЦИЯ ---
+        // ВСТАВЬ СВОЮ ССЫЛКУ CSV НИЖЕ
+        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR6_3m6_p_3m6_p_3m6_p/pub?output=csv"; 
+
         let currentUser = JSON.parse(localStorage.getItem('curr_u')) || null;
         let users = JSON.parse(localStorage.getItem('users_db')) || [];
         let products = [];
         let selectedProduct = null;
 
         const STATIC_TEXTS = {
-            faq: { t: "FAQ", c: "ВСТАВЬ ТЕКСТ FAQ. Вопрос: Как получить товар? Ответ: Сразу после оплаты." },
-            about: { t: "О нас", c: "ВСТАВЬ ТЕКСТ О НАС. Мы лучший магазин аккаунтов. Почему мы? Потому что быстро. <br><br> <img src='ВСТАВЬ ССЫЛКУ НА КАРТИНКУ' class='w-full rounded'>" },
-            news: { t: "Новости", c: "ВСТАВЬ ТЕКСТ НОВОСТЕЙ. Телеграм обновился! Наши аккаунты живут дольше." },
-            trust: { t: "Доверие", c: "ВСТАВЬ ТЕКСТ ПОЧЕМУ ДОВЕРЯТЬ. Более 1000 успешных сделок." },
-            tos: { t: "Оферта", c: "ВСТАВЬ ТЕКСТ ОФЕРТЫ. Совершая покупку, вы соглашаетесь с правилами..." }
+            faq: { t: "FAQ", c: "Как купить? Выберите товар, оплатите по реквизитам и нажмите кнопку подтверждения." },
+            about: { t: "О нас", c: "Мы предоставляем качественные аккаунты уже 3 года.<br><br><img src='ВСТАВЬ ССЫЛКУ НА КАРТИНКУ' class='w-full rounded-2xl'>" },
+            news: { t: "Статьи и Новости", c: "Новости Телеграм: Новое обновление API.<br><br>Наши аккаунты теперь защищены лучше." },
+            tos: { t: "Публичная оферта", c: "Покупая товар, вы подтверждаете свое согласие с правилами магазина." }
         };
 
         // --- ИНИЦИАЛИЗАЦИЯ ---
         window.onload = () => {
-            fetchProducts();
-            updateGlobalUI();
+            loadFromCSV();
+            if(currentUser) updateGlobalUI();
         }
 
-        function toggleTheme() {
-            document.body.classList.toggle('light');
-        }
+        function toggleTheme() { document.body.classList.toggle('light'); }
 
-        async function fetchProducts() {
-            // Имитация загрузки из CSV (A:Категория, B:Название, C:Цена, D:Описание, E:Фото, F:Кол-во, G:Флаг)
-            // Реальную ссылку CSV вставлять в fetch("ССЫЛКА")
-            products = [
-                { cat: 'Telegram', name: 'США', price: 55, desc: 'Отлежка 7 дней, формат TDATA', img: '🇺🇸', qty: 171 },
-                { cat: 'Telegram', name: 'Бангладеш', price: 58, desc: 'Авторег, микс', img: '🇧🇩', qty: 73 },
-                { cat: 'Telegram', name: 'Индонезия', price: 62, desc: 'Чистые IP', img: '🇮🇩', qty: 56 },
-                { cat: 'Telegram', name: 'Бразилия', price: 148, desc: 'Премиум аккаунты', img: '🇧🇷', qty: 37 },
-                { cat: 'Telegram', name: 'Казахстан', price: 200, desc: 'Для спама/инвайта', img: '🇰🇿', qty: 20 }
-            ];
-            renderProducts();
+        async function loadFromCSV() {
+            try {
+                const res = await fetch(CSV_URL);
+                const data = await res.text();
+                const rows = data.split('\n').slice(1); // Пропускаем заголовок
+                products = rows.map(row => {
+                    const col = row.split(','); // Предполагаем разделитель - запятая
+                    return {
+                        cat: col[0], name: col[1], price: col[2], desc: col[3],
+                        img: col[4], qty: col[5], flag: col[6]
+                    };
+                }).filter(p => p.name);
+                renderProducts();
+            } catch(e) {
+                console.log("Ошибка CSV, загружаем демо-данные");
+                products = [
+                    {cat:'TG', name:'США', price:55, desc:'TData', img:'🇺🇸', qty:100, flag:'🇺🇸'},
+                    {cat:'TG', name:'Индонезия', price:62, desc:'Session', img:'🇮🇩', qty:50, flag:'🇮🇩'}
+                ];
+                renderProducts();
+            }
         }
 
         function renderProducts() {
             const container = document.getElementById('productContainer');
             const search = document.getElementById('searchInput').value.toLowerCase();
-            
-            container.innerHTML = products
-                .filter(p => p.name.toLowerCase().includes(search))
-                .map((p, i) => `
-                <div class="card p-3 cursor-pointer hover:border-blue-500 transition" onclick="openBuy(${i})">
-                    <div class="flex items-center gap-2 mb-2">
-                        <span class="text-xl">${p.img}</span>
-                        <div class="text-[11px] font-bold truncate">${p.name}</div>
+            container.innerHTML = products.filter(p => p.name.toLowerCase().includes(search)).map((p, i) => `
+                <div class="card p-4 active:scale-95 transition cursor-pointer" onclick="openBuy(${i})">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="text-xl">${p.flag || '🌐'}</span>
+                        <div class="text-[11px] font-bold truncate uppercase tracking-tighter">${p.name}</div>
                     </div>
-                    <div class="flex items-center gap-1 text-[10px] opacity-50 mb-3">
-                        <i class="fab fa-telegram text-blue-400"></i> Telegram
+                    <div class="flex items-center gap-1 text-[9px] opacity-40 mb-4 font-bold">
+                        <i class="fab fa-telegram-plane"></i> TELEGRAM
                     </div>
-                    <div class="flex justify-between items-end">
-                        <div class="text-[10px] opacity-40">${p.qty} шт</div>
-                        <div class="text-sm font-bold text-blue-400">${p.price}.00₽</div>
+                    <div class="flex justify-between items-center">
+                        <div class="text-[10px] opacity-30 font-bold">${p.qty} ШТ</div>
+                        <div class="text-sm font-black text-blue-500">${p.price}.00₽</div>
                     </div>
                 </div>
             `).join('');
         }
 
-        // --- ЛОГИКА ПОКУПКИ ---
-        function openBuy(idx) {
-            selectedProduct = products[idx];
-            document.getElementById('buyTitle').innerText = selectedProduct.name;
-            document.getElementById('buyDesc').innerText = selectedProduct.desc;
-            document.getElementById('buyQty').value = 1;
-            document.getElementById('buyVoucher').value = '';
-            calcTotal();
-            showModal('buyStepModal');
+        // --- УВЕДОМЛЕНИЯ ---
+        function copyText(text) {
+            navigator.clipboard.writeText(text);
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
         }
 
-        document.getElementById('buyQty').oninput = calcTotal;
-        document.getElementById('buyVoucher').oninput = calcTotal;
-
-        function calcTotal() {
-            const qty = document.getElementById('buyQty').value;
-            let total = selectedProduct.price * qty;
-            
-            // Логика ваучера: если ввел "GIFT50", скидка 50р
-            if (document.getElementById('buyVoucher').value === "GIFT50") total -= 50;
-            
-            document.getElementById('buyTotal').innerText = total > 0 ? total : 0;
-        }
-
-        function goToPay() {
-            closeModal('buyStepModal');
-            showModal('payModal');
-        }
-
+        // --- ЛОГИКА ОПЛАТЫ ---
         function confirmPay() {
             closeModal('payModal');
-            // После оплаты - выдача
-            alert("ОПЛАТА ПРОВЕРЯЕТСЯ. ВСТАВЬ ТЕКСТ ПОСЛЕ ОПЛАТЫ. \n\nДанные: account_data:pass_123");
-            
-            if(currentUser) {
-                currentUser.orders = currentUser.orders || [];
-                currentUser.orders.push({
-                    date: new Date().toLocaleDateString(),
-                    item: selectedProduct.name,
-                    price: document.getElementById('buyTotal').innerText
-                });
-                currentUser.spent = (currentUser.spent || 0) + Number(document.getElementById('buyTotal').innerText);
-                saveUser();
-            }
+            showStaticModal('faq'); // Вместо алерта показываем окно
+            document.getElementById('textModalTitle').innerText = "Заказ принят";
+            document.getElementById('textModalContent').innerHTML = `
+                <div class="text-center py-4">
+                    <div class="text-4xl mb-4">✅</div>
+                    <p class="mb-6 font-bold">Ваш заказ проверяется! Данные появятся здесь через пару минут.</p>
+                    <button onclick="closeModal('textModal')" class="btn-blue px-8 py-3">О, я доволен, жми на меня</button>
+                </div>
+            `;
         }
 
-        // --- ПРОФИЛЬ ---
-        function openProfile() {
-            showModal('profileModal');
-            if (currentUser) {
-                document.getElementById('authSection').classList.add('hidden');
-                document.getElementById('userSection').classList.remove('hidden');
-                document.getElementById('updLogin').value = currentUser.login;
-                document.getElementById('updEmail').value = currentUser.email;
-                document.getElementById('statOrders').innerText = currentUser.orders ? currentUser.orders.length : 0;
-                document.getElementById('statSpent').innerText = (currentUser.spent || 0) + " ₽";
-                
-                // Ваучеры
-                const vList = document.getElementById('myVouchers');
-                vList.innerHTML = (currentUser.vouchers || ["GIFT50", "WELCOME10"]).map(v => `
-                    <span onclick="copy('${v}')" class="bg-blue-600 px-2 py-1 rounded text-[10px] font-bold cursor-pointer">${v}</span>
-                `).join('');
+        // --- ЗМЕЙКА ---
+        const canvas = document.getElementById("snakeCanvas");
+        const ctx = canvas.getContext("2d");
+        let snake = [{x: 10, y: 10}];
+        let food = {x: 15, y: 15};
+        let dx = 0, dy = 0;
+        let score = 0;
 
-                // История
-                const hList = document.getElementById('historyList');
-                hList.innerHTML = currentUser.orders ? currentUser.orders.map(o => `
-                    <div class="flex justify-between border-b border-gray-800 py-1">
-                        <span>${o.date} - ${o.item}</span>
-                        <span class="text-blue-400">${o.price}₽</span>
-                    </div>
-                `).join('') : "Покупок нет";
-            }
-        }
-
-        function handleAuth() {
-            const login = document.getElementById('authLog').value;
-            const pass = document.getElementById('authPass').value;
-            if(!login || !pass) return alert("Заполни поля");
-
-            let user = users.find(u => u.login === login || u.email === login);
-            if (user) {
-                if(user.pass === pass) {
-                    currentUser = user;
-                } else {
-                    return alert("Неверный пароль");
-                }
+        function gameLoop() {
+            const head = {x: snake[0].x + dx, y: snake[0].y + dy};
+            snake.unshift(head);
+            if (head.x === food.x && head.y === food.y) {
+                score++;
+                food = {x: Math.floor(Math.random()*20), y: Math.floor(Math.random()*20)};
             } else {
-                // Регистрация
-                currentUser = { login, email: login + "@shop.ru", pass, date: new Date().toLocaleDateString(), spent: 0, orders: [], vouchers: ["GIFT50"] };
-                users.push(currentUser);
+                snake.pop();
             }
-            saveUser();
-            updateGlobalUI();
-            openProfile();
+            if (head.x<0 || head.x>=20 || head.y<0 || head.y>=20) {
+                snake = [{x:10,y:10}]; dx=0; dy=0; score=0;
+            }
+            ctx.fillStyle = "black"; ctx.fillRect(0,0,300,300);
+            ctx.fillStyle = "#009dff"; snake.forEach(s => ctx.fillRect(s.x*15, s.y*15, 14, 14));
+            ctx.fillStyle = "red"; ctx.fillRect(food.x*15, food.y*15, 14, 14);
+            setTimeout(gameLoop, 150);
+        }
+        gameLoop();
+        function changeDir(dir) {
+            if(dir==='UP') {dx=0; dy=-1}
+            if(dir==='DOWN') {dx=0; dy=1}
+            if(dir==='LEFT') {dx=-1; dy=0}
+            if(dir==='RIGHT') {dx=1; dy=0}
         }
 
-        function updateUserData(type) {
-            if (type === 'login') currentUser.login = document.getElementById('updLogin').value;
-            if (type === 'email') currentUser.email = document.getElementById('updEmail').value;
-            if (type === 'pass') currentUser.pass = document.getElementById('updPass').value;
-            saveUser();
-            alert("Данные изменены");
-        }
-
-        function saveUser() {
-            localStorage.setItem('curr_u', JSON.stringify(currentUser));
-            const idx = users.findIndex(u => u.login === currentUser.login);
-            if(idx !== -1) users[idx] = currentUser;
-            localStorage.setItem('users_db', JSON.stringify(users));
-        }
-
-        function logout() {
-            currentUser = null;
-            localStorage.removeItem('curr_u');
-            location.reload();
-        }
-
-        // --- УТИЛИТЫ ---
+        // --- ВСПОМОГАТЕЛЬНОЕ ---
         function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-        
         function showStaticModal(key) {
             document.getElementById('textModalTitle').innerText = STATIC_TEXTS[key].t;
             document.getElementById('textModalContent').innerHTML = STATIC_TEXTS[key].c;
             showModal('textModal');
         }
 
-        function copy(text) {
-            navigator.clipboard.writeText(text);
-            alert("Скопировано: " + text);
-        }
-
-        function updateGlobalUI() {
+        function openProfile() {
+            showModal('profileModal');
             if(currentUser) {
-                document.getElementById('navUser').innerText = currentUser.login;
+                document.getElementById('authSection').classList.add('hidden');
+                document.getElementById('userSection').classList.remove('hidden');
+                document.getElementById('updLogin').value = currentUser.login;
+                document.getElementById('updEmail').value = currentUser.email;
+                document.getElementById('statOrders').innerText = currentUser.orders?.length || 0;
+                document.getElementById('statSpent').innerText = (currentUser.spent || 0) + "₽";
+                document.getElementById('myVouchers').innerHTML = (currentUser.vouchers || ["VOUCHER-X100"]).map(v => 
+                    `<div class="bg-blue-600 px-3 py-1 rounded-full text-[10px] font-bold cursor-pointer" onclick="copyText('${v}')">${v}</div>`
+                ).join('');
             }
         }
 
-        let score = 0;
-        function playGame() {
-            score++;
-            document.getElementById('gameScore').innerText = score;
-            const box = document.getElementById('gameBox');
-            box.style.backgroundColor = score % 2 === 0 ? '#1e222c' : '#009dff';
+        function handleAuth() {
+            const log = document.getElementById('authLog').value;
+            const pass = document.getElementById('authPass').value;
+            if(!log || !pass) return;
+            currentUser = { login: log, email: log+'@mail.ru', spent: 0, orders: [], vouchers: ["WELCOME50"] };
+            localStorage.setItem('curr_u', JSON.stringify(currentUser));
+            openProfile();
+            updateGlobalUI();
         }
+
+        function updateGlobalUI() { document.getElementById('navUser').innerText = currentUser.login; }
+        function logout() { localStorage.removeItem('curr_u'); location.reload(); }
+        function openBuy() { showModal('payModal'); }
     </script>
 </body>
 </html>
